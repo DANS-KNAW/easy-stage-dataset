@@ -30,7 +30,7 @@ ARGUMENTS
 * ``-c``, ``--check-data-file-existence-in-storage`` -- if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each
    of the data files in the bag to ensure that it exists in archival storage. Can only be specified if ``-e`` is also used.
 * ``<EASY-BagIt directory>`` -- a directory conforming to the [EASY-BagIt] format.
-* ``<SDO-set directory>`` -- the SDO-set directory to put the generated [SDO]s in. If the directory does not exist it is first
+* ``<SDO-set directory>`` -- the SDO-set directory to put the generated [SDOs] in. If the directory does not exist it is first
   created.
 
 
@@ -83,4 +83,4 @@ Steps:
 [bagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
 [SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
 [easy-ingest]: https://github.com/DANS-KNAW/easy-ingest#easy-ingest
-[SDO]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object
+[SDOs]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-objects
