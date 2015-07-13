@@ -83,3 +83,4 @@ Steps:
 [bagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
 [SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
 [easy-ingest]: https://github.com/DANS-KNAW/easy-ingest#easy-ingest
+[SDO]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object
