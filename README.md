@@ -15,3 +15,5 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
+Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-deposit] service. These
+deposit must conform to the [EASY-bagIt] format, which is basically [bagIt] with some extra EASY-specific requirements
