@@ -16,10 +16,21 @@ DESCRIPTION
 -----------
 
 Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-deposit] service. These
-deposits must conform to the [EASY-BagIt] format, which is basically [bagIt] with some extra EASY-specific requirements.
+deposits must conform to the [EASY-BagIt] format, which is basically [BagIt] with some extra EASY-specific requirements.
 
-To convert this deposit into an EASY dataset it is first converted into a *Staged Digital Object Set* (an [SDO-set]) which can
-then be ingested into a Fedora Commons 3.x repository using the [easy-ingest] command.
+To prepare the deposit for inclusion in EASY ``easy-stage-dataset`` performs the following tasks:
+
+1. It generates the metadata required for an EASY dataset:
+   * Adminstrative Metadata
+   * EASY Metadata (descriptive metadata)
+   * ...
+2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
+3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
+4. It generates an SQL-script to add the files and folders to the EASY Filesystem RDB.
+5. It generates a SOLR document to add the dataset to the EASY SOLR Search Index.
+
+The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository. The result of 4 can be executed by 
+PostGreSQL and the result of 5 will be accepted by the SOLR service.
 
 
 ARGUMENTS
@@ -74,13 +85,11 @@ Steps:
         mvn install
 
 
-
-
-
-
-[easy-deposit]: https://github.com/DANS-KNAW/easy-deposit
-[EASY-BagIt]: http://easy.dans.knaw.nl/schemas/EASY-BagIt.html 
-[bagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
-[SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
+[easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
 [easy-ingest]: https://github.com/DANS-KNAW/easy-ingest#easy-ingest
+[EASY-BagIt]: http://easy.dans.knaw.nl/schemas/EASY-BagIt.html 
+[SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
 [SDOs]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-objects
+
+[BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
+
