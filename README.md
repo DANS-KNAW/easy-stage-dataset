@@ -9,8 +9,7 @@ Stage a dataset in DANS-bagIt format for ingest into an EASY Fedora Commons Repo
 SYNOPSIS
 --------
 
-    easy-stage-dataset [-e|--external-bagit-archive-url <url> [-c|--check-data-file-existence-in-storage]] \
-        <DANS-bagIt directory> <SDO-set directory>
+    easy-stage-dataset [-e <url> [-c]] <DANS-bagIt directory> <SDO-set directory>
 
 
 DESCRIPTION
@@ -26,10 +25,10 @@ then be ingested into a Fedora Commons 3.x repository using the [easy-ingest] co
 ARGUMENTS
 ---------
 
--e, --external-bagit-archive-url: in case the dataset data is stored in Fedora-external storage, the URL of the directory
-  where it is stored. ``easy-stage-dataset`` will create Redirect datastreams for all the data files in the bag.
--c, --check-data-file-existence-in-storage: if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each of the
-  data files in the bag to ensure that it exists in archival storage.
+* ``-e``, ``--external-bagit-archive-url``: in case the dataset data is stored in Fedora-external storage, the URL of the   
+   directory where it is stored. ``easy-stage-dataset`` will create Redirect datastreams for all the data files in the bag.
+* ``-c``, ``--check-data-file-existence-in-storage``: if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each
+   of the data files in the bag to ensure that it exists in archival storage. Can only be specified if ``-e`` is also used.
 
 
 INSTALLATION AND CONFIGURATION
