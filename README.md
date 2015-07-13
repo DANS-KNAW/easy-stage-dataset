@@ -25,12 +25,12 @@ then be ingested into a Fedora Commons 3.x repository using the [easy-ingest] co
 ARGUMENTS
 ---------
 
-* ``-e``, ``--external-bagit-archive-url``: in case the dataset data is stored in Fedora-external storage, the URL of the   
+* ``-e``, ``--external-bagit-archive-url`` -- in case the dataset data is stored in Fedora-external storage, the URL of the   
    directory where it is stored. ``easy-stage-dataset`` will create Redirect datastreams for all the data files in the bag.
-* ``-c``, ``--check-data-file-existence-in-storage``: if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each
+* ``-c``, ``--check-data-file-existence-in-storage`` -- if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each
    of the data files in the bag to ensure that it exists in archival storage. Can only be specified if ``-e`` is also used.
-* ``<EASY-BagIt directory>``: a directory conforming to the [EASY-BagIt] format.
-* ``<SDO-set directory>``: the SDO-set directory to put the generated [SDO]s in. If the directory does not exist it is first
+* ``<EASY-BagIt directory>`` -- a directory conforming to the [EASY-BagIt] format.
+* ``<SDO-set directory>`` -- the SDO-set directory to put the generated [SDO]s in. If the directory does not exist it is first
   created.
 
 
