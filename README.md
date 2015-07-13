@@ -3,20 +3,20 @@
 easy-stage-dataset
 ==================
 
-Stage a dataset in DANS-bagIt format for ingest into an EASY Fedora Commons Repository
+Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
 
 
 SYNOPSIS
 --------
 
-    easy-stage-dataset [-e <url> [-c]] <DANS-bagIt directory> <SDO-set directory>
+    easy-stage-dataset [-e <url> [-c]] <EASY-BagIt directory> <SDO-set directory>
 
 
 DESCRIPTION
 -----------
 
 Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-deposit] service. These
-deposits must conform to the [EASY-bagIt] format, which is basically [bagIt] with some extra EASY-specific requirements.
+deposits must conform to the [EASY-BagIt] format, which is basically [bagIt] with some extra EASY-specific requirements.
 
 To convert this deposit into an EASY dataset it is first converted into a *Staged Digital Object Set* (an [SDO-set]) which can
 then be ingested into a Fedora Commons 3.x repository using the [easy-ingest] command.
@@ -29,6 +29,9 @@ ARGUMENTS
    directory where it is stored. ``easy-stage-dataset`` will create Redirect datastreams for all the data files in the bag.
 * ``-c``, ``--check-data-file-existence-in-storage``: if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each
    of the data files in the bag to ensure that it exists in archival storage. Can only be specified if ``-e`` is also used.
+* ``<EASY-BagIt directory>``: a directory conforming to the [EASY-BagIt] format.
+* ``<SDO-set directory>``: the SDO-set directory to put the generated [SDO]s in. If the directory does not exist it is first
+  created.
 
 
 INSTALLATION AND CONFIGURATION
@@ -76,7 +79,7 @@ Steps:
 
 
 [easy-deposit]: https://github.com/DANS-KNAW/easy-deposit
-[EASY-bagIt]: 
+[EASY-BagIt]: http://easy.dans.knaw.nl/schemas/EASY-BagIt.html 
 [bagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
 [SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
 [easy-ingest]: https://github.com/DANS-KNAW/easy-ingest#easy-ingest
