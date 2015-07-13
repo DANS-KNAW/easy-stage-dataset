@@ -27,7 +27,9 @@ ARGUMENTS
 ---------
 
 -e, --external-bagit-archive-url: in case the dataset data is stored in Fedora-external storage, the URL of the directory
-  where it is stored.
+  where it is stored. ``easy-stage-dataset`` will create Redirect datastreams for all the data files in the bag.
+-c, --check-data-file-existence-in-storage: if set ``easy-stage-dataset`` will do an http ``HEAD`` request on each of the
+  data files in the bag to ensure that it exists in archival storage.
 
 
 INSTALLATION AND CONFIGURATION
