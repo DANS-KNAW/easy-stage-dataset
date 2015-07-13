@@ -68,7 +68,7 @@ Steps:
 2. Clone and build this project
 
         git clone https://github.com/DANS-KNAW/easy-stage-dataset.git
-        cd easy-ingest
+        cd easy-stage-dataset
         mvn install
 
 
