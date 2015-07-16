@@ -26,11 +26,8 @@ To prepare the deposit for inclusion in EASY ``easy-stage-dataset`` performs the
    * ...
 2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
 3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
-4. It generates an SQL-script to add the files and folders to the EASY Filesystem RDB.
-5. It generates a SOLR document to add the dataset to the EASY SOLR Search Index.
 
-The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository. The result of 4 can be executed by 
-PostGreSQL and the result of 5 will be accepted by the SOLR service.
+The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository.
 
 
 ARGUMENTS
