@@ -65,7 +65,7 @@ BUILDING FROM SOURCE
 
 Prerequisites:
 
-* Java 7 or higher
+* Scala 2.11 or higher
 * Maven 3.3.3 or higher
  
 Steps:
