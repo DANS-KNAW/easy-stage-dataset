@@ -14,6 +14,7 @@ target/
 .idea/
 .DS_Store
 home/
+out/
 
 # Eclipse
 /.project
