@@ -8,7 +8,7 @@ import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
 import scala.util.Try
-import scala.xml.XML
+import scala.xml.{Elem, NodeSeq, XML}
 
 object Main {
 
@@ -50,12 +50,14 @@ object Main {
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
     val mimeType = readMimeType(relativePath)
     createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, sdoDir)
-    createFileFOXML(file.getName, s.ownerId, mimeType, sdoDir)
+    createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType))
   }
 
   def createDirSDO(dir: File)(implicit s: Settings): Try[Unit] = Try {
     val sdoDir = getSDODir(dir)
     sdoDir.mkdir()
+//    val relativePath = dir.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
+    createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId))
   }
 
   def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
@@ -72,13 +74,23 @@ object Main {
     pw.close()
   }
 
-  def createFileFOXML(filename: String, ownerId: String, mimeType: String, sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+  def createFOXML(sdoDir: File, getFOXML: => String)(implicit s: Settings): Try[Unit] = Try {
     val pw = new PrintWriter(Paths.get(sdoDir.getPath, FOXML_FILENAME).toFile)
-    pw.write(getFileFOXML(filename, ownerId, mimeType))
+    pw.write(getFOXML)
     pw.close()
   }
 
   def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
+    val dc = <dc:title>{label}</dc:title><dc:type>{mimeType}</dc:type>
+    getFOXML(label, ownerId, dc).mkString
+  }
+
+  def getDirFOXML(label: String, ownerId: String): String = {
+    val dc = <dc:title>{label}</dc:title>
+    getFOXML(label, ownerId, dc).mkString
+  }
+
+  def getFOXML(label: String, ownerId: String, dcElems: NodeSeq): Elem = {
 //    <?xml version="1.0" encoding="UTF-8"?>
     <foxml:digitalObject VERSION="1.1"
                          xmlns:foxml="info:fedora/fedora-system:def/foxml#"
@@ -97,13 +109,12 @@ object Main {
                        xmlns:dc="http://purl.org/dc/elements/1.1/"
                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                        xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-              <dc:title>{label}</dc:title>
-              <dc:type>{mimeType}</dc:type>
+              {dcElems}
             </oai_dc:dc>
           </foxml:xmlContent>
         </foxml:datastreamVersion>
       </foxml:datastream>
-    </foxml:digitalObject>.mkString
+    </foxml:digitalObject>
   }
 
   def readMimeType(filePath: String)(implicit s: Settings): String = {
