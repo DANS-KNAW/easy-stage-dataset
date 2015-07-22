@@ -1,21 +1,33 @@
 package nl.knaw.dans.easy.stage
 
-import java.io.{PrintWriter, File}
+import java.io.{File, PrintWriter}
 import java.nio.file.Paths
 
+import org.apache.commons.io.FileUtils
+import org.json4s.JsonDSL._
+import org.json4s.native.JsonMethods._
+
 import scala.util.Try
+import scala.xml.XML
 
 object Main {
 
-  case class Settings(bagitDir: File, sdoSetDir: File)
+  private val CONFIG_FILENAME = "cfg.json"
+  private val FOXML_FILENAME = "fo.xml"
+
+  case class Settings(ownerId: String, bagStorageLocation: String, bagitDir: File, sdoSetDir: File)
 
   def main(args: Array[String]) {
+
     implicit val s = Settings(
+      ownerId = "georgi",
+      bagStorageLocation = "http://localhost/bags",
       bagitDir = new File("test-resources/example-bag"),
       sdoSetDir = new File("out/sdoSetDir"))
 
     val dataDir = s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
+
     createDigitalObjects(dataDir)
   }
 
@@ -23,35 +35,50 @@ object Main {
     val children = dataDir.listFiles()
     children.foreach(child => {
       if (child.isFile) {
-        createFileDO(child)
+        createFileSDO(child)
       } else if (child.isDirectory) {
-        createDirDO(child)
+        createDirSDO(child)
         createDigitalObjects(child)
       }
     })
   }
 
-  def createFileDO(file: File)(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = getDODir(file)
-    println("file DO> " + sdoDir.getPath)
+  def createFileSDO(file: File)(implicit s: Settings): Try[Unit] = Try {
+    val sdoDir = getSDODir(file)
     sdoDir.mkdir()
-
-    createFileFOXML(sdoDir)
+    FileUtils.copyFileToDirectory(file, sdoDir)
+    val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
+    val mimeType = readMimeType(relativePath)
+    createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, sdoDir)
+    createFileFOXML(file.getName, s.ownerId, mimeType, sdoDir)
   }
 
-  def createDirDO(dir: File)(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = getDODir(dir)
-    println("dir DO> " + sdoDir.getPath)
+  def createDirSDO(dir: File)(implicit s: Settings): Try[Unit] = Try {
+    val sdoDir = getSDODir(dir)
     sdoDir.mkdir()
   }
 
-  def createFileFOXML(sdoDir: File): Try[Unit] = Try {
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "fo.xml").toFile)
-    pw.write(getFileFOXML())
+  def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
+    val sdoCfg =
+      ("namespace" -> "easy-file") ~
+      ("datastreams" -> List(
+        ("dsLocation" -> fileLocation ) ~
+        ("dsID" -> "REMOTE_BYTES") ~
+        ("controlGroup" -> "R") ~
+        ("mimeType" -> mimeType)
+      ))
+    pw.write(pretty(render(sdoCfg)))
     pw.close()
   }
 
-  def getFileFOXML(): String = {
+  def createFileFOXML(filename: String, ownerId: String, mimeType: String, sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, FOXML_FILENAME).toFile)
+    pw.write(getFileFOXML(filename, ownerId, mimeType))
+    pw.close()
+  }
+
+  def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
 //    <?xml version="1.0" encoding="UTF-8"?>
     <foxml:digitalObject VERSION="1.1"
                          xmlns:foxml="info:fedora/fedora-system:def/foxml#"
@@ -59,6 +86,8 @@ object Main {
                          xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
       <foxml:objectProperties>
         <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE={label}/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE={ownerId}/>
       </foxml:objectProperties>
       <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
         <foxml:datastreamVersion ID="DC1.0" LABEL="Dublin Core Record for this object"
@@ -68,8 +97,8 @@ object Main {
                        xmlns:dc="http://purl.org/dc/elements/1.1/"
                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                        xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
-              <dc:identifier>ingest-test:1</dc:identifier>
-              <dc:description>An object ingested by posting a FOXML document to the REST API.</dc:description>
+              <dc:title>{label}</dc:title>
+              <dc:type>{mimeType}</dc:type>
             </oai_dc:dc>
           </foxml:xmlContent>
         </foxml:datastreamVersion>
@@ -77,7 +106,22 @@ object Main {
     </foxml:digitalObject>.mkString
   }
 
-  def getDODir(fileOrDir: File)(implicit s: Settings): File = {
+  def readMimeType(filePath: String)(implicit s: Settings): String = {
+    val filesMetadata = new File(s.bagitDir, "metadata/files.xml")
+    if (!filesMetadata.exists) {
+      throw new RuntimeException("Unable to find `metadata/files.xml` in bag.")
+    }
+    val mimes = for {
+      file <- XML.loadFile(filesMetadata) \\ "files" \ "file"
+      if (file \ "@filepath").text == filePath
+      mime <- file \ "format"
+    } yield mime
+    if (mimes.size != 1)
+      throw new RuntimeException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
+    mimes(0).text
+  }
+
+  def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
     val sdoName = fileOrDir.getPath.replace(s.bagitDir.getPath, "").replace("/", "_").replace(".", "_") match {
       case name if name.startsWith("_") => name.tail
       case name => name
