@@ -14,6 +14,7 @@ object Main {
 
   private val CONFIG_FILENAME = "cfg.json"
   private val FOXML_FILENAME = "fo.xml"
+  private val DATASET_SDO = "dataset"
 
   case class Settings(ownerId: String, bagStorageLocation: String, bagitDir: File, sdoSetDir: File)
 
@@ -28,47 +29,67 @@ object Main {
     val dataDir = s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
 
-    createDigitalObjects(dataDir)
+    createDatasetSDO().flatMap(_ => createSDOs(dataDir, DATASET_SDO)).get
   }
 
-  def createDigitalObjects(dataDir: File)(implicit s: Settings): Try[Unit] = Try {
-    val children = dataDir.listFiles()
+  def createDatasetSDO()(implicit s: Settings): Try[Unit] = Try {
+    val sdoDir = new File(s.sdoSetDir, DATASET_SDO)
+    sdoDir.mkdir()
+  }
+
+  def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
+    val children = dir.listFiles()
     children.foreach(child => {
       if (child.isFile) {
-        createFileSDO(child)
+        createFileSDO(child, parentSDO)
       } else if (child.isDirectory) {
-        createDirSDO(child)
-        createDigitalObjects(child)
+        createDirSDO(child, parentSDO)
+          .flatMap(_ => createSDOs(child, child.getName))
       }
     })
   }
 
-  def createFileSDO(file: File)(implicit s: Settings): Try[Unit] = Try {
+  def createFileSDO(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
     val sdoDir = getSDODir(file)
     sdoDir.mkdir()
     FileUtils.copyFileToDirectory(file, sdoDir)
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
     val mimeType = readMimeType(relativePath)
-    createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, sdoDir)
-    createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType))
+    createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
+      .flatMap(_ => createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType)))
   }
 
-  def createDirSDO(dir: File)(implicit s: Settings): Try[Unit] = Try {
+  def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
     val sdoDir = getSDODir(dir)
     sdoDir.mkdir()
-//    val relativePath = dir.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
-    createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId))
+    createDirJsonCfg(dir.getName, parentSDO, sdoDir)
+      .flatMap(_ => createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId)))
   }
 
-  def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+  def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
     val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
     val sdoCfg =
       ("namespace" -> "easy-file") ~
       ("datastreams" -> List(
         ("dsLocation" -> fileLocation ) ~
-        ("dsID" -> "REMOTE_BYTES") ~
+        ("dsID" -> "EASY_FILE") ~
         ("controlGroup" -> "R") ~
-        ("mimeType" -> mimeType)
+        ("mimeType" -> mimeType))) ~
+      ("relations" -> List(
+        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
+      ))
+    pw.write(pretty(render(sdoCfg)))
+    pw.close()
+  }
+
+  def createDirJsonCfg(dirName: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
+    val sdoCfg =
+      ("namespace" -> "easy-folder") ~
+      ("relations" -> List(
+        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
       ))
     pw.write(pretty(render(sdoCfg)))
     pw.close()
