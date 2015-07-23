@@ -72,7 +72,7 @@ object Main {
       ("namespace" -> "easy-file") ~
       ("datastreams" -> List(
         ("dsLocation" -> fileLocation ) ~
-        ("dsID" -> "REMOTE_BYTES") ~
+        ("dsID" -> "EASY_FILE") ~
         ("controlGroup" -> "R") ~
         ("mimeType" -> mimeType))) ~
       ("relations" -> List(
