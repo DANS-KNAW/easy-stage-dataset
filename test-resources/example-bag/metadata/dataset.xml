@@ -20,16 +20,16 @@
         <dcx-dai:creatorDetails>
             <dcx-dai:author>
                 <dcx-dai:titles></dcx-dai:titles>
-                <dcx-dai:initials>{[transformed] first_name VARCHAR(255)}</dcx-dai:initials>
+                <dcx-dai:initials>G.</dcx-dai:initials>
                 <dcx-dai:insertions></dcx-dai:insertions>
-                <dcx-dai:surname>{last_name VARCHAR(255)}</dcx-dai:surname>
-                <dcx-dai:DAI></dcx-dai:DAI>
+                <dcx-dai:surname>Khomeriki</dcx-dai:surname>
+                <!--dcx-dai:DAI></dcx-dai:DAI-->
                 <dcx-dai:organization>
                     <dcx-dai:name xml:lang="en">{institution VARCHAR(255)}</dcx-dai:name>
                 </dcx-dai:organization>
             </dcx-dai:author>
         </dcx-dai:creatorDetails>        
-        <ddm:created>{created_date TIMESTAMP}</ddm:created>
+        <ddm:created>2015-07-09T10:38:24.570+02:00</ddm:created>
 		<ddm:audience>D41500</ddm:audience>
 		<ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
 	</ddm:profile>
