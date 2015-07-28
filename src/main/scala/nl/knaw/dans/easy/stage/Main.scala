@@ -55,7 +55,7 @@ object Main {
     FileUtils.copyFileToDirectory(file, sdoDir)
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
     val mimeType = readMimeType(relativePath)
-    createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
+    createFileJsonCfg(s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
       .flatMap(_ => createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType)))
   }
 
@@ -66,7 +66,7 @@ object Main {
       .flatMap(_ => createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId)))
   }
 
-  def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
+  def createFileJsonCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
     val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
     val sdoCfg =
       ("namespace" -> "easy-file") ~
@@ -76,8 +76,10 @@ object Main {
         ("controlGroup" -> "R") ~
         ("mimeType" -> mimeType))) ~
       ("relations" -> List(
-        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO),
+        ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
+        ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
     pw.write(pretty(render(sdoCfg)))
     pw.close()
@@ -88,8 +90,10 @@ object Main {
     val sdoCfg =
       ("namespace" -> "easy-folder") ~
       ("relations" -> List(
-        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO),
+        ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
+        ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
     pw.write(pretty(render(sdoCfg)))
     pw.close()
