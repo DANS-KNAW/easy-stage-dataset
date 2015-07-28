@@ -3,6 +3,7 @@ package nl.knaw.dans.easy.stage
 import java.io.{File, PrintWriter}
 import java.nio.file.Paths
 
+import nl.knaw.dans.easy.stage.Util._
 import org.apache.commons.io.FileUtils
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -32,9 +33,17 @@ object Main {
     createDatasetSDO().flatMap(_ => createSDOs(dataDir, DATASET_SDO)).get
   }
 
-  def createDatasetSDO()(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = new File(s.sdoSetDir, DATASET_SDO)
-    sdoDir.mkdir()
+  def createDatasetSDO()(implicit s: Settings): Try[Unit] = {
+    for {
+      sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
+      _ <- createAMD(sdoDir)
+    } yield ()
+  }
+
+  def createAMD(sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "AMD").toFile)
+    pw.write(AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
+    pw.close()
   }
 
   def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
@@ -59,11 +68,12 @@ object Main {
       .flatMap(_ => createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType)))
   }
 
-  def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = getSDODir(dir)
-    sdoDir.mkdir()
-    createDirJsonCfg(dir.getName, parentSDO, sdoDir)
-      .flatMap(_ => createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId)))
+  def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    for {
+      sdoDir <- mkdirSafe(getSDODir(dir))
+      _ <- createDirJsonCfg(dir.getName, parentSDO, sdoDir)
+      _ <- createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId))
+    } yield ()
   }
 
   def createFileJsonCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
