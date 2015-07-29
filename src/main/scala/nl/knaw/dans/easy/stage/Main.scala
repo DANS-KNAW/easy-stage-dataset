@@ -1,16 +1,16 @@
 package nl.knaw.dans.easy.stage
 
-import java.io.{File, PrintWriter}
-import java.nio.file.Paths
+import java.io.File
 
 import nl.knaw.dans.easy.stage.Util._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
+import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
 import org.apache.commons.io.FileUtils
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 import scala.xml.{Elem, NodeSeq, XML}
 
 object Main {
@@ -39,62 +39,65 @@ object Main {
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
       _ <- createAMD(sdoDir)
-      _ <- createEMD(sdoDir)
+      _ <- createEMDAndDC(sdoDir)
       _ <- createPRSQL(sdoDir)
     } yield ()
 
-  def createAMD(sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "AMD").toFile)
-    pw.write(AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
-    pw.close()
-  }
+  def createAMD(sdoDir: File)(implicit s: Settings): Try[Unit] =
+    writeToFile(new File(sdoDir.getPath, "AMD"), AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
 
-  def createEMD(sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+  def createEMDAndDC(sdoDir: File)(implicit s: Settings): Try[Unit] = {
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
-    if (ddm.exists()) {
-      val crosswalk = new Ddm2EmdCrosswalk()
-      val emdObj = crosswalk.createFrom(ddm)
-      if (emdObj == null)
-        throw new RuntimeException(s"${crosswalk.getXmlErrorHandler.getMessages}")
-      val emd = new EmdMarshaller(emdObj).getXmlString
-      val pw = new PrintWriter(new File(sdoDir, "EMD"))
-      pw.write(emd)
-      pw.close()
-    } else {
-      throw new RuntimeException(s"Couldn't find ${sdoDir.getName}/metadata/dataset.xml")
+    if (!ddm.exists()) {
+      return Failure(new RuntimeException(s"Couldn't find ${sdoDir.getName}/metadata/dataset.xml"))
     }
+    for {
+      emd <- getEasyMetadata(ddm)
+      _   <- writeToFile(new File(sdoDir, "EMD"), new EmdMarshaller(emd).getXmlString)
+      _   <- writeToFile(new File(sdoDir, "DC"), emd.getDublinCoreMetadata.asXMLString())
+    } yield ()
   }
 
-  def createPRSQL(sdoDir:File): Try[Unit] = Try {
+  def getEasyMetadata(ddm: File): Try[EasyMetadata] =
+    try {
+      val crosswalk = new Ddm2EmdCrosswalk()
+      val emd = crosswalk.createFrom(ddm)
+      if (emd == null)
+        Failure(new RuntimeException(s"${crosswalk.getXmlErrorHandler.getMessages}"))
+      else
+        Success(emd)
+    } catch {
+      case t: Throwable => Failure(t)
+    }
+
+  def createPRSQL(sdoDir:File): Try[Unit] = {
     val prsql =
       <psl:permissionSequenceList xmlns:psl="http://easy.dans.knaw.nl/easy/permission-sequence-list/">
         <sequences></sequences>
       </psl:permissionSequenceList>.toString()
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "PRSQL").toFile)
-    pw.write(prsql)
-    pw.close()
+    writeToFile(new File(sdoDir.getPath, "PRSQL"), prsql)
   }
 
-  def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
-    val children = dir.listFiles()
-    children.foreach(child => {
-      if (child.isFile) {
+  def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    def visit(child: File): Try[Unit] =
+      if (child.isFile)
         createFileSDO(child, parentSDO)
-      } else if (child.isDirectory) {
-        createDirSDO(child, parentSDO)
-          .flatMap(_ => createSDOs(child, child.getName))
-      }
-    })
+      else if (child.isDirectory)
+        createDirSDO(child, parentSDO).flatMap(_ => createSDOs(child, child.getName))
+      else
+        Failure(new RuntimeException(s"Unknown object encountered while traversing ${dir.getName}: ${child.getName}"))
+    Try { dir.listFiles().toList }.flatMap(_.map(visit).allSuccess)
   }
 
-  def createFileSDO(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = getSDODir(file)
-    sdoDir.mkdir()
-    FileUtils.copyFileToDirectory(file, sdoDir)
+  def createFileSDO(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
-    val mimeType = readMimeType(relativePath)
-    createFileJsonCfg(s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
-      .flatMap(_ => createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType)))
+    for {
+      sdoDir <- mkdirSafe(getSDODir(file))
+      mime <- readMimeType(relativePath)
+      _ = FileUtils.copyFileToDirectory(file, sdoDir)
+      _ <- createFileJsonCfg(s"${s.bagStorageLocation}/$relativePath", mime, parentSDO, sdoDir)
+      _ <- createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mime))
+    } yield ()
   }
 
   def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] =
@@ -104,8 +107,7 @@ object Main {
       _ <- createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId))
     } yield ()
 
-  def createFileJsonCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
+  def createFileJsonCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = {
     val sdoCfg =
       ("namespace" -> "easy-file") ~
       ("datastreams" -> List(
@@ -119,12 +121,10 @@ object Main {
         ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
         ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
-    pw.write(pretty(render(sdoCfg)))
-    pw.close()
+    writeToFile(new File(sdoDir.getPath, CONFIG_FILENAME), pretty(render(sdoCfg)))
   }
 
-  def createDirJsonCfg(dirName: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
+  def createDirJsonCfg(dirName: String, parentSDO: String, sdoDir: File): Try[Unit] = {
     val sdoCfg =
       ("namespace" -> "easy-folder") ~
       ("relations" -> List(
@@ -133,15 +133,11 @@ object Main {
         ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
         ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
-    pw.write(pretty(render(sdoCfg)))
-    pw.close()
+    writeToFile(new File(sdoDir.getPath, CONFIG_FILENAME), pretty(render(sdoCfg)))
   }
 
-  def createFOXML(sdoDir: File, getFOXML: => String)(implicit s: Settings): Try[Unit] = Try {
-    val pw = new PrintWriter(Paths.get(sdoDir.getPath, FOXML_FILENAME).toFile)
-    pw.write(getFOXML)
-    pw.close()
-  }
+  def createFOXML(sdoDir: File, getFOXML: => String)(implicit s: Settings): Try[Unit] =
+    writeToFile(new File(sdoDir.getPath, FOXML_FILENAME), getFOXML)
 
   def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
     val dc = <dc:title>{label}</dc:title><dc:type>{mimeType}</dc:type>
@@ -180,7 +176,7 @@ object Main {
     </foxml:digitalObject>
   }
 
-  def readMimeType(filePath: String)(implicit s: Settings): String = {
+  def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
     val filesMetadata = new File(s.bagitDir, "metadata/files.xml")
     if (!filesMetadata.exists) {
       throw new RuntimeException("Unable to find `metadata/files.xml` in bag.")
@@ -200,6 +196,18 @@ object Main {
       case name if name.startsWith("_") => name.tail
       case name => name
     }
-    Paths.get(s.sdoSetDir.getPath, sdoName).toFile
+    new File(s.sdoSetDir.getPath, sdoName)
   }
+
+  class CompositeException(throwables: Seq[Throwable]) extends RuntimeException(throwables.foldLeft("")((msg, t) => s"$msg\n${t.getMessage}"))
+
+  implicit class TryExtensions[T](xs: Seq[Try[Unit]]) {
+    def allSuccess: Try[Unit] =
+      if (xs.exists(_.isFailure))
+        Failure(new CompositeException(xs.collect { case Failure(e) => e }))
+      else
+        Success(Unit)
+  }
+
 }
+
