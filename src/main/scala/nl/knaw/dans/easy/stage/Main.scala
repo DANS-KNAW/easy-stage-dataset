@@ -3,6 +3,9 @@ package nl.knaw.dans.easy.stage
 import java.io.{File, PrintWriter}
 import java.nio.file.Paths
 
+import nl.knaw.dans.easy.stage.Util._
+import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
+import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
 import org.apache.commons.io.FileUtils
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -32,9 +35,44 @@ object Main {
     createDatasetSDO().flatMap(_ => createSDOs(dataDir, DATASET_SDO)).get
   }
 
-  def createDatasetSDO()(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = new File(s.sdoSetDir, DATASET_SDO)
-    sdoDir.mkdir()
+  def createDatasetSDO()(implicit s: Settings): Try[Unit] =
+    for {
+      sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
+      _ <- createAMD(sdoDir)
+      _ <- createEMD(sdoDir)
+      _ <- createPRSQL(sdoDir)
+    } yield ()
+
+  def createAMD(sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "AMD").toFile)
+    pw.write(AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
+    pw.close()
+  }
+
+  def createEMD(sdoDir: File)(implicit s: Settings): Try[Unit] = Try {
+    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
+    if (ddm.exists()) {
+      val crosswalk = new Ddm2EmdCrosswalk()
+      val emdObj = crosswalk.createFrom(ddm)
+      if (emdObj == null)
+        throw new RuntimeException(s"${crosswalk.getXmlErrorHandler.getMessages}")
+      val emd = new EmdMarshaller(emdObj).getXmlString
+      val pw = new PrintWriter(new File(sdoDir, "EMD"))
+      pw.write(emd)
+      pw.close()
+    } else {
+      throw new RuntimeException(s"Couldn't find ${sdoDir.getName}/metadata/dataset.xml")
+    }
+  }
+
+  def createPRSQL(sdoDir:File): Try[Unit] = Try {
+    val prsql =
+      <psl:permissionSequenceList xmlns:psl="http://easy.dans.knaw.nl/easy/permission-sequence-list/">
+        <sequences></sequences>
+      </psl:permissionSequenceList>.toString()
+    val pw = new PrintWriter(Paths.get(sdoDir.getPath, "PRSQL").toFile)
+    pw.write(prsql)
+    pw.close()
   }
 
   def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
@@ -55,18 +93,18 @@ object Main {
     FileUtils.copyFileToDirectory(file, sdoDir)
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
     val mimeType = readMimeType(relativePath)
-    createFileJsonCfg(file.getName, s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
+    createFileJsonCfg(s"${s.bagStorageLocation}/$relativePath", mimeType, parentSDO, sdoDir)
       .flatMap(_ => createFOXML(sdoDir, getFileFOXML(file.getName, s.ownerId, mimeType)))
   }
 
-  def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = Try {
-    val sdoDir = getSDODir(dir)
-    sdoDir.mkdir()
-    createDirJsonCfg(dir.getName, parentSDO, sdoDir)
-      .flatMap(_ => createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId)))
-  }
+  def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] =
+    for {
+      sdoDir <- mkdirSafe(getSDODir(dir))
+      _ <- createDirJsonCfg(dir.getName, parentSDO, sdoDir)
+      _ <- createFOXML(sdoDir, getDirFOXML(dir.getName, s.ownerId))
+    } yield ()
 
-  def createFileJsonCfg(filename: String, fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
+  def createFileJsonCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = Try {
     val pw = new PrintWriter(Paths.get(sdoDir.getPath, CONFIG_FILENAME).toFile)
     val sdoCfg =
       ("namespace" -> "easy-file") ~
@@ -76,8 +114,10 @@ object Main {
         ("controlGroup" -> "R") ~
         ("mimeType" -> mimeType))) ~
       ("relations" -> List(
-        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO),
+        ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
+        ("predicate" -> "info:fedora/fedora-system:def/model#") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
     pw.write(pretty(render(sdoCfg)))
     pw.close()
@@ -88,8 +128,10 @@ object Main {
     val sdoCfg =
       ("namespace" -> "easy-folder") ~
       ("relations" -> List(
-        ("predicate" -> "fedora:isMemberOf") ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> "fedora:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO)
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("objectSDO" -> parentSDO),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isSubordinateTo") ~ ("objectSDO" -> DATASET_SDO),
+        ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
+        ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/dans-container-item-v1")
       ))
     pw.write(pretty(render(sdoCfg)))
     pw.close()
