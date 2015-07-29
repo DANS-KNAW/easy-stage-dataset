@@ -1,8 +1,18 @@
 package nl.knaw.dans.easy.stage
 
+import java.io.File
+
+import nl.knaw.dans.easy.stage.Constants._
+import nl.knaw.dans.easy.stage.Util._
+
+import scala.util.Try
 import scala.xml.Elem
 
 object AMD {
+
+  def create(sdoDir: File)(implicit s: Settings): Try[Unit] =
+    writeToFile(new File(sdoDir.getPath, AMD_FILENAME), AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
+
   def apply(depositorId: String, submissionDate: String): Elem = {
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>SUBMITTED</datasetState>
