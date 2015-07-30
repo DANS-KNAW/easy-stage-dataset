@@ -40,6 +40,16 @@ object Util {
     mimes(0).text
   }
 
+  def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
+    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
+    if (!ddm.exists) {
+      throw new RuntimeException("Unable to find `metadata/dataset.xml` in bag.")
+    }
+    for {
+      audience <- XML.loadFile(ddm) \\ "DDM" \ "profile" \ "audience"
+    } yield audience.text
+  }
+
   def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
     val sdoName = fileOrDir.getPath.replace(s.bagitDir.getPath, "").replace("/", "_").replace(".", "_") match {
       case name if name.startsWith("_") => name.tail

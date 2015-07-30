@@ -15,7 +15,7 @@ object EMD {
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists()) {
-      return Failure(new RuntimeException(s"Couldn't find ${sdoDir.getName}/metadata/dataset.xml"))
+      return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
     }
     for {
       emd <- getEasyMetadata(ddm)
