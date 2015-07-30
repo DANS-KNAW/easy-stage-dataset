@@ -11,14 +11,29 @@ import scala.util.Try
 
 object JSON {
 
-  def createDatasetCfg(sdoDir: File): Try[Unit] = {
+  def createDatasetCfg(sdoDir: File)(implicit s: Settings): Try[Unit] = {
     val sdoCfg =
       ("namespace" -> "easy-dataset") ~
-      ("datastreams" -> List()) ~
+      ("datastreams" -> List(
+        ("contentFile" -> "AMD") ~
+        ("dsID" -> "AMD") ~
+        ("controlGroup" -> "R") ~
+        ("mimeType" -> "application/xml")
+        ,
+        ("contentFile" -> "EMD") ~
+        ("dsID" -> "EMD") ~
+        ("controlGroup" -> "R") ~
+        ("mimeType" -> "application/xml")
+        ,
+        ("contentFile" -> "PRSQL") ~
+        ("dsID" -> "PRSQL") ~
+        ("controlGroup" -> "R") ~
+        ("mimeType" -> "application/xml")
+      )) ~
       ("relations" -> List(
-        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#hasDoi") ~ ("object" -> "10.5072/dans-zzz-zzz5"), // TODO: remove hard-coded DOI
-        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#hasPid") ~ ("object" -> "urn:nbn:nl:ui:13-0000-00"), // TODO: remove hard-coded URN PID
-        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("objectSDO" -> "info:fedora/easy-discipline:1"), // TODO: remove hard-coded discipline
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#hasDoi") ~ ("object" -> s.DOI),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#hasPid") ~ ("object" -> s.URN),
+        ("predicate" -> "http://dans.knaw.nl/ontologies/relations#:isMemberOf") ~ ("object" -> "info:fedora/easy-discipline:1"), // TODO: remove hard-coded discipline
         ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
         ("predicate" -> "info:fedora/fedora-system:def/model#hasModel") ~ ("object" -> "info:fedora/easy-model:oai-item1")
@@ -30,7 +45,7 @@ object JSON {
     val sdoCfg =
       ("namespace" -> "easy-file") ~
       ("datastreams" -> List(
-        ("dsLocation" -> fileLocation ) ~
+        ("dsLocation" -> fileLocation) ~
         ("dsID" -> "EASY_FILE") ~
         ("controlGroup" -> "R") ~
         ("mimeType" -> mimeType))) ~

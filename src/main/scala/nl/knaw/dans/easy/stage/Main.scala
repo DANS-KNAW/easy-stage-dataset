@@ -17,7 +17,9 @@ object Main {
       ownerId = "georgi",
       bagStorageLocation = "http://localhost/bags",
       bagitDir = new File("test-resources/example-bag"),
-      sdoSetDir = new File("out/sdoSetDir"))
+      sdoSetDir = new File("out/sdoSetDir"),
+      URN = "urn:nbn:nl:ui:13-1337-13",
+      DOI = "10.1000/xyz123")
 
     val dataDir = s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
@@ -32,6 +34,7 @@ object Main {
       emd <- EMD.create(sdoDir)
       _ <- FOXML.create(sdoDir, getDatasetFOXML(s.ownerId, emd))
       _ <- PRSQL.create(sdoDir)
+      _ <- JSON.createDatasetCfg(sdoDir)
     } yield ()
 
   def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
