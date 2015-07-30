@@ -12,7 +12,6 @@ import scala.util.Try
 object JSON {
 
   def createDatasetCfg(sdoDir: File)(implicit s: Settings): Try[Unit] = {
-    println(s.disciplines)
     def sdoCfg(audiences: Seq[String]) =
       ("namespace" -> "easy-dataset") ~
       ("datastreams" -> List(
