@@ -16,7 +16,7 @@ object FOXML {
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
     val dc = XML.loadString(emd.getDublinCoreMetadata.asXMLString())
-    getFOXML(emd.getPreferredTitle, ownerId, dc).mkString
+    new xml.PrettyPrinter(120, 4).format(getFOXML(emd.getPreferredTitle, ownerId, dc))
   }
 
   def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
