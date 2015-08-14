@@ -16,7 +16,7 @@ object FOXML {
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
     val dc = XML.loadString(emd.getDublinCoreMetadata.asXMLString())
-    new xml.PrettyPrinter(120, 4).format(getFOXML(emd.getPreferredTitle, ownerId, dc))
+    getFOXML(emd.getPreferredTitle, ownerId, dc).toString
   }
 
   def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
@@ -48,9 +48,9 @@ object FOXML {
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
                          xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
       <foxml:objectProperties>
-        <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
-        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE={label}/>
-        <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE={ownerId}/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE={label} />
+        <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE={ownerId} />
       </foxml:objectProperties>
       <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
         <foxml:datastreamVersion ID="DC1.0" LABEL="Dublin Core Record"

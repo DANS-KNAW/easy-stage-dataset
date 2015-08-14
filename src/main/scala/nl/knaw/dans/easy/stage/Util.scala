@@ -51,11 +51,14 @@ object Util {
   }
 
   def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
-    val sdoName = fileOrDir.getPath.replace(s.bagitDir.getPath, "").replace("/", "_").replace(".", "_") match {
+    val sdoName = getRelativePath(fileOrDir).replace("/", "_").replace(".", "_") match {
       case name if name.startsWith("_") => name.tail
       case name => name
     }
     new File(s.sdoSetDir.getPath, sdoName)
   }
+
+  def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
+    fileOrDir.getPath.replace(s.bagitDir.getPath, "")
 
 }
