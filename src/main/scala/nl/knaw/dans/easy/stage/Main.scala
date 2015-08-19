@@ -18,8 +18,8 @@ object Main {
     implicit val s = Settings(
       ownerId = "georgi",
       bagStorageLocation = "http://localhost/bags",
-      bagitDir = new File("test-resources/example-bag"),
-      sdoSetDir = new File("out/sdoSetDir"),
+      bagitDir = new File(args(0)),
+      sdoSetDir = new File(args(1)),
       URN = "urn:nbn:nl:ui:13-1337-13",
       DOI = "10.1000/xyz123",
       disciplines = Fedora.loadDisciplines())
@@ -45,7 +45,7 @@ object Main {
       if (child.isFile)
         createFileSDO(child, parentSDO)
       else if (child.isDirectory)
-        createDirSDO(child, parentSDO).flatMap(_ => createSDOs(child, child.getName))
+        createDirSDO(child, parentSDO).flatMap(_ => createSDOs(child, getSDODir(child).getName))
       else
         Failure(new RuntimeException(s"Unknown object encountered while traversing ${dir.getName}: ${child.getName}"))
     Try { dir.listFiles().toList }.flatMap(_.map(visit).allSuccess)
@@ -59,6 +59,7 @@ object Main {
       _ = FileUtils.copyFileToDirectory(file, sdoDir)
       _ <- JSON.createFileCfg(s"${s.bagStorageLocation}/$relativePath", mime, parentSDO, sdoDir)
       _ <- FOXML.create(sdoDir, getFileFOXML(file.getName, s.ownerId, mime))
+      _ <- EasyFileMetadata.create(sdoDir, file, mime)
     } yield ()
   }
 
@@ -67,6 +68,7 @@ object Main {
       sdoDir <- mkdirSafe(getSDODir(dir))
       _ <- JSON.createDirCfg(dir.getName, parentSDO, sdoDir)
       _ <- FOXML.create(sdoDir, getDirFOXML(dir.getName, s.ownerId))
+      _ <- EasyItemContainerMd.create(sdoDir, dir)
     } yield ()
 
 }
