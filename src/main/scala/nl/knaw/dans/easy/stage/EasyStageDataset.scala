@@ -21,8 +21,7 @@ object EasyStageDataset {
       bagitDir = new File(args(0)),
       sdoSetDir = new File(args(1)),
       URN = "urn:nbn:nl:ui:13-1337-13",
-      DOI = "10.1000/xyz123",
-      disciplines = Fedora.loadDisciplines())
+      DOI = "10.1000/xyz123")
 
     run().get
   }
