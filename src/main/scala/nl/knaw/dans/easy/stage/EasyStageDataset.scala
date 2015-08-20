@@ -75,7 +75,7 @@ object EasyStageDataset {
       _ <- EasyItemContainerMd.create(sdoDir, dir)
     } yield ()
 
-  def getDataDir(implicit s: Settings) = Try {
+  private def getDataDir(implicit s: Settings) = Try {
     s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
   }
