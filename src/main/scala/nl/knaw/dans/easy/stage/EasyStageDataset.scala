@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Try}
 
-object Main {
+object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
