@@ -8,4 +8,4 @@ case class Settings(ownerId: String,
                     sdoSetDir: File,
                     URN: String,
                     DOI: String,
-                    disciplines: Map[String,String])
+                    disciplines: Map[String,String] = Fedora.loadDisciplines())
