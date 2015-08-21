@@ -11,7 +11,7 @@
     <name>EASY Stage Dataset</name>
     <version>1.x-SNAPSHOT</version>
     <properties>
-        <main-class>nl.knaw.dans.easy.stage.Main</main-class>
+        <main-class>nl.knaw.dans.easy.stage.EasyStageDataset</main-class>
     </properties>
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
