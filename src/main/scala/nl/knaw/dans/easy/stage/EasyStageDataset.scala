@@ -23,10 +23,10 @@ object EasyStageDataset {
       URN = "urn:nbn:nl:ui:13-1337-13",
       DOI = "10.1000/xyz123")
 
-    run().get
+    run.get
   }
 
-  def run()(implicit s: Settings): Try[Unit] =
+  def run(implicit s: Settings): Try[Unit] =
     for {
       dataDir <- getDataDir
       _ <- createDatasetSDO()
