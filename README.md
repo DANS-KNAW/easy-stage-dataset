@@ -86,5 +86,5 @@ Steps:
 [SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
 [SDOs]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-objects
 
-[BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-10
+[BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
 
