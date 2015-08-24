@@ -1,5 +1,3 @@
-*Note: this project is in pre-alpha state, so below instructions may not work completely yet*
-
 easy-stage-dataset
 ==================
 
@@ -21,7 +19,7 @@ deposits must conform to the [EASY-BagIt] format, which is basically [BagIt] wit
 To prepare the deposit for inclusion in EASY ``easy-stage-dataset`` performs the following tasks:
 
 1. It generates the metadata required for an EASY dataset:
-   * Adminstrative Metadata
+   * Administrative Metadata
    * EASY Metadata (descriptive metadata)
    * ...
 2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
@@ -47,7 +45,7 @@ INSTALLATION AND CONFIGURATION
 
 ### Installation steps:
 
-1. Unzip the tarball to a directory of your choice, e.g. /opt/
+1. Unzip the tarball to a directory of your choice, e.g. `/opt/`
 2. A new directory called easy-stage-dataset-<version> will be created
 3. Create an environment variabele ``EASY_STAGE_DATASET_HOME`` with the directory from step 2 as its value
 4. Add ``$EASY_STAGE_DATASET_HOME/bin`` to your ``PATH`` environment variable.
