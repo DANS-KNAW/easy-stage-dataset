@@ -29,6 +29,7 @@ object EasyStageDataset {
   def run(implicit s: Settings): Try[Unit] =
     for {
       dataDir <- getDataDir
+      _ <- mkdirSafe(s.sdoSetDir)
       _ <- createDatasetSDO()
       _ <- createSDOs(dataDir, DATASET_SDO)
     } yield ()
