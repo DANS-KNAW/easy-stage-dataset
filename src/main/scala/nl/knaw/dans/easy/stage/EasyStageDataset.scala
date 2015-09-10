@@ -1,10 +1,12 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.net.URL
 
 import nl.knaw.dans.easy.stage.Constants._
 import nl.knaw.dans.easy.stage.FOXML._
 import nl.knaw.dans.easy.stage.Util._
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
@@ -14,14 +16,20 @@ object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
+    val homeDir = new File(System.getenv("EASY_STAGE_DATASET_HOME"))
+    val props = new PropertiesConfiguration(new File(homeDir, "cfg/application.properties"))
+    val conf = new Conf(args)
 
     implicit val s = Settings(
-      ownerId = "georgi",
-      bagStorageLocation = "http://localhost/bags",
-      bagitDir = new File(args(0)),
-      sdoSetDir = new File(args(1)),
-      URN = "urn:nbn:nl:ui:13-1337-13",
-      DOI = "10.1000/xyz123")
+      ownerId = props.getString("owner"),
+      bagStorageLocation = props.getString("storage-base-url"),
+      bagitDir = conf.bag(),
+      sdoSetDir = conf.sdoSet(),
+      URN = conf.urn(),
+      DOI = "10.1000/xyz123", //  TODO: make fetch from metadata OR generate
+      fedoraUser = props.getString("fcrepo-user"),
+      fedoraPassword = props.getString("fcrepo-password"),
+      fedoraUrl = new URL(props.getString("fcrepo-service-url")))
 
     run.get
   }
@@ -29,6 +37,7 @@ object EasyStageDataset {
   def run(implicit s: Settings): Try[Unit] =
     for {
       dataDir <- getDataDir
+      _ <- mkdirSafe(s.sdoSetDir)
       _ <- createDatasetSDO()
       _ <- createSDOs(dataDir, DATASET_SDO)
     } yield ()
