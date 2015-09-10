@@ -7,8 +7,8 @@ import scala.xml.XML
 
 object Fedora {
 
-  def loadDisciplines(): Map[String,String] = {
-    val credentials = new FedoraCredentials("http://deasy:8080/fedora", "fedoraAdmin", "fedoraAdmin") // TODO: parametrise this
+  def loadDisciplines(fedoraServiceUrl: String, fedoraUser: String, fedoraPassword: String): Map[String,String] = {
+    val credentials = new FedoraCredentials(fedoraServiceUrl, fedoraUser, fedoraPassword)
     val client = new FedoraClient(credentials)
     FedoraClient.findObjects().query("pid~easy-discipline:*").maxResults(Integer.MAX_VALUE).pid().execute(client).getPids
       .map(pid => (FedoraClient.getRelationships(pid).execute(client).getEntity(classOf[String]), pid))
