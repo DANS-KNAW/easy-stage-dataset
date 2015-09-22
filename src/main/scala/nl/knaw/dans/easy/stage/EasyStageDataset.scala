@@ -34,15 +34,18 @@ object EasyStageDataset {
     run.get
   }
 
-  def run(implicit s: Settings): Try[Unit] =
+  def run(implicit s: Settings): Try[Unit] = {
+    log.debug(s"settings = $s")
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
-      _ <- createDatasetSDO()
-      _ <- createSDOs(dataDir, DATASET_SDO)
+      _ <- createDatasetSdo()
+      _ <- createFileAndFolderSdos(dataDir, DATASET_SDO)
     } yield ()
+  }
 
-  private def createDatasetSDO()(implicit s: Settings): Try[Unit] =
+  private def createDatasetSdo()(implicit s: Settings): Try[Unit] = {
+    log.debug("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
       _ <- AMD.create(sdoDir)
@@ -51,19 +54,22 @@ object EasyStageDataset {
       _ <- PRSQL.create(sdoDir)
       _ <- JSON.createDatasetCfg(sdoDir)
     } yield ()
+  }
 
-  private def createSDOs(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+  private def createFileAndFolderSdos(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    log.debug("Creating file and folder SDOs")
     def visit(child: File): Try[Unit] =
       if (child.isFile)
-        createFileSDO(child, parentSDO)
+        createFileSdo(child, parentSDO)
       else if (child.isDirectory)
-        createDirSDO(child, parentSDO).flatMap(_ => createSDOs(child, getSDODir(child).getName))
+        createFolderSdo(child, parentSDO).flatMap(_ => createFileAndFolderSdos(child, getSDODir(child).getName))
       else
         Failure(new RuntimeException(s"Unknown object encountered while traversing ${dir.getName}: ${child.getName}"))
     Try { dir.listFiles().toList }.flatMap(_.map(visit).allSuccess)
   }
 
-  private def createFileSDO(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+  private def createFileSdo(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    log.debug(s"Creating file SDO for $file")
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
@@ -75,13 +81,15 @@ object EasyStageDataset {
     } yield ()
   }
 
-  private def createDirSDO(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] =
+  private def createFolderSdo(folder: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    log.debug(s"Creating folder SDO for $folder")
     for {
-      sdoDir <- mkdirSafe(getSDODir(dir))
-      _ <- JSON.createDirCfg(dir.getName, parentSDO, sdoDir)
-      _ <- FOXML.create(sdoDir, getDirFOXML(dir.getName, s.ownerId))
-      _ <- EasyItemContainerMd.create(sdoDir, dir)
+      sdoDir <- mkdirSafe(getSDODir(folder))
+      _ <- JSON.createDirCfg(folder.getName, parentSDO, sdoDir)
+      _ <- FOXML.create(sdoDir, getDirFOXML(folder.getName, s.ownerId))
+      _ <- EasyItemContainerMd.create(sdoDir, folder)
     } yield ()
+  }
 
   private def getDataDir(implicit s: Settings) = Try {
     s.bagitDir.listFiles.find(_.getName == "data")
