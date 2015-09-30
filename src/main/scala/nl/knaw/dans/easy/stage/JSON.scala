@@ -23,17 +23,17 @@ object JSON {
         ("contentFile" -> "AMD") ~
         ("dsID" -> "AMD") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "application/xml")
+        ("mimeType" -> "text/xml")
         ,
         ("contentFile" -> "EMD") ~
         ("dsID" -> "EMD") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "application/xml")
+        ("mimeType" -> "text/xml")
         ,
         ("contentFile" -> "PRSQL") ~
         ("dsID" -> "PRSQL") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "application/xml")
+        ("mimeType" -> "text/xml")
       )) ~
       ("relations" -> (List(
         ("predicate" -> HAS_DOI) ~ ("object" -> s.DOI) ~ ("isLiteral" -> true),
@@ -65,7 +65,7 @@ object JSON {
         ("contentFile" -> "EASY_FILE_METADATA") ~
         ("dsID" -> "EASY_FILE_METADATA") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "application/xml"))) ~
+        ("mimeType" -> "text/xml"))) ~
       ("relations" -> List(
         ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO),
         ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
@@ -82,7 +82,7 @@ object JSON {
         ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
         ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "application/xml"))) ~
+        ("mimeType" -> "text/xml"))) ~
       ("relations" -> List(
         ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO),
         ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),

@@ -2,8 +2,10 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 import java.net.URL
+import java.util.Date
 
 case class Settings(ownerId: String,
+                    submissionTimestamp: String,
                     bagStorageLocation: String,
                     bagitDir: File,
                     sdoSetDir: File,

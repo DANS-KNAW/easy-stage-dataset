@@ -1,5 +1,4 @@
 #!/bin/bash
 
 java -Dlogback.configurationFile=$EASY_STAGE_DATASET_HOME/cfg/logback.xml \
-     -Dconfig.file=$EASY_STAGE_DATASET_HOME/cfg/application.conf \
      -jar $EASY_STAGE_DATASET_HOME/bin/easy-stage-dataset.jar $@

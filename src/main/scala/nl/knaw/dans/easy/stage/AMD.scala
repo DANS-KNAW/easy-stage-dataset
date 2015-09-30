@@ -4,6 +4,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.Constants._
 import nl.knaw.dans.easy.stage.Util._
+import org.joda.time.DateTime
 
 import scala.util.Try
 import scala.xml.Elem
@@ -11,19 +12,25 @@ import scala.xml.Elem
 object AMD {
 
   def create(sdoDir: File)(implicit s: Settings): Try[Unit] =
-    writeToFile(new File(sdoDir.getPath, AMD_FILENAME), AMD(s.ownerId, "2015-07-09T10:38:24.570+02:00").toString())
+    writeToFile(new File(sdoDir.getPath, AMD_FILENAME), AMD(s.ownerId, s.submissionTimestamp).toString())
 
-  def apply(depositorId: String, submissionDate: String): Elem = {
+  /*
+   * An exact timestamp is required, so valid ISO dates like 2015-09-01T12:01 won't do
+   */
+  def normalizeTimestamp (t: String): String = DateTime.parse(t).toString
+
+  def apply(depositorId: String, submissionTimestamp: String): Elem = {
+    val normalizedSubmissiontimestamp = normalizeTimestamp(submissionTimestamp)
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>SUBMITTED</datasetState>
       <previousState>DRAFT</previousState>
-      <lastStateChange>{submissionDate}</lastStateChange>
+      <lastStateChange>{normalizedSubmissiontimestamp}</lastStateChange>
       <depositorId>{depositorId}</depositorId>
       <stateChangeDates>
         <damd:stateChangeDate>
           <fromState>DRAFT</fromState>
           <toState>SUBMITTED</toState>
-          <changeDate>{submissionDate}</changeDate>
+          <changeDate>{normalizedSubmissiontimestamp}</changeDate>
         </damd:stateChangeDate>
       </stateChangeDates>
       <groupIds></groupIds>
