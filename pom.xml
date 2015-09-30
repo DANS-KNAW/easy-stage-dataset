@@ -64,6 +64,13 @@
             <artifactId>fedora-client-messaging</artifactId>
             <version>0.7</version>
         </dependency>
+        <dependency>
+            <!-- Necessary to get rid of jodatime warnings about missing FromString
+                (Jodatime is a transitive dependency through yourmediashelf)  -->
+            <groupId>org.joda</groupId>
+            <artifactId>joda-convert</artifactId>
+            <version>1.6</version>
+        </dependency>
     </dependencies>
     <build>
         <sourceDirectory>src/main/scala</sourceDirectory>

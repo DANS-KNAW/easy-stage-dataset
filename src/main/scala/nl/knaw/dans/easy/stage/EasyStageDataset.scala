@@ -8,9 +8,10 @@ import nl.knaw.dans.easy.stage.FOXML._
 import nl.knaw.dans.easy.stage.Util._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
+import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 
-import scala.util.{Failure, Try}
+import scala.util.{Success, Failure, Try}
 
 object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
@@ -22,16 +23,20 @@ object EasyStageDataset {
 
     implicit val s = Settings(
       ownerId = props.getString("owner"),
+      submissionTimestamp = conf.submissionTimestamp(),
       bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
-      sdoSetDir = conf.sdoSet(),
+      sdoSetDir = new File(conf.sdoSet()),
       URN = conf.urn(),
       DOI = "10.1000/xyz123", //  TODO: make fetch from metadata OR generate
       fedoraUser = props.getString("fcrepo-user"),
       fedoraPassword = props.getString("fcrepo-password"),
       fedoraUrl = new URL(props.getString("fcrepo-service-url")))
 
-    run.get
+    run match {
+      case Success(_) => log.info("Staging SUCCESS")
+      case Failure(t) => log.error("Staging FAIL", t)
+    }
   }
 
   def run(implicit s: Settings): Try[Unit] = {
@@ -40,12 +45,13 @@ object EasyStageDataset {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       _ <- createDatasetSdo()
+      _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO)
     } yield ()
   }
 
   private def createDatasetSdo()(implicit s: Settings): Try[Unit] = {
-    log.debug("Creating dataset SDO")
+    log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
       _ <- AMD.create(sdoDir)
@@ -57,7 +63,7 @@ object EasyStageDataset {
   }
 
   private def createFileAndFolderSdos(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
-    log.debug("Creating file and folder SDOs")
+    log.debug(s"Creating file and folder SDOs for directory: $dir")
     def visit(child: File): Try[Unit] =
       if (child.isFile)
         createFileSdo(child, parentSDO)
