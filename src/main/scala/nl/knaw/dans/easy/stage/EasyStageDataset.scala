@@ -8,10 +8,9 @@ import nl.knaw.dans.easy.stage.FOXML._
 import nl.knaw.dans.easy.stage.Util._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
-import org.joda.time.DateTime
 import org.slf4j.LoggerFactory
 
-import scala.util.{Success, Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
@@ -28,7 +27,8 @@ object EasyStageDataset {
       bagitDir = conf.bag(),
       sdoSetDir = new File(conf.sdoSet()),
       URN = conf.urn(),
-      DOI = "10.1000/xyz123", //  TODO: make fetch from metadata OR generate
+      DOI = conf.doi(),
+      otherAccessDOI = props.getBoolean("stage-other-access-doi"),
       fedoraUser = props.getString("fcrepo-user"),
       fedoraPassword = props.getString("fcrepo-password"),
       fedoraUrl = new URL(props.getString("fcrepo-service-url")))
