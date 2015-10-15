@@ -8,9 +8,9 @@ import nl.knaw.dans.easy.stage.Util._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
-import nl.knaw.dans.pf.language.emd.types.{EmdConstants, BasicIdentifier}
+import nl.knaw.dans.pf.language.emd.types.{BasicIdentifier, EmdConstants}
 
-import scala.util.{Success, Failure, Try}
+import scala.util.{Failure, Success, Try}
 
 object EMD {
 
@@ -39,7 +39,7 @@ object EMD {
 
   private def addIdentifiers(emd: EasyMetadata)(implicit s: Settings): EasyMetadata = {
     val doi = new BasicIdentifier(s.DOI)
-    doi.setScheme(EmdConstants.SCHEME_DOI)
+    doi.setScheme(if (s.otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
     doi.setIdentificationSystem(new URI("http://dx.doi.org"))
     emd.getEmdIdentifier.add(doi)
     val pid = new BasicIdentifier(s.URN)
