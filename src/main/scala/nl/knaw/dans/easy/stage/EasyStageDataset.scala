@@ -16,19 +16,19 @@ object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
-    val homeDir = new File(System.getenv("EASY_STAGE_DATASET_HOME"))
-    val props = new PropertiesConfiguration(new File(homeDir, "cfg/application.properties"))
+    val propsFile = new File(System.getProperty("app.home","."), "cfg/application.properties")
+    val props = new PropertiesConfiguration(propsFile)
     val conf = new Conf(args)
 
     implicit val s = Settings(
       ownerId = props.getString("owner"),
-      submissionTimestamp = conf.submissionTimestamp(),
+      submissionTimestamp = conf.submissionTimestamp().toString,
       bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
-      sdoSetDir = new File(conf.sdoSet()),
+      sdoSetDir = conf.sdoSet(),
       URN = conf.urn(),
       DOI = conf.doi(),
-      otherAccessDOI = props.getBoolean("stage-other-access-doi"),
+      otherAccessDOI = conf.otherAccessDOI(),
       fedoraUser = props.getString("fcrepo-user"),
       fedoraPassword = props.getString("fcrepo-password"),
       fedoraUrl = new URL(props.getString("fcrepo-service-url")))

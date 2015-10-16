@@ -1,4 +1,8 @@
 #!/bin/bash
 
-java -Dlogback.configurationFile=$EASY_STAGE_DATASET_HOME/cfg/logback.xml \
-     -jar $EASY_STAGE_DATASET_HOME/bin/easy-stage-dataset.jar $@
+BINPATH=`readlink -f $0`
+APPHOME=`dirname \`dirname $BINPATH \``
+
+java -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
+     -Dapp.home=$APPHOME \
+     -jar $APPHOME/bin/easy-stage-dataset.jar $@

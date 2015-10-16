@@ -7,7 +7,7 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset [-e <url> [-c]] [-u <user>] [-p <password>] [-f <fedora-url>] <EASY-BagIt directory> <SDO-set directory>
+    easy-state-dataset  -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
 
 
 DESCRIPTION
@@ -31,16 +31,20 @@ The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository
 ARGUMENTS
 ---------
 
-* `-e`, `--external-bagit-archive-url` -- in case the dataset data is stored in Fedora-external storage, the URL of the   
-   directory where it is stored. `easy-stage-dataset` will create Redirect datastreams for all the data files in the bag.
-* `-c`, `--check-data-file-existence-in-storage` -- if set `easy-stage-dataset` will do an http `HEAD` request on each
-   of the data files in the bag to ensure that it exists in archival storage. Can only be specified if `-e` is also used.
-* `-u`, `--user` -- Fedora user to connect with when retrieving the disciplines.
-* `-p`, `--password` -- Fedora password for the user.
-* `-f`, `--fcrepo-server -- Fedora Repository Server to retrieve EASY disciplines from
-* `<EASY-BagIt directory>` -- a directory conforming to the [EASY-BagIt] format.
-* `<SDO-set directory>` -- the SDO-set directory to put the generated [SDOs] in. If the directory does not exist it is first
-  created.
+      -d, --doi  <arg>                         The DOI to assign to the new dataset in
+                                               EASY
+      -b, --EASY-bag  <arg>                    Bag with extra metadata for EASY to be
+                                               staged for ingest into Fedora
+      -o, --stage-other-access-doi             Stage the provided DOI as an "other
+                                               access DOI"
+      -s, --staged-digital-object-set  <arg>   The resulting Staged Digital Object
+                                               directory (will be created if it does
+                                               not exist)
+      -t, --submission-timestamp  <arg>        Timestamp in ISO8601 format
+      -u, --urn  <arg>                         The URN to assign to the new dataset in
+                                               EASY
+          --help                               Show help message
+          --version                            Show version of this program
 
 
 INSTALLATION AND CONFIGURATION
@@ -50,14 +54,14 @@ INSTALLATION AND CONFIGURATION
 
 1. Unzip the tarball to a directory of your choice, e.g. `/opt/`
 2. A new directory called easy-stage-dataset-<version> will be created
-3. Create an environment variabele `EASY_STAGE_DATASET_HOME` with the directory from step 2 as its value
-4. Add `$EASY_STAGE_DATASET_HOME/bin` to your `PATH` environment variable.
+3. The directory from step 2 is used as value for the system property ``app.home``
+4. Add ``${app.home}/bin`` to your ``PATH`` environment variable
 
 
 ### Configuration
 
-General configuration settings can be set in `EASY_STAGE_DATASET_HOME/cfg/application.properties` and logging can be
-configured in `EASY_STAGE_DATASET_HOME/cfg/logback.xml`. The available settings are explained in comments in 
+General configuration settings can be set in `${app.home}/cfg/application.properties` and logging can be
+configured in `${app.home}/cfg/logback.xml`. The available settings are explained in comments in 
 aforementioned files.
 
 
@@ -82,12 +86,8 @@ Steps:
         cd easy-stage-dataset
         mvn install
 
-
+[dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
 [easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
-[easy-ingest]: https://github.com/DANS-KNAW/easy-ingest#easy-ingest
 [EASY-BagIt]: http://easy.dans.knaw.nl/schemas/EASY-BagIt.html 
-[SDO-set]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-object-set
-[SDOs]: https://github.com/DANS-KNAW/easy-ingest#staged-digital-objects
-
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
 
