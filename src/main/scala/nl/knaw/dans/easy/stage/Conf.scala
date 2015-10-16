@@ -6,14 +6,14 @@ import org.joda.time.DateTime
 import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 
 class Conf(args: Seq[String] = "-b. -s. -t2015 -uu -dd".split(" ")) extends ScallopConf(args) {
-  printedName = "easy-state-dataset"
+  printedName = "easy-stage-dataset"
   version(s"$printedName ${Version()}")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
            |
            |Usage:
            |
-           | $printedName  -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
+           | $printedName -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
            |
            |Options:
            |""".stripMargin)
