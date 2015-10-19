@@ -10,7 +10,7 @@ case class Settings(ownerId: String,
                     sdoSetDir: File,
                     URN: String,
                     DOI: String,
-                    otherAccessDOI: Boolean,
+                    otherAccessDOI: Boolean = false,
                     fedoraUser: String,
                     fedoraPassword: String,
                     fedoraUrl: URL) {

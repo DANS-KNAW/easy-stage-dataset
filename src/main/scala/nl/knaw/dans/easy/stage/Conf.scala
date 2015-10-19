@@ -3,57 +3,45 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import org.joda.time.DateTime
-import org.rogach.scallop.ScallopConf
+import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 
-class Conf(args: Seq[String]) extends ScallopConf(args) {
-  printedName = "easy-state-dataset"
+class Conf(args: Seq[String] = "-b. -s. -t2015 -uu -dd".split(" ")) extends ScallopConf(args) {
+  printedName = "easy-stage-dataset"
   version(s"$printedName ${Version()}")
-  banner("""
+  banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
            |
-           |Usage: easy-stage-dataset  <EASY-bag> <staged-digital-object-set> <urn> <submission-timestamp>
+           |Usage:
+           |
+           | $printedName -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
+           |
            |Options:
            |""".stripMargin)
 
-  val bag = trailArg[File](
-    name = "EASY-bag",
+  implicit val conv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
+
+  val bag = opt[File](
+    name = "EASY-bag", short = 'b',
     descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
     required = true)
-  /*
-   * Scallop fails with a vague error if a type File argument refers to a file that does
-   * not (yet) exist. As the SDO-set might not yet exist we work around this by making
-   * this a type String argument
-   */
-  val sdoSet = trailArg[String](
-    name = "staged-digital-object-set",
+  val sdoSet = opt[File](
+    name = "staged-digital-object-set", short = 's',
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
+    required = true)(singleArgConverter[File](conv = new File(_)))
+  val submissionTimestamp = opt[DateTime](
+    name = "submission-timestamp", short = 't',
+    descr = "Timestamp in ISO8601 format",
     required = true)
-  val urn = trailArg[String](
-    name = "urn",
+  val urn = opt[String](
+    name = "urn", short = 'u',
     descr = "The URN to assign to the new dataset in EASY",
     required = true)
-  val doi = trailArg[String](
-    name = "doi",
+  val doi = opt[String](
+    name = "doi", short = 'd',
     descr = "The DOI to assign to the new dataset in EASY",
     required = true)
-  val otherAccessDOI = trailArg[Boolean](
-    name = "stage-other-access-doi",
+  val otherAccessDOI = opt[Boolean](
+    name = "stage-other-access-doi", short = 'o',
     descr = "Stage the provided DOI as an \"other access DOI\"",
-    required = false,
     default = Some(false))
-  val submissionTimestamp = trailArg[String](
-    name = "submission-timestamp",
-    descr = "Timestamp in ISO8601 format",
-    required = true
-  )
-  validateOpt(submissionTimestamp) {
-    case Some(t) =>
-      try {
-        DateTime.parse(t)
-        Right(Unit)
-      } catch {
-        case e: IllegalArgumentException => Left(s"Not a valid ISO8601 date: $t. Error: ${e.getMessage}")
-      }
-    case _ => Left("Could not parse argument submission-timestamp ")
-  }
 }
