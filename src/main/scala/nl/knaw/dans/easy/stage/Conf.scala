@@ -5,7 +5,7 @@ import java.io.File
 import org.joda.time.DateTime
 import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 
-class Conf(args: Seq[String] = "-b. -s. -t2015 -uu -dd".split(" ")) extends ScallopConf(args) {
+class Conf(args: Seq[String]) extends ScallopConf(args) {
   printedName = "easy-stage-dataset"
   version(s"$printedName ${Version()}")
   banner(s"""
@@ -13,21 +13,14 @@ class Conf(args: Seq[String] = "-b. -s. -t2015 -uu -dd".split(" ")) extends Scal
            |
            |Usage:
            |
-           | $printedName -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
+           | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
+           |                       <EASY-bag> <staged-digital-object-set>
            |
            |Options:
            |""".stripMargin)
 
   implicit val conv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
 
-  val bag = opt[File](
-    name = "EASY-bag", short = 'b',
-    descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
-    required = true)
-  val sdoSet = opt[File](
-    name = "staged-digital-object-set", short = 's',
-    descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
-    required = true)(singleArgConverter[File](conv = new File(_)))
   val submissionTimestamp = opt[DateTime](
     name = "submission-timestamp", short = 't',
     descr = "Timestamp in ISO8601 format",
@@ -41,7 +34,15 @@ class Conf(args: Seq[String] = "-b. -s. -t2015 -uu -dd".split(" ")) extends Scal
     descr = "The DOI to assign to the new dataset in EASY",
     required = true)
   val otherAccessDOI = opt[Boolean](
-    name = "stage-other-access-doi", short = 'o',
-    descr = "Stage the provided DOI as an \"other access DOI\"",
+    name = "doi-is-other-access-doi", short = 'o',
+    descr = """Stage the provided DOI as an "other access DOI"""",
     default = Some(false))
+  val bag = trailArg[File](
+    name = "EASY-bag",
+    descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
+    required = true)
+  val sdoSet = trailArg[String](
+    name = "staged-digital-object-set",
+    descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
+    required = true)
 }

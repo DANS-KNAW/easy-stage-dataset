@@ -7,8 +7,8 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset -b <EASY-bag> -s <staged-digital-object-set> -u <urn> -d <doi> -t <submission-timestamp> [ -o ]
-
+    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \
+                   <EASY-bag> <staged-digital-object-set>
 
 DESCRIPTION
 -----------
@@ -31,21 +31,20 @@ The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository
 ARGUMENTS
 ---------
 
-      -d, --doi  <arg>                         The DOI to assign to the new dataset in
-                                               EASY
-      -b, --EASY-bag  <arg>                    Bag with extra metadata for EASY to be
-                                               staged for ingest into Fedora
-      -o, --stage-other-access-doi             Stage the provided DOI as an "other
-                                               access DOI"
-      -s, --staged-digital-object-set  <arg>   The resulting Staged Digital Object
-                                               directory (will be created if it does
-                                               not exist)
-      -t, --submission-timestamp  <arg>        Timestamp in ISO8601 format
-      -u, --urn  <arg>                         The URN to assign to the new dataset in
-                                               EASY
-          --help                               Show help message
-          --version                            Show version of this program
-
+    -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
+    -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access
+                                        DOI"
+    -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
+    -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
+        --help                          Show help message
+        --version                       Show version of this program
+    
+    trailing arguments:
+     EASY-bag (required)                    Bag with extra metadata for EASY to be
+                                            staged for ingest into Fedora
+     staged-digital-object-set (required)   The resulting Staged Digital Object
+                                            directory (will be created if it does not
+                                            exist)
 
 INSTALLATION AND CONFIGURATION
 ------------------------------

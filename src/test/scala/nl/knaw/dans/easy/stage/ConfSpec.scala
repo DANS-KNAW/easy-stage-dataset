@@ -12,10 +12,10 @@ import scala.collection.JavaConverters._
 class ConfSpec extends FlatSpec with Matchers {
 
   clearProperty("app.home")
-  def helpInfo = {
+  val helpInfo = {
     val mockedStdOut = new ByteArrayOutputStream()
     Console.withOut(mockedStdOut) {
-      new Conf().printHelp()
+      new Conf(Seq("-t", "2015", "-u", "urn",  "-d", "doi", ".", ".")).printHelp()
     }
     mockedStdOut.toString
   }
@@ -37,7 +37,7 @@ class ConfSpec extends FlatSpec with Matchers {
   }
 
   "distributed default properties" should "be valid options" in {
-    val optKeys = new Conf().builder.opts.map(opt => opt.name).toArray
+    val optKeys = new Conf(Seq("-t2015", "-u urn",  "-d doi", ".", ".")).builder.opts.map(opt => opt.name).toArray
     val propKeys = new PropertiesConfiguration("src/main/assembly/dist/cfg/application.properties")
       .getKeys.asScala.withFilter(key => key.startsWith("default.") )
 
