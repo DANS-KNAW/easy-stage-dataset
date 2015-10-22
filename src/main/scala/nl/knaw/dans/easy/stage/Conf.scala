@@ -7,14 +7,15 @@ import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   printedName = "easy-stage-dataset"
-  version(s"$printedName ${Version()}")
+  val indent_____ = printedName.replaceAll(".", " ")
+  version(s"$printedName v${Version()}")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
            |
            |Usage:
            |
            | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
-           |                       <EASY-bag> <staged-digital-object-set>
+           | $indent_____    <EASY-bag> <staged-digital-object-set>
            |
            |Options:
            |""".stripMargin)
