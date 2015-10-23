@@ -16,8 +16,7 @@ object EasyStageDataset {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
-    val propsFile = new File(System.getProperty("app.home","."), "cfg/application.properties")
-    val props = new PropertiesConfiguration(propsFile)
+    val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
     val conf = new Conf(args)
 
     implicit val s = Settings(
@@ -58,7 +57,8 @@ object EasyStageDataset {
       emd <- EMD.create(sdoDir)
       _ <- FOXML.create(sdoDir, getDatasetFOXML(s.ownerId, emd))
       _ <- PRSQL.create(sdoDir)
-      _ <- JSON.createDatasetCfg(sdoDir)
+      license <- AdditionalLicense.create(sdoDir)
+      _ <- JSON.createDatasetCfg(sdoDir, license)
     } yield ()
   }
 

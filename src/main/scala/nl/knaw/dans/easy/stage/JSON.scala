@@ -4,6 +4,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.Constants._
 import nl.knaw.dans.easy.stage.Util._
+import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -16,10 +17,9 @@ object JSON {
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
 
-  def createDatasetCfg(sdoDir: File)(implicit s: Settings): Try[Unit] = {
-    def sdoCfg(audiences: Seq[String]) =
-      ("namespace" -> "easy-dataset") ~
-      ("datastreams" -> List(
+  def createDatasetCfg(sdoDir: File, license: Option[File])(implicit s: Settings): Try[Unit] = {
+    val datastreams =
+      List(
         ("contentFile" -> "AMD") ~
         ("dsID" -> "AMD") ~
         ("controlGroup" -> "X") ~
@@ -33,8 +33,16 @@ object JSON {
         ("contentFile" -> "PRSQL") ~
         ("dsID" -> "PRSQL") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")
-      )) ~
+        ("mimeType" -> "text/xml")) ++
+      license.toList.map(f =>
+        ("contentFile" -> "ADDITIONAL_LICENSE") ~
+        ("dsID" -> "ADDITIONAL_LICENSE") ~
+        ("controlGroup" -> "M") ~
+        ("mimeType" -> "text/plain"))
+
+    def sdoCfg(audiences: Seq[String]) =
+      ("namespace" -> "easy-dataset") ~
+      ("datastreams" -> datastreams) ~
       ("relations" -> (List(
         ("predicate" -> HAS_DOI) ~ ("object" -> s.DOI) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_PID) ~ ("object" -> s.URN) ~ ("isLiteral" -> true),

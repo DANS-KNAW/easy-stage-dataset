@@ -15,4 +15,5 @@ case class Settings(ownerId: String,
                     fedoraPassword: String,
                     fedoraUrl: URL) {
   val disciplines: Map[String,String] = Fedora.loadDisciplines(fedoraUrl.toString, fedoraUser, fedoraPassword)
+  val licenses: Map[String, File] = Licenses.getLicenses
 }
