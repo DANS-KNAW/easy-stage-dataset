@@ -15,6 +15,7 @@ object JSON {
   val HAS_MODEL = "info:fedora/fedora-system:def/model#hasModel"
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
+  val DATASET_ARCHIVAL_STORAGE_LOCATION = "http://dans.knaw.nl/ontologies/relations#datasetArchivalStorageLocation"
 
   def createDatasetCfg(sdoDir: File)(implicit s: Settings): Try[Unit] = {
     def sdoCfg(audiences: Seq[String]) =
@@ -40,7 +41,8 @@ object JSON {
         ("predicate" -> HAS_PID) ~ ("object" -> s.URN) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1")
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
+        ("predicate" -> DATASET_ARCHIVAL_STORAGE_LOCATION) ~ ("object" -> s.bagStorageLocation) ~ ("isLiteral" -> true)
         ) ++ audiences.map(audience =>
           ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${s.disciplines(audience)}"))
       ))
