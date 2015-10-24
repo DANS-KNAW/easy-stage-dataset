@@ -22,6 +22,7 @@ object JSON {
       List(
         ("contentFile" -> "AMD") ~
         ("dsID" -> "AMD") ~
+        ("label" -> "Administrative metadata for this dataset") ~
         ("controlGroup" -> "X") ~
         ("mimeType" -> "text/xml")
         ,
