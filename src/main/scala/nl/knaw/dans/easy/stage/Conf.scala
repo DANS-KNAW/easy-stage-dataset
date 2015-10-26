@@ -8,6 +8,7 @@ import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   printedName = "easy-stage-dataset"
   version(s"$printedName v${Version()}")
+  private val padding = Array.fill(printedName.length)(' ').mkString("")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
            |
@@ -17,7 +18,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
            | ____________ -b <EASY-bag> -s <staged-digital-object-set>
            |
            |Options:
-           |""".stripMargin.replaceAll("_+",printedName.replaceAll("."," ")))
+           |""".stripMargin.replaceAll("_+",padding))
 
   implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
   val mayNotExist = singleArgConverter[File](conv = new File(_))
