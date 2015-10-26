@@ -11,7 +11,7 @@ import scala.collection.JavaConverters._
 
 class ConfSpec extends FlatSpec with Matchers {
 
-  val commandLineArgs = "-t 2015 -u urn -d doi -b . -s -".split(" ")
+  val commandLineArgs = "-t 2015 -u urn -d doi . -".split(" ")
   private val conf = new Conf(commandLineArgs)
   val helpInfo = {
     val mockedStdOut = new ByteArrayOutputStream()
