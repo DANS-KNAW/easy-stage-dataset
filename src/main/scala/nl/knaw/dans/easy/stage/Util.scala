@@ -60,5 +60,4 @@ object Util {
 
   def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
     fileOrDir.getPath.replace(s.bagitDir.getPath, "")
-
 }
