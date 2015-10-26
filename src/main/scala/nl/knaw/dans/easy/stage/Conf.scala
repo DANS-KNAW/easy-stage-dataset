@@ -7,7 +7,6 @@ import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   printedName = "easy-stage-dataset"
-  val indent_____ = printedName.replaceAll(".", " ")
   version(s"$printedName v${Version()}")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
@@ -15,12 +14,13 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
            |Usage:
            |
            | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
-           | $indent_____    <EASY-bag> <staged-digital-object-set>
+           | ____________ -b <EASY-bag> -s <staged-digital-object-set>
            |
            |Options:
-           |""".stripMargin)
+           |""".stripMargin.replaceAll("_+",printedName.replaceAll("."," ")))
 
-  implicit val conv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
+  implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
+  val mayNotExist = singleArgConverter[File](conv = new File(_))
 
   val submissionTimestamp = opt[DateTime](
     name = "submission-timestamp", short = 't',
@@ -38,12 +38,12 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
     default = Some(false))
-  val bag = trailArg[File](
-    name = "EASY-bag",
+  val bag = opt[File](
+    name = "EASY-bag", short = 'b',
     descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
     required = true)
-  val sdoSet = trailArg[String](
-    name = "staged-digital-object-set",
+  val sdoSet = opt[File](
+    name = "staged-digital-object-set", short = 's',
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
-    required = true)
+    required = true)(mayNotExist)
 }
