@@ -12,17 +12,17 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-dataset"
   version(s"$printedName v${Version()}")
-  private val padding = printedName.map(_ => " ").mkString("")
+  private val _________ = printedName.map(_ => " ").mkString("")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
            |
            |Usage:
            |
            | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
-           | ____________    <EASY-bag> <staged-digital-object-set>
+           | ${_________}    <EASY-bag> <staged-digital-object-set>
            |
            |Options:
-           |""".stripMargin.replaceAll("_+",padding))
+           |""".stripMargin)
 
   implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
   val mayNotExist = singleArgConverter[File](conv = new File(_))
