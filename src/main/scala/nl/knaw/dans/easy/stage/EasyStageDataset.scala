@@ -17,7 +17,7 @@ object EasyStageDataset {
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    val conf = new Conf(args)
+    val conf = new DatasetConf(args)
 
     implicit val s = Settings(
       ownerId = props.getString("owner"),

@@ -2,12 +2,11 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.EasyStageDataset._
 import org.joda.time.DateTime
 import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 import org.slf4j.LoggerFactory
 
-class Conf(args: Seq[String]) extends ScallopConf(args) {
+class DatasetConf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
 
   printedName = "easy-stage-dataset"
