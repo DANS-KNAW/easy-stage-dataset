@@ -24,7 +24,7 @@ object EasyStageDataset {
       submissionTimestamp = conf.submissionTimestamp().toString,
       bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
-      sdoSetDir = new File(conf.sdoSet()),
+      sdoSetDir = conf.sdoSet(),
       URN = conf.urn(),
       DOI = conf.doi(),
       otherAccessDOI = conf.otherAccessDOI(),
