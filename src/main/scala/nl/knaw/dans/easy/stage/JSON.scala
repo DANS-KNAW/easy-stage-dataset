@@ -63,44 +63,59 @@ object JSON {
   }
 
   def createFileCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = {
+    createFileCfg(fileLocation, mimeType, sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO))
+  }
+
+  def createFileCfg(fileLocation: String, mimeType: String, sdoDir: File, parentObjectId: String): Try[Unit] = {
+    createFileCfg(fileLocation, mimeType, sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
+  }
+
+  private def createFileCfg(fileLocation: String, mimeType: String, sdoDir: File, memberOfRelation: JObject): Try[Unit] = {
     val sdoCfg =
       ("namespace" -> "easy-file") ~
-      ("datastreams" -> List(
-        ("dsLocation" -> fileLocation) ~
-        ("dsID" -> "EASY_FILE") ~
-        ("controlGroup" -> "R") ~
-        ("mimeType" -> mimeType) 
-//        ("checksumType" -> "SHA-1") ~
-//        ("checksum" -> "d4484a61da2d91194f4401e2c761ba8b63bfeb29") // TODO: FILL IN REAL CHECKSUM !!!!
-        ,
-        ("contentFile" -> "EASY_FILE_METADATA") ~
-        ("dsID" -> "EASY_FILE_METADATA") ~
-        ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml"))) ~
-      ("relations" -> List(
-        ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
-      ))
+        ("datastreams" -> List(
+          ("dsLocation" -> fileLocation) ~
+            ("dsID" -> "EASY_FILE") ~
+            ("controlGroup" -> "R") ~
+            ("mimeType" -> mimeType)
+          //        ("checksumType" -> "SHA-1") ~
+          //        ("checksum" -> "d4484a61da2d91194f4401e2c761ba8b63bfeb29") // TODO: FILL IN REAL CHECKSUM !!!!
+          ,
+          ("contentFile" -> "EASY_FILE_METADATA") ~
+            ("dsID" -> "EASY_FILE_METADATA") ~
+            ("controlGroup" -> "X") ~
+            ("mimeType" -> "text/xml"))) ~
+        ("relations" -> List(
+          memberOfRelation,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
+        ))
     writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg)))
   }
 
   def createDirCfg(dirName: String, parentSDO: String, sdoDir: File): Try[Unit] = {
-    val sdoCfg =
-      ("namespace" -> "easy-folder") ~
-      ("datastreams" -> List(
-        ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
-        ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
-        ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml"))) ~
-      ("relations" -> List(
-        ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO),
-        ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
-      ))
-    writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg)))
+    createDirCfg(sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO))
   }
 
+  def createDirCfg(dirName: String, sdoDir: File, parentObjectId: String): Try[Unit] = {
+    createDirCfg(sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
+  }
+
+  private def createDirCfg(sdoDir: File, memberOfRelation: JObject): Try[Unit] = {
+    val sdoCfg =
+      ("namespace" -> "easy-folder") ~
+        ("datastreams" -> List(
+          ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
+            ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
+            ("controlGroup" -> "X") ~
+            ("mimeType" -> "text/xml"))) ~
+        ("relations" -> List(
+          memberOfRelation,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
+        ))
+    writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg)))
+  }
 }

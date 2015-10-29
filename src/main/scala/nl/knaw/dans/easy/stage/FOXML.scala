@@ -11,7 +11,7 @@ import scala.xml.{Elem, NodeSeq, XML}
 
 object FOXML {
 
-  def create(sdoDir: File, foxml: => String)(implicit s: Settings): Try[Unit] =
+  def create(sdoDir: File, foxml: => String)(implicit s: SharedSettings): Try[Unit] =
     writeToFile(new File(sdoDir.getPath, FOXML_FILENAME), foxml)
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
