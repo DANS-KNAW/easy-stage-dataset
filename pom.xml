@@ -9,13 +9,13 @@
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset</artifactId>
     <name>EASY Stage Dataset</name>
-    <version>1.x-SNAPSHOT</version>
+    <version>1.0-beta-5</version>
     <properties>
         <main-class>nl.knaw.dans.easy.stage.EasyStageDataset</main-class>
     </properties>
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.0-beta-5</tag>
     </scm>
     <dependencies>
         <dependency>
