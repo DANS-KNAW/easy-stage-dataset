@@ -8,7 +8,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 
-// TODO fix NullPointerException when subclassin AbstractConfSpec
+// TODO fix NullPointerException when subclassing AbstractConfSpec
 class FileItemConfSpec extends FlatSpec with Matchers {
 
   val commandLineArgs = "-".split(" ")

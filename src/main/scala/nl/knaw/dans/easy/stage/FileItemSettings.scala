@@ -10,7 +10,7 @@ case class FileItemSettings(file: Option[File],
                             override val sdoSetDir: File,
  
                             // as in example-bag/metadata/manifest-md5.txt
-                            md5: String,
+                            md5: Option[String],
  
                             // as in example-bag/metadata/files.xml
                             filePath: File,
@@ -24,7 +24,7 @@ case class FileItemSettings(file: Option[File],
                             creatorRole: String = "DEPOSITOR",
                             visibleTo: String = "ANONYMOUS",
                             accessibleTo: String = "NONE"
-                           ) extends SharedSettings(sdoSetDir, ???)
+                           ) extends SharedSettings(sdoSetDir, new File("bagitDir")) // FIXME
 object FileItemSettings {
   def apply(conf: FileItemConf): FileItemSettings = new FileItemSettings(
     sdoSetDir = conf.sdoSetDir.apply(),
@@ -35,7 +35,9 @@ object FileItemSettings {
     filePath = conf.filePath.apply(),
     format = conf.format.get,
     identifier =conf.identifier.get,
-    md5 = conf.md5.apply(),
+    md5 = conf.md5.get,
     title = conf.title.get
   )
+  def apply(args: Seq[String]): FileItemSettings =
+    FileItemSettings( new FileItemConf(args))
 }

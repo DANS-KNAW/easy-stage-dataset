@@ -17,9 +17,9 @@ object EasyStageFileItem {
     if (conf.datasetId.isDefined) {
       Array(FileItemSettings(conf))
     } else {
-      Array() // TODO read CSV from stdin
-    }.foreach { implicit settings: FileItemSettings =>
-      run match {
+      FileItemCsv.read(System.in,conf).get
+    }.foreach { fileItemSettings =>
+      run(fileItemSettings) match {
         case Success(_) => log.info("Staging SUCCESS")
         case Failure(t) => log.error("Staging FAIL", t)
       }
