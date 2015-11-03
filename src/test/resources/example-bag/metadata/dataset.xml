@@ -39,7 +39,7 @@
         <dcterms:hasVersion>{version BIGINT(19) The version number of the Dataset}</dcterms:hasVersion>
         <dcterms:modified>{last_modified_date TIMESTAMP}</dcterms:modified>
         <dcterms:issued>{publish_date TIMESTAMP The date a dataset is made public}</dcterms:issued>
-        <dcterms:license xsi:type="dcterms:URI">http://opensource.org/licences/MIT</dcterms:license>
+        <dcterms:license xsi:type="dcterms:URI">http://opensource.org/licenses/MIT</dcterms:license>
     </ddm:dcmiMetadata>
 </ddm:DDM>
 

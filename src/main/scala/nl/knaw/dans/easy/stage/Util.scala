@@ -25,7 +25,7 @@ object Util {
   def writeToFile(f: File, s: String): Try[Unit] =
     Try { scala.tools.nsc.io.File(f).writeAll(s) }
 
-  def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
+  def readMimeType(filePath: String)(implicit s: SharedSettings): Try[String] = Try {
     val filesMetadata = new File(s.bagitDir, "metadata/files.xml")
     if (!filesMetadata.exists) {
       throw new RuntimeException("Unable to find `metadata/files.xml` in bag.")
@@ -50,7 +50,7 @@ object Util {
     } yield audience.text
   }
 
-  def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
+  def getSDODir(fileOrDir: File)(implicit s: SharedSettings): File = {
     val sdoName = getRelativePath(fileOrDir).replace("/", "_").replace(".", "_") match {
       case name if name.startsWith("_") => name.tail
       case name => name
@@ -58,6 +58,6 @@ object Util {
     new File(s.sdoSetDir.getPath, sdoName)
   }
 
-  def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
+  def getRelativePath(fileOrDir: File)(implicit s: SharedSettings): String =
     fileOrDir.getPath.replace(s.bagitDir.getPath, "")
 }

@@ -9,7 +9,7 @@ import scala.util.Try
 
 object EasyItemContainerMd {
 
-  def create(sdoDir:File, folder: File)(implicit s: Settings): Try[Unit] = {
+  def create(sdoDir:File, folder: File)(implicit s: SharedSettings): Try[Unit] = {
     val eicmd =
       <icmd:item-container-md xmlns:icmd="http://easy.dans.knaw.nl/easy/item-container-md/" version="0.1">
         <name>{folder.getName}</name>

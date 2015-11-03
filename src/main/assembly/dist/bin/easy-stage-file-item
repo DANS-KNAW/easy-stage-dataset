@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+BINPATH=`readlink -f $0`
+if [ $? -ne 0 ] ; then
+  APPHOME=`dirname \`dirname $0 \``
+else
+  APPHOME=`dirname \`dirname $BINPATH \``
+fi
+
+java -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
+     -Dapp.home=$APPHOME \
+     -cp $APPHOME/bin/easy-stage-dataset.jar \
+     nl.knaw.dans.easy.stage.EasyStageFileItem $@
