@@ -10,10 +10,10 @@ import org.slf4j.LoggerFactory
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
 
-  printedName = "easy-stage-fiel-item"
+  printedName = "easy-stage-file-item"
   version(s"$printedName v${Version()}")
   banner(s"""
-            |Stage a file item in EASY-BagIt format for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
+            |Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
             |
             |Usage:
             |
@@ -65,7 +65,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     name = "md5",
     descr = "MD5 checksum of the file to stage")
   val datasetId = opt[String](
-    name = "datasetId", short = 'i',
+    name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage " +
      "if omitted the csf-file is read")
   dependsOnAll(file, List(filePath,md5,datasetId))
