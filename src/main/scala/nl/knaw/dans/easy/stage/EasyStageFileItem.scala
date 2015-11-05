@@ -32,8 +32,8 @@ object EasyStageFileItem {
       _       <- datasetExists
       _       <- mkdirSafe(s.sdoSetDir)
       dataDir <- mkdirSafe(new File(s.sdoSetDir, s.datasetId.replace(":", "_")))
-      _       <- if (s.file.isDefined) createFileSdo(s.file.get, ???/*ownerId*/)
-                 else createFolderSdo(s.filePath,???/*ownerId*/)
+      _       <- if (s.file.isDefined) createFileSdo(s.file.get, ownerId = ???)
+                 else createFolderSdo(s.filePath,ownerId = ???)
     } yield ()
   }
 
@@ -50,16 +50,14 @@ object EasyStageFileItem {
 
   private def createFileSdo(file: File, ownerId: String)(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"Creating file SDO for $file")
-    val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
-    val datastreamsDsLocation = s"${??? /*s.bagStorageLocation*/}/$relativePath"
     for {
       parentId <- findParent
-      mime     <- readMimeType(relativePath)
-      sdoDir   <- mkdirSafe(getSDODir(file))
+      mime     <- Try{s.format.get}
+      sdoDir   <- mkdirSafe(getSDODir())
       _        =  FileUtils.copyFileToDirectory(file, sdoDir)
-      _        <- JSON.createFileCfg(datastreamsDsLocation, mime, sdoDir, parentId)
+      _        <- JSON.createFileCfg(s.file.get.getAbsolutePath, mime, sdoDir, parentId)
       _        <- FOXML.create(sdoDir, getFileFOXML(file.getName, ownerId, mime))
-      _        <- EasyFileMetadata.create(sdoDir, file, mime)
+      _        <- EasyFileMetadata.create(sdoDir, file, mime, relativePath = ???)
     } yield ()
   }
 
@@ -67,10 +65,15 @@ object EasyStageFileItem {
     log.debug(s"Creating folder SDO for $folder")
     for {
       parentId <- findParent
-      sdoDir   <- mkdirSafe(getSDODir(folder))
+      sdoDir   <- mkdirSafe(getSDODir())
       _        <- JSON.createDirCfg(folder.getName, sdoDir, parentId)
       _        <- FOXML.create(sdoDir, getDirFOXML(folder.getName, ownerId))
-      _        <- EasyItemContainerMd.create(sdoDir, folder)
+      _        <- EasyItemContainerMd.create(sdoDir, folder, relativePath = ???)
     } yield ()
+  }
+
+  private def getSDODir()(implicit s: FileItemSettings): File = {
+    val sdoName = s.filePath.toString.replaceAll("[/.]", "_").replaceAll("^_","")
+    new File(s.sdoSetDir.getPath, sdoName)
   }
 }

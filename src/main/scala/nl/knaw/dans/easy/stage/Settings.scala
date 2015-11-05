@@ -6,14 +6,14 @@ import java.net.URL
 case class Settings(ownerId: String,
                     submissionTimestamp: String,
                     bagStorageLocation: String,
-                    override val bagitDir: File,
-                    override val sdoSetDir: File,
+                    bagitDir: File,
+                    sdoSetDir: File,
                     URN: String,
                     DOI: String,
                     otherAccessDOI: Boolean = false,
                     fedoraUser: String,
                     fedoraPassword: String,
-                    fedoraUrl: URL) extends SharedSettings(sdoSetDir,bagitDir) {
+                    fedoraUrl: URL) {
   Fedora.connect(fedoraUrl.toString, fedoraUser, fedoraPassword)
 
   val disciplines: Map[String,String] = Fedora.disciplines

@@ -83,7 +83,7 @@ object EasyStageDataset {
       _ = FileUtils.copyFileToDirectory(file, sdoDir)
       _ <- JSON.createFileCfg(s"${s.bagStorageLocation}/$relativePath", mime, parentSDO, sdoDir)
       _ <- FOXML.create(sdoDir, getFileFOXML(file.getName, s.ownerId, mime))
-      _ <- EasyFileMetadata.create(sdoDir, file, mime)
+      _ <- EasyFileMetadata.create(sdoDir, file, mime, getRelativePath(file))
     } yield ()
   }
 
@@ -93,7 +93,7 @@ object EasyStageDataset {
       sdoDir <- mkdirSafe(getSDODir(folder))
       _ <- JSON.createDirCfg(folder.getName, parentSDO, sdoDir)
       _ <- FOXML.create(sdoDir, getDirFOXML(folder.getName, s.ownerId))
-      _ <- EasyItemContainerMd.create(sdoDir, folder)
+      _ <- EasyItemContainerMd.create(sdoDir, folder, getRelativePath(folder))
     } yield ()
   }
 
@@ -101,4 +101,15 @@ object EasyStageDataset {
     s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
   }
+
+  def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
+    val sdoName = getRelativePath(fileOrDir).replace("/", "_").replace(".", "_") match {
+      case name if name.startsWith("_") => name.tail
+      case name => name
+    }
+    new File(s.sdoSetDir.getPath, sdoName)
+  }
+
+  def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
+    fileOrDir.getPath.replace(s.bagitDir.getPath, "")
 }

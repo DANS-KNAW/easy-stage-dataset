@@ -7,7 +7,7 @@ import org.joda.time.DateTime
 
 case class FileItemSettings(file: Option[File],
                             datasetId: String,
-                            override val sdoSetDir: File,
+                            sdoSetDir: File,
  
                             // as in example-bag/metadata/manifest-md5.txt
                             md5: Option[String],
@@ -24,7 +24,8 @@ case class FileItemSettings(file: Option[File],
                             creatorRole: String = "DEPOSITOR",
                             visibleTo: String = "ANONYMOUS",
                             accessibleTo: String = "NONE"
-                           ) extends SharedSettings(sdoSetDir, new File("bagitDir")) // FIXME
+                           )
+
 object FileItemSettings {
   def apply(conf: FileItemConf): FileItemSettings = new FileItemSettings(
     sdoSetDir = conf.sdoSetDir.apply(),
