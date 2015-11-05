@@ -3,27 +3,29 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.util.UUID
 
+import nl.knaw.dans.easy.stage.lib.Props._
 import org.joda.time.DateTime
 
 case class FileItemSettings(file: Option[File],
                             datasetId: String,
                             sdoSetDir: File,
+                            ownerId: String = props.getString("owner"),
  
                             // as in example-bag/metadata/manifest-md5.txt
                             md5: Option[String],
  
                             // as in example-bag/metadata/files.xml
                             filePath: File,
-                            identifier: Option[UUID],
-                            title: Option[List[String]],
-                            description: Option[String],
+                            identifier: Option[String],// TODO not used?
+                            title: Option[List[String]],// TODO not used?
+                            description: Option[String],// TODO not used?
                             format: Option[String],
-                            created: Option[DateTime],
+                            created: Option[DateTime],// TODO not used?
  
                             // as in SDO/*/EASY_FILE_METADATA
-                            creatorRole: String = "DEPOSITOR",
-                            visibleTo: String = "ANONYMOUS",
-                            accessibleTo: String = "NONE"
+                            creatorRole: String = "DEPOSITOR",// TODO hardcoded for datasets
+                            visibleTo: String = "ANONYMOUS",// TODO hardcoded for datasets
+                            accessibleTo: String = "NONE"// TODO hardcoded for datasets
                            )
 
 object FileItemSettings {

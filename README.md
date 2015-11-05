@@ -45,7 +45,7 @@ ARGUMENTS for easy-stage-dataset
      -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
          --help                          Show help message
          --version                       Show version of this program
-   
+
     trailing arguments:
      EASY-bag (required)                    Bag with extra metadata for EASY to be
                                             staged for ingest into Fedora
@@ -57,24 +57,25 @@ ARGUMENTS for easy-stage-dataset
 ARGUMENTS for easy-stage-fileItem
 ---------------------------------
 
-      -c, --created  <arg>       dcterms property, date-time when the file was created
-      -i, --dataset-id  <arg>    id of the dataset in Fedora that should receive the
-                                 file to stage if omitted the csf-file is read
-      -d, --description  <arg>   dcterms property description
-      -f, --file  <arg>          File to stage for ingest into Fedora, if omitted a
-                                 folder is staged
-      -p, --file-path  <arg>     the path that the file should get in the dataset
-          --format  <arg>        dcterms property format, the mime type of the file
-      -u, --identifier  <arg>    dcterms property UUID
-      -m, --md5  <arg>           MD5 checksum of the file to stage
-      -t, --title  <arg>...      dcterms property title and optional alternatives
-          --help                 Show help message
-          --version              Show version of this program
-    
-     trailing arguments:
-      staged-digital-object-set (required)   The resulting Staged Digital Object
-                                             directory (will be created if it does not
-                                             exist)
+     -c, --created  <arg>       dcterms property, date-time when the file was created
+     -i, --dataset-id  <arg>    id of the dataset in Fedora that should receive the
+                                file to stage if omitted the csf-file is read
+     -d, --description  <arg>   dcterms property description
+     -f, --file  <arg>          File to stage for ingest into Fedora, if omitted a
+                                folder is staged
+     -p, --file-path  <arg>     the path that the file should get in the dataset
+         --format  <arg>        dcterms property format, the mime type of the file
+     -u, --identifier  <arg>    dcterms property
+     -m, --md5  <arg>           MD5 checksum of the file to stage
+     -t, --title  <arg>...      dcterms property title and optional alternatives
+         --help                 Show help message
+         --version              Show version of this program
+
+    trailing arguments:
+     staged-digital-object-set (required)   The resulting Staged Digital Object
+                                            directory (will be created if it does not
+                                            exist)
+
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
