@@ -51,13 +51,13 @@ object EasyStageFileItem {
   private def createFileSdo(file: File, ownerId: String)(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"Creating file SDO for $file")
     val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
-    val bagLocation = s"${??? /*s.bagStorageLocation*/}/$relativePath"
+    val datastreamsDsLocation = s"${??? /*s.bagStorageLocation*/}/$relativePath"
     for {
       parentId <- findParent
       mime     <- readMimeType(relativePath)
       sdoDir   <- mkdirSafe(getSDODir(file))
       _        =  FileUtils.copyFileToDirectory(file, sdoDir)
-      _        <- JSON.createFileCfg(bagLocation, mime, sdoDir, parentId)
+      _        <- JSON.createFileCfg(datastreamsDsLocation, mime, sdoDir, parentId)
       _        <- FOXML.create(sdoDir, getFileFOXML(file.getName, ownerId, mime))
       _        <- EasyFileMetadata.create(sdoDir, file, mime)
     } yield ()
