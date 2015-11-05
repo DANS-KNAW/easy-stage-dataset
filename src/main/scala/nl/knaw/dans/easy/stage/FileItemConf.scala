@@ -12,16 +12,14 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-file-item"
   version(s"$printedName v${Version()}")
-  banner(s"""
-            |Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
+  banner(s"""Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
             |
             |Usage:
             |
             | $printedName [<options>...] <staged-digital-object-set>
-            |   or
             | $printedName <staged-digital-object-set> < <utf8-csv-file>
             |
-            | The input file should have one column for each options, it may have more columns.
+            | The CSV file should have one column for each option, it may have more columns.
             |
             |Options:
             |""".stripMargin)

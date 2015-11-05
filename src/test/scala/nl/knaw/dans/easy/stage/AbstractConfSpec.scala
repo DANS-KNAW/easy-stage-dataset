@@ -11,12 +11,11 @@ import scala.collection.JavaConverters._
 abstract class AbstractConfSpec extends FlatSpec with Matchers {
 
   def getConf: ScallopConf
-  val conf = getConf
 
   val helpInfo = {
     val mockedStdOut = new ByteArrayOutputStream()
     Console.withOut(mockedStdOut) {
-      conf.printHelp()
+      getConf.printHelp()
     }
     mockedStdOut.toString
   }
@@ -31,14 +30,8 @@ abstract class AbstractConfSpec extends FlatSpec with Matchers {
     new File("README.md") should containTrimmed(synopsis)
   }
 
-  "first banner line" should "be part of README.md and pom.xml" in {
-    val description = helpInfo.split("\n")(1)
-    new File("README.md") should containTrimmed(description)
-    new File("pom.xml") should containTrimmed(description)
-  }
-
   "distributed default properties" should "be valid options" in {
-    val optKeys = conf.builder.opts.map(opt => opt.name).toArray
+    val optKeys = getConf.builder.opts.map(opt => opt.name).toArray
     val propKeys = new PropertiesConfiguration("src/main/assembly/dist/cfg/application.properties")
       .getKeys.asScala.withFilter(key => key.startsWith("default.") )
 

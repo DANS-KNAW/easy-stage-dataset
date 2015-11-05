@@ -10,6 +10,12 @@ SYNOPSIS
     easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \
                           <EASY-bag> <staged-digital-object-set>
 
+    easy-stage-file-item [<options>...] <staged-digital-object-set>
+    easy-stage-file-item <staged-digital-object-set> < <utf8-csv-file>
+
+    The CSV file should have one column for each option, it may have more columns.
+
+
 DESCRIPTION
 -----------
 
@@ -26,10 +32,11 @@ To prepare the deposit for inclusion in EASY `easy-stage-dataset` performs the f
 3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
 
 The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository.
+The command `easy-stage-file-item` executes step 3 to stage a file for ingestion into an existing dataset.
 
 
-ARGUMENTS
----------
+ARGUMENTS for easy-stage-dataset
+--------------------------------
 
      -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
      -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access
@@ -45,6 +52,29 @@ ARGUMENTS
      staged-digital-object-set (required)   The resulting Staged Digital Object
                                             directory (will be created if it does not
                                             exist)
+
+
+ARGUMENTS for easy-stage-fileItem
+---------------------------------
+
+      -c, --created  <arg>       dcterms property, date-time when the file was created
+      -i, --dataset-id  <arg>    id of the dataset in Fedora that should receive the
+                                 file to stage if omitted the csf-file is read
+      -d, --description  <arg>   dcterms property description
+      -f, --file  <arg>          File to stage for ingest into Fedora, if omitted a
+                                 folder is staged
+      -p, --file-path  <arg>     the path that the file should get in the dataset
+          --format  <arg>        dcterms property format, the mime type of the file
+      -u, --identifier  <arg>    dcterms property UUID
+      -m, --md5  <arg>           MD5 checksum of the file to stage
+      -t, --title  <arg>...      dcterms property title and optional alternatives
+          --help                 Show help message
+          --version              Show version of this program
+    
+     trailing arguments:
+      staged-digital-object-set (required)   The resulting Staged Digital Object
+                                             directory (will be created if it does not
+                                             exist)
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
