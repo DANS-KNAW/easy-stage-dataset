@@ -8,11 +8,11 @@ import nl.knaw.dans.easy.stage.Util._
 import scala.util.Try
 
 object EasyFileMetadata {
-  def create(sdoDir:File, file: File, mimeType: String)(implicit s: SharedSettings): Try[Unit] = {
+  def create(sdoDir:File, file: File, mimeType: String, relativePath: String): Try[Unit] = {
     val efm =
       <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
         <name>{file.getName}</name>
-        <path>{getRelativePath(file)}</path>
+        <path>{relativePath}</path>
         <mimeType>{mimeType}</mimeType>
         <size>{file.length}</size>
         <creatorRole>DEPOSITOR</creatorRole>
