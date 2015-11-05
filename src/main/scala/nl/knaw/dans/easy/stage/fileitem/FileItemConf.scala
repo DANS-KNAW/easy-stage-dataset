@@ -25,7 +25,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
             |""".stripMargin)
 
 
-  implicit val UUIDConv: ValueConverter[UUID] = singleArgConverter[UUID](conv = UUID.fromString)
   implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
   val mayNotExist = singleArgConverter[File](conv = new File(_))
   val shouldBeFile = singleArgConverter[File](conv = {f =>
@@ -40,9 +39,9 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     name = "file-path", short = 'p',
     descr = "the path that the file should get in the dataset"
     )(mayNotExist)
-  val identifier = opt[UUID](
+  val identifier = opt[String](
     name = "identifier", short = 'u',
-    descr = "dcterms property UUID")
+    descr = "dcterms property")
   val title = opt[List[String]](
     name = "title",
     descr = "dcterms property title and optional alternatives")
