@@ -1,7 +1,9 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.sql.{Array, DriverManager}
+import java.sql.DriverManager
+
+import nl.knaw.dans.easy.stage.lib.Props
 
 import scala.util.Try
 

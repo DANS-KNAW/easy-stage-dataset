@@ -1,4 +1,4 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 

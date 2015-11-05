@@ -1,9 +1,10 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.FOXML._
-import nl.knaw.dans.easy.stage.Util._
+import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML,getFileFOXML}
+import nl.knaw.dans.easy.stage.lib.Util.mkdirSafe
+import nl.knaw.dans.easy.stage.lib._
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 

@@ -1,9 +1,9 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.Util._
+import Constants._
+import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 
 import scala.util.Try

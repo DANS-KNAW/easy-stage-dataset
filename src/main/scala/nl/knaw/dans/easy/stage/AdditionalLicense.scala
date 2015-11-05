@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.lib.Constants
 import org.apache.commons.io.FileUtils
 
 import scala.util.Try
