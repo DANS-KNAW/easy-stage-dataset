@@ -2,8 +2,9 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.Util._
+import nl.knaw.dans.easy.stage.lib.Constants
+import Constants._
+import nl.knaw.dans.easy.stage.lib.Util._
 import org.joda.time.DateTime
 
 import scala.util.Try

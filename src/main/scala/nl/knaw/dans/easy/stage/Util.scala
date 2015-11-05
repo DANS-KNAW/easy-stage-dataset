@@ -17,14 +17,6 @@ object Util {
         Success(Unit)
   }
 
-  def mkdirSafe(f: File): Try[File] = Try {
-    f.mkdir()
-    f
-  }
-
-  def writeToFile(f: File, s: String): Try[Unit] =
-    Try { scala.tools.nsc.io.File(f).writeAll(s) }
-
   def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
     val filesMetadata = new File(s.bagitDir, "metadata/files.xml")
     if (!filesMetadata.exists) {

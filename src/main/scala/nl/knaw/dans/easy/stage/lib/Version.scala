@@ -14,7 +14,7 @@
   * limitations under the License.
   ******************************************************************************/
 
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.lib
 
 object Version {
   def apply(): String = {

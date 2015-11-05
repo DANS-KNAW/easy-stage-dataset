@@ -3,8 +3,9 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URI
 
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.Util._
+import nl.knaw.dans.easy.stage.lib.Constants
+import Constants._
+import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller

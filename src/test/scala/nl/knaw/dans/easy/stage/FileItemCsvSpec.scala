@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.stage
 
 import java.io.ByteArrayInputStream
 
+import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemCsv, FileItemConf}
 import org.scalatest.{FlatSpec, Matchers}
 
 class FileItemCsvSpec extends FlatSpec with Matchers {

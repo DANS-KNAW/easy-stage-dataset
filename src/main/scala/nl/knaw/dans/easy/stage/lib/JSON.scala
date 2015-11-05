@@ -1,9 +1,11 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.Util._
+import Constants._
+import nl.knaw.dans.easy.stage.Settings // TODO fix package loop for createDatasetCfg
+import nl.knaw.dans.easy.stage.Util.readAudiences // TODO fix package loop for createDatasetCfg
+import nl.knaw.dans.easy.stage.lib.Util._
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._

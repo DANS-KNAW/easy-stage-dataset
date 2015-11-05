@@ -1,4 +1,4 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 import java.util.UUID

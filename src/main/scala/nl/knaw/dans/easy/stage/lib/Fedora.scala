@@ -1,4 +1,4 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.lib
 
 import com.yourmediashelf.fedora.client.request.FedoraRequest
 import com.yourmediashelf.fedora.client.{FedoraClient, FedoraCredentials}

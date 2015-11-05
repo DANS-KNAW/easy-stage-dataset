@@ -3,6 +3,7 @@ package nl.knaw.dans.easy.stage
 import java.io.{ByteArrayOutputStream, File}
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.fileitem.FileItemConf
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
 import org.scalatest.{FlatSpec, Matchers}
