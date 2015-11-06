@@ -1,10 +1,11 @@
 package nl.knaw.dans.easy.stage
 
-import java.io.ByteArrayInputStream
+import java.io.{FileInputStream, ByteArrayInputStream}
 
 import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemCsv, FileItemConf}
 import org.scalatest.{FlatSpec, Matchers}
 
+// TODO extend AbstractConfSpec
 class FileItemCsvSpec extends FlatSpec with Matchers {
 
   val commandLineArgs = "target/test/sdo-set".split(" ")
@@ -22,10 +23,13 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
   }
 
   "proper csv file" should "render FileItemSettings" in {
-    // NB: if a FILE does not exists, FileItemConf exists end thus terminates the full test suite
+    // NB: if a FILE does not exists, FileItemConf exits and thus terminates the full test suite
     val in = new ByteArrayInputStream(
       """xx,DATASET-ID,FILE-PATH,FILE,MD5,FORMAT,IDENTIFIER,TITLE,DESCRIPTION,CREATED
         |yy,easy-dataset:1,path/to/dir
+        |
+        |some comment in an ignored column if you like
+        |and empty lines wherever you want
         |
         |zz,easy-dataset:1,path/to/dir/qs.hs,src/test/resources/example-bag/data/quicksort.hs,eb0c93c460fac5cca0fd789d17c52daa,
         |
@@ -37,4 +41,9 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
     records(1).filePath.toString shouldBe "path/to/dir/qs.hs"
     records(1).file.get.getName shouldBe "quicksort.hs"
   }
-}
+
+  "sampl.csv" should "render one or more FileItemSettings" in {
+    // TODO a comment line does not seem to work
+    val exampleCSV = new FileInputStream("src/test/resources/example.csv")
+    FileItemCsv.read(exampleCSV, conf).get should not have length (0)
+  }}

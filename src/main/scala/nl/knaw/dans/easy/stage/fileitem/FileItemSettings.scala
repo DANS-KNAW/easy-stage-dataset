@@ -6,11 +6,11 @@ import java.util.UUID
 import nl.knaw.dans.easy.stage.lib.Props._
 import org.joda.time.DateTime
 
-case class FileItemSettings(file: Option[File],
+case class FileItemSettings(sdoSetDir: File,
                             datasetId: String,
-                            sdoSetDir: File,
+                            file: Option[File],
                             ownerId: String = props.getString("owner"),
- 
+
                             // as in example-bag/metadata/manifest-md5.txt
                             md5: Option[String],
  
@@ -40,7 +40,9 @@ object FileItemSettings {
     identifier =conf.identifier.get,
     md5 = conf.md5.get,
     title = conf.title.get
-  )
+  ) {
+    override def toString = conf.builder.args.mkString(", ")
+  }
   def apply(args: Seq[String]): FileItemSettings =
     FileItemSettings( new FileItemConf(args))
 }
