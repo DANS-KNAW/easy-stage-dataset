@@ -11,9 +11,7 @@ SYNOPSIS
                           <EASY-bag> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
-    easy-stage-file-item <staged-digital-object-set> < <utf8-csv-file>
-
-    The CSV file should have one column for each option, it may have more columns.
+    easy-stage-file-item <staged-digital-object-set> <csv-file>
 
 
 DESCRIPTION
@@ -59,22 +57,28 @@ ARGUMENTS for easy-stage-fileItem
 
      -c, --created  <arg>       dcterms property, date-time when the file was created
      -i, --dataset-id  <arg>    id of the dataset in Fedora that should receive the
-                                file to stage if omitted the csf-file is read
+                                file to stage (requires file-path). If omitted the
+                                trailing argument csf-file is required
      -d, --description  <arg>   dcterms property description
      -f, --file  <arg>          File to stage for ingest into Fedora, if omitted a
-                                folder is staged
-     -p, --file-path  <arg>     the path that the file should get in the dataset
+                                folder is staged (requires dataset-id, md5 and
+                                format)
+     -p, --file-path  <arg>     the path that the file should get in the dataset or
+                                the folder that should be created in the dataset
          --format  <arg>        dcterms property format, the mime type of the file
      -u, --identifier  <arg>    dcterms property
      -m, --md5  <arg>           MD5 checksum of the file to stage
      -t, --title  <arg>...      dcterms property title and optional alternatives
          --help                 Show help message
          --version              Show version of this program
-
+   
     trailing arguments:
      staged-digital-object-set (required)   The resulting Staged Digital Object
                                             directory (will be created if it does not
                                             exist)
+     csv-file (not required)                a comma separated file with one column
+                                            for each option (additional columns are
+                                            ignored) and one set of options per line
 
 
 INSTALLATION AND CONFIGURATION

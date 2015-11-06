@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import scala.io.Source.fromInputStream
-import scala.util.Try
+import scala.util.{Success, Try}
 
 object FileItemCsv {
   val log = LoggerFactory.getLogger(getClass)
@@ -19,6 +19,10 @@ object FileItemCsv {
     val csv = {
       val rawContent = fromInputStream(in).mkString
       parse(rawContent, CSVFormat.RFC4180).getRecords.map(_.toList)
+    }
+    if (csv.isEmpty){
+      log.warn("CSV file empty")
+      return Success(Array[FileItemSettings]())
     }
     val head = csv.head
     validateHeaders(conf,head)
@@ -35,8 +39,7 @@ object FileItemCsv {
   }
 
   private def validateHeaders(conf: FileItemConf, headers: List[String]): Unit = {
-    val requiredHeaders = conf.builder.opts
-      .filter(!_.isInstanceOf[TrailingArgsOption])
+    val requiredHeaders = conf.builder.opts.filter(!_.isInstanceOf[TrailingArgsOption])
       .map(_.name).map(_.toUpperCase)
     val ignoredHeaders = headers.filter(!requiredHeaders.contains(_))
     val missingHeaders = requiredHeaders.filter(!headers.toArray.contains(_))
