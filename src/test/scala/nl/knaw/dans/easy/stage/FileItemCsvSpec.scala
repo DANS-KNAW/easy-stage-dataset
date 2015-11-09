@@ -5,13 +5,12 @@ import java.io.{FileInputStream, ByteArrayInputStream}
 import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemCsv, FileItemConf}
 import org.scalatest.{FlatSpec, Matchers}
 
-// TODO extend AbstractConfSpec
 class FileItemCsvSpec extends FlatSpec with Matchers {
 
   val commandLineArgs = "target/test/sdo-set".split(" ")
   private val conf = new FileItemConf(commandLineArgs)
 
-  "csv file with too little headers" should "fail" in {
+  "csv file with too few headers" should "fail" in {
     val in = new ByteArrayInputStream (
       "TITLE,DESCRIPTION,FORMAT,CREATED,FILE,MD5,DATASET-ID,xxx,STAGED-DIGITAL-OBJECT-SET"
         .stripMargin.getBytes)
@@ -42,8 +41,7 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
     records(1).file.get.getName shouldBe "quicksort.hs"
   }
 
-  "sampl.csv" should "render one or more FileItemSettings" in {
-    // TODO a comment line does not seem to work
+  "sample.csv" should "render one or more FileItemSettings" in {
     val exampleCSV = new FileInputStream("src/test/resources/example.csv")
     FileItemCsv.read(exampleCSV, conf).get should not have length (0)
   }}
