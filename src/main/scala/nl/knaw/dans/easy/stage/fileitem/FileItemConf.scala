@@ -66,8 +66,9 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csf-file is required")
   codependent(datasetId,filePath)
-  codependent(file,md5,format)
+  codependent(file,format)
   dependsOnAll(file, List(datasetId))
+  dependsOnAll(md5, List(file))
   dependsOnAll(created, List(file))
   dependsOnAll(description, List(file))
   dependsOnAll(title, List(file))

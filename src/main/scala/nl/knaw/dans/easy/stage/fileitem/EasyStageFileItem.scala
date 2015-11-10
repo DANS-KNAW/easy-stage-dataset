@@ -4,10 +4,12 @@ import java.io.{FileInputStream, File}
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
+import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML,getFileFOXML}
-import nl.knaw.dans.easy.stage.lib.Util.mkdirSafe
+import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
 import org.apache.commons.io.FileUtils
+import org.json4s.native.JsonMethods._
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -41,42 +43,44 @@ object EasyStageFileItem {
                        else EasyFilesAndFolders.getPathId(s.filePath.getParentFile, s.datasetId)
       _             <- mkdirSafe(s.sdoSetDir)
       datasetSdoDir <- mkdirSafe(new File(s.sdoSetDir, s.datasetId.replace(":", "_")))
+      sdoDir        <- mkdirSafe(new File(datasetSdoDir, toSdoName(s.filePath)))
       parentSdoDir  =  if(s.filePath.getParentFile == null) datasetSdoDir
                        else new File(datasetSdoDir, toSdoName(s.filePath.getParentFile))
-      sdoDir        <- mkdirSafe(new File(datasetSdoDir, toSdoName(s.filePath)))
-      _             <- parentExists(parentId, parentSdoDir)
+      _             <- if (parentId.isDefined || parentSdoDir.isDirectory) Success()
+                       else Failure(new scala.Exception(s"${parentSdoDir.getName} was not staged"))
       _             <- if (s.file.isDefined) createFileSdo(sdoDir, parentId, parentSdoDir)
                        else createFolderSdo(sdoDir, parentId, parentSdoDir)
     } yield ()
   }
 
-  private def createFileSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
+  def createFileSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"Creating file SDO: ${s.filePath}")
+    val fmFile    = new File(sdoDir.getPath, EASY_FILE_METADATA_FILENAME)
+    val jsonFile  = new File(sdoDir.getPath, JSON_CFG_FILENAME)
+    val foxmlFile = new File(sdoDir.getPath, FOXML_FILENAME)
+    val location  = new File(s.storageBaseUrl, s.filePath.toString).toString
     for {
-      mime         <- Try{s.format.get}
-      _            <- Try{FileUtils.copyFileToDirectory(s.file.get, sdoDir)}
-      _            <- if (parentId.isDefined)
-                           JSON.createFileCfg(s.file.get.getAbsolutePath, mime, sdoDir, parentId.get)
-                      else JSON.createFileCfg(s.file.get.getAbsolutePath, mime, parentSdoDir.getName, sdoDir)
-      _            <- FOXML.create(sdoDir, getFileFOXML(s.filePath.getName, s.ownerId, mime))
-      _            <- EasyFileMetadata.create(sdoDir, s.filePath, mime, s.filePath.toString)
+      mime <- Try{s.format.get}
+      _ <- Try{FileUtils.copyFileToDirectory(s.file.get, sdoDir)}
+      _ <- writeToFile(jsonFile,pretty(render(if (parentId.isDefined)
+                JSON.createFileCfg(location, mime, parentId.get)
+           else JSON.createFileCfg(location, mime, parentSdoDir))))
+      _ <- writeToFile(foxmlFile, getFileFOXML(s.filePath.getName, s.ownerId, mime))
+      _ <- writeToFile(fmFile, EasyFileMetadata(s).toString())
     } yield ()
   }
 
-  private def createFolderSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
+  def createFolderSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"Creating folder SDO: ${s.filePath}")
+    val jsonFile  = new File(sdoDir.getPath, JSON_CFG_FILENAME)
     for {
-      _            <- if (parentId.isDefined)
-                           JSON.createDirCfg(s.filePath.getName, sdoDir, parentId.get)
-                      else JSON.createDirCfg(s.filePath.getName, parentSdoDir.getName, sdoDir)
-      _            <- FOXML.create(sdoDir, getDirFOXML(s.filePath.getName, s.ownerId))
-      _            <- EasyItemContainerMd.create(sdoDir, s.filePath, relativePath = s.filePath.toString)
+      _ <- writeToFile(jsonFile,pretty(render(if (parentId.isDefined)
+                JSON.createDirCfg(s.filePath.getName, parentId.get)
+           else JSON.createDirCfg(s.filePath.getName, parentSdoDir))))
+      _ <- FOXML.create(sdoDir, getDirFOXML(s.filePath.getName, s.ownerId))
+      _ <- EasyItemContainerMd.create(sdoDir, s.filePath, relativePath = s.filePath.toString)
     } yield ()
   }
-
-  private def parentExists(parentId: Option[String], parentDir: File): Try[Unit] =
-    if (parentId.isDefined || parentDir.isDirectory) Success()
-    else Failure(new scala.Exception(s"${parentDir.getName} was not staged"))
 
   private def toSdoName(path: File): String =
     path.toString.replaceAll("[/.]", "_").replaceAll("^_", "")

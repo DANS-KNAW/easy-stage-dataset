@@ -5,7 +5,6 @@ import java.io.File
 import Constants._
 import nl.knaw.dans.easy.stage.{dataset, Settings}
 
-// TODO fix package loop for createDatasetCfg
 import dataset.Util.readAudiences // TODO fix package loop for createDatasetCfg
 import nl.knaw.dans.easy.stage.lib.Util._
 import org.json4s.JsonAST.JObject
@@ -66,16 +65,13 @@ object JSON {
     } yield ()
   }
 
-  def createFileCfg(fileLocation: String, mimeType: String, parentSDO: String, sdoDir: File): Try[Unit] = {
-    createFileCfg(fileLocation, mimeType, sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO))
-  }
+  def createFileCfg(fileLocation: String, mimeType: String, parentSDO: File): JObject =
+    createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
 
-  def createFileCfg(fileLocation: String, mimeType: String, sdoDir: File, parentObjectId: String): Try[Unit] = {
-    createFileCfg(fileLocation, mimeType, sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
-  }
+  def createFileCfg(fileLocation: String, mimeType: String, parentObjectId: String): JObject =
+    createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
 
-  private def createFileCfg(fileLocation: String, mimeType: String, sdoDir: File, memberOfRelation: JObject): Try[Unit] = {
-    val sdoCfg =
+  private def createFileCfg(fileLocation: String, mimeType: String, memberOfRelation: JObject): JObject = {
       ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           ("dsLocation" -> fileLocation) ~
@@ -95,19 +91,17 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
-    writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg)))
   }
 
-  def createDirCfg(dirName: String, parentSDO: String, sdoDir: File): Try[Unit] = {
-    createDirCfg(sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO))
+  def createDirCfg(dirName: String, parentSDO: File): JObject = {
+    createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
   }
 
-  def createDirCfg(dirName: String, sdoDir: File, parentObjectId: String): Try[Unit] = {
-    createDirCfg(sdoDir, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
+  def createDirCfg(dirName: String, parentObjectId: String): JObject = {
+    createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
   }
 
-  private def createDirCfg(sdoDir: File, memberOfRelation: JObject): Try[Unit] = {
-    val sdoCfg =
+  private def createDirCfg(memberOfRelation: JObject): JObject = {
       ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
@@ -120,6 +114,5 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
-    writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg)))
   }
 }
