@@ -3,6 +3,7 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 
 case class Settings(ownerId: String,

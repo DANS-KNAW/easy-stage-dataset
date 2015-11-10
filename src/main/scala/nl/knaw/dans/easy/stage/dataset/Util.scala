@@ -1,8 +1,10 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import scala.util.{Success, Failure, Try}
+import nl.knaw.dans.easy.stage.Settings
+
+import scala.util.{Failure, Success, Try}
 import scala.xml.{Elem, XML}
 
 object Util {
