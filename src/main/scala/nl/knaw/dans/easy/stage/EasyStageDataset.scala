@@ -3,11 +3,12 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.dataset.{PRSQL, EMD, AMD, AdditionalLicense}
 import nl.knaw.dans.easy.stage.lib._
 import Constants._
 import nl.knaw.dans.easy.stage.lib.{EasyItemContainerMd, EasyFileMetadata, JSON, FOXML}
 import FOXML._
-import nl.knaw.dans.easy.stage.Util._
+import dataset.Util._
 import nl.knaw.dans.easy.stage.lib.Util._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils

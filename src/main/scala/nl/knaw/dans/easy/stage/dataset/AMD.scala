@@ -1,9 +1,10 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Constants
-import Constants._
+import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.Util._
 import org.joda.time.DateTime
 
