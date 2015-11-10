@@ -3,7 +3,7 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import scala.util.{Success, Failure, Try}
-import scala.xml.XML
+import scala.xml.{Elem, XML}
 
 object Util {
 
@@ -18,27 +18,27 @@ object Util {
   }
 
   def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
-    val filesMetadata = new File(s.bagitDir, "metadata/files.xml")
-    if (!filesMetadata.exists) {
-      throw new RuntimeException("Unable to find `metadata/files.xml` in bag.")
-    }
     val mimes = for {
-      file <- XML.loadFile(filesMetadata) \\ "files" \ "file"
+      file <- loadXML("metadata/files.xml") \\ "files" \ "file"
       if (file \ "@filepath").text == filePath
       mime <- file \ "format"
     } yield mime
     if (mimes.size != 1)
-      throw new RuntimeException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
+      throw new scala.RuntimeException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
     mimes(0).text
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
-    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
-    if (!ddm.exists) {
-      throw new RuntimeException("Unable to find `metadata/dataset.xml` in bag.")
-    }
     for {
-      audience <- XML.loadFile(ddm) \\ "DDM" \ "profile" \ "audience"
+      audience <- loadXML("metadata/dataset.xml") \\ "DDM" \ "profile" \ "audience"
     } yield audience.text
+  }
+
+  private def loadXML(fileName: String)(implicit s: Settings): Elem = {
+    val metadataFile = new File(s.bagitDir, fileName)
+    if (!metadataFile.exists) {
+      throw new scala.RuntimeException(s"Unable to find `$fileName` in bag.")
+    }
+    XML.loadFile(metadataFile)
   }
 }
