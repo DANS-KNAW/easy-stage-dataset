@@ -3,15 +3,14 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URL
 
-import nl.knaw.dans.easy.stage.dataset.{PRSQL, EMD, AMD, AdditionalLicense}
-import nl.knaw.dans.easy.stage.lib._
-import Constants._
-import nl.knaw.dans.easy.stage.lib.{EasyItemContainerMd, EasyFileMetadata, JSON, FOXML}
-import FOXML._
-import dataset.Util._
+import nl.knaw.dans.easy.stage.dataset.Util._
+import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
+import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
+import nl.knaw.dans.easy.stage.lib.Constants._
+import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.easy.stage.lib.{FOXML, JSON}
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -25,7 +24,7 @@ object EasyStageDataset {
 
     implicit val s = Settings(
       ownerId = props.getString("owner"),
-      submissionTimestamp = conf.submissionTimestamp().toString,
+      submissionTimestamp = conf.submissionTimestamp.apply().toString,
       bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
       sdoSetDir = conf.sdoSet(),
@@ -84,10 +83,13 @@ object EasyStageDataset {
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
       mime <- readMimeType(relativePath)
-      _ = FileUtils.copyFileToDirectory(file, sdoDir)
-      _ <- JSON.createFileCfg(s"${s.bagStorageLocation}/$relativePath", mime, parentSDO, sdoDir)
-      _ <- FOXML.create(sdoDir, getFileFOXML(file.getName, s.ownerId, mime))
-      _ <- EasyFileMetadata.create(sdoDir, file, mime, getRelativePath(file))
+      _ <- EasyStageFileItem.createFileSdo(sdoDir,None,new File(parentSDO))(FileItemSettings(
+        sdoSetDir = s.sdoSetDir,
+        file = Some(file),
+        ownerId = s.ownerId,
+        filePath = new File(relativePath),
+        format = Some(mime)
+      ))
     } yield ()
   }
 
@@ -95,9 +97,11 @@ object EasyStageDataset {
     log.debug(s"Creating folder SDO for $folder")
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _ <- JSON.createDirCfg(folder.getName, parentSDO, sdoDir)
-      _ <- FOXML.create(sdoDir, getDirFOXML(folder.getName, s.ownerId))
-      _ <- EasyItemContainerMd.create(sdoDir, folder, getRelativePath(folder))
+      _ <- EasyStageFileItem.createFolderSdo(sdoDir = sdoDir,parentId = None, parentSdoDir = new File(parentSDO))(FileItemSettings(
+        sdoSetDir = s.sdoSetDir,
+        ownerId = s.ownerId,
+        filePath = new File(getRelativePath(folder))
+      ))
     } yield ()
   }
 

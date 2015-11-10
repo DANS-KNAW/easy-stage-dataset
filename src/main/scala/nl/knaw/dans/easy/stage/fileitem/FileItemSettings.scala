@@ -1,31 +1,33 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.util.UUID
 
 import nl.knaw.dans.easy.stage.lib.Props._
 import org.joda.time.DateTime
 
 case class FileItemSettings(sdoSetDir: File,
-                            datasetId: String,
-                            file: Option[File],
+                            // only used for EasyStageFileItem.run,
+                            // not for createFileSdo as called by EasyStageDataset
+                            datasetId: String = "",
+                            file: Option[File] = None,
                             ownerId: String = props.getString("owner"),
+                            storageBaseUrl: String = props.getString("storage-base-url"),
 
                             // as in example-bag/metadata/manifest-md5.txt
-                            md5: Option[String],
+                            md5: Option[String] = None,
  
                             // as in example-bag/metadata/files.xml
                             filePath: File,
-                            identifier: Option[String],// TODO not used?
-                            title: Option[List[String]],// TODO not used?
-                            description: Option[String],// TODO not used?
-                            format: Option[String],
-                            created: Option[DateTime],// TODO not used?
+                            identifier: Option[String] = None,// TODO not used?
+                            title: Option[List[String]] = None ,// TODO not used?
+                            description: Option[String] = None,// TODO not used?
+                            format: Option[String] = None,
+                            created: Option[DateTime] = None,// TODO not used?
  
                             // as in SDO/*/EASY_FILE_METADATA
-                            creatorRole: String = "DEPOSITOR",// TODO hardcoded for datasets
-                            visibleTo: String = "ANONYMOUS",// TODO hardcoded for datasets
-                            accessibleTo: String = "NONE"// TODO hardcoded for datasets
+                            creatorRole: String = "DEPOSITOR",
+                            visibleTo: String = "ANONYMOUS",
+                            accessibleTo: String = "NONE"
                            )
 
 object FileItemSettings {
