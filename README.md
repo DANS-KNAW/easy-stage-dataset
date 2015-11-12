@@ -14,7 +14,7 @@ DESCRIPTION
 -----------
 
 Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-deposit] service. These
-deposits must conform to the [EASY-BagIt] format, which is basically [BagIt] with some extra EASY-specific requirements.
+deposits must conform to [BagIt] format.
 
 To prepare the deposit for inclusion in EASY `easy-stage-dataset` performs the following tasks:
 
@@ -69,17 +69,10 @@ BUILDING FROM SOURCE
 
 Prerequisites:
 
-* Scala 2.11 or higher
+* Java 8 or higher
 * Maven 3.3.3 or higher
  
 Steps:
-
-1. Clone and build the [dans-parent] project (*can be skipped if you have access to the DANS maven repository*)
-      
-        git clone https://github.com/DANS-KNAW/dans-parent.git
-        cd dans-parent
-        mvn install
-2. Clone and build this project
 
         git clone https://github.com/DANS-KNAW/easy-stage-dataset.git
         cd easy-stage-dataset
@@ -87,6 +80,5 @@ Steps:
 
 [dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
 [easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
-[EASY-BagIt]: http://easy.dans.knaw.nl/schemas/EASY-BagIt.html 
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
 
