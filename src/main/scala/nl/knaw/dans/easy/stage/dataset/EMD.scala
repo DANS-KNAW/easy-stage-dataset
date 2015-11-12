@@ -4,8 +4,6 @@ import java.io.File
 import java.net.URI
 
 import nl.knaw.dans.easy.stage.Settings
-import nl.knaw.dans.easy.stage.lib.Constants
-import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
@@ -23,7 +21,7 @@ object EMD {
     }
     for {
       emd <- getEasyMetadata(ddm).map(addIdentifiers)
-      _   <- writeToFile(new File(sdoDir, EMD_FILENAME), new EmdMarshaller(emd).getXmlString)
+      _   <- writeEMD(sdoDir, new EmdMarshaller(emd).getXmlString)
     } yield emd
   }
 

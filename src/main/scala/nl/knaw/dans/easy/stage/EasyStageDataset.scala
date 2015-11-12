@@ -8,8 +8,8 @@ import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
 import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
+import nl.knaw.dans.easy.stage.lib.JSON
 import nl.knaw.dans.easy.stage.lib.Util._
-import nl.knaw.dans.easy.stage.lib.{FOXML, JSON}
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
 
@@ -56,12 +56,13 @@ object EasyStageDataset {
     log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-      _ <- AMD.create(sdoDir)
+      _ <- writeAMD(sdoDir, AMD(s.ownerId, s.submissionTimestamp).toString())
       emd <- EMD.create(sdoDir)
-      _ <- FOXML.create(sdoDir, getDatasetFOXML(s.ownerId, emd))
-      _ <- PRSQL.create(sdoDir)
+      _ <- writeFoxml(sdoDir, getDatasetFOXML(s.ownerId, emd))
+      _ <- writePrsql(sdoDir, PRSQL.create())
       license <- AdditionalLicense.create(sdoDir)
-      _ <- JSON.createDatasetCfg(sdoDir, license)
+      audiences <- readAudiences()
+      _ <- writeJsonCfg(sdoDir, JSON.createDatasetCfg(license, audiences))
     } yield ()
   }
 
@@ -83,7 +84,11 @@ object EasyStageDataset {
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
       mime <- readMimeType(relativePath)
-      _ <- EasyStageFileItem.createFileSdo(sdoDir,None,new File(parentSDO))(FileItemSettings(
+      _ <- EasyStageFileItem.createFileSdo(
+        sdoDir = sdoDir,
+        parentId = None,
+        parentSdoDir = new File(parentSDO)
+      )(FileItemSettings(
         sdoSetDir = s.sdoSetDir,
         file = Some(file),
         ownerId = s.ownerId,
@@ -97,7 +102,11 @@ object EasyStageDataset {
     log.debug(s"Creating folder SDO for $folder")
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _ <- EasyStageFileItem.createFolderSdo(sdoDir = sdoDir,parentId = None, parentSdoDir = new File(parentSDO))(FileItemSettings(
+      _ <- EasyStageFileItem.createFolderSdo(
+        sdoDir = sdoDir,
+        parentId = None,
+        parentSdoDir = new File(parentSDO)
+      )(FileItemSettings(
         sdoSetDir = s.sdoSetDir,
         ownerId = s.ownerId,
         filePath = new File(getRelativePath(folder))
