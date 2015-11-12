@@ -10,12 +10,9 @@ import scala.util.Try
 
 object PRSQL {
 
-  def create(sdoDir:File): Try[Unit] = {
-    val prsql =
+  def create(): String = {
       <psl:permissionSequenceList xmlns:psl="http://easy.dans.knaw.nl/easy/permission-sequence-list/">
         <sequences></sequences>
       </psl:permissionSequenceList>.toString()
-    writeToFile(new File(sdoDir.getPath, PRSQL_FILENAME), prsql)
   }
-
 }

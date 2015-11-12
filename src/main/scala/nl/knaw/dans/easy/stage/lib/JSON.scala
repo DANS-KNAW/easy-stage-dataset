@@ -2,16 +2,11 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
-import Constants._
-import nl.knaw.dans.easy.stage.{dataset, Settings}
-
-import dataset.Util.readAudiences // TODO fix package loop for createDatasetCfg
-import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.lib.Constants._
 import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
-
-import scala.util.Try
 
 object JSON {
   val HAS_DOI = "http://dans.knaw.nl/ontologies/relations#hasDoi"
@@ -21,7 +16,7 @@ object JSON {
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
   val DATASET_ARCHIVAL_STORAGE_LOCATION = "http://dans.knaw.nl/ontologies/relations#datasetArchivalStorageLocation"
 
-  def createDatasetCfg(sdoDir: File, license: Option[File])(implicit s: Settings): Try[Unit] = {
+  def createDatasetCfg(license: Option[File], audiences: Seq[String])(implicit s: Settings): String = {
     val datastreams =
       List(
         ("contentFile" -> "AMD") ~
@@ -33,8 +28,7 @@ object JSON {
         ("contentFile" -> "EMD") ~
         ("dsID" -> "EMD") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")
-        ,
+        ("mimeType" -> "text/xml")        ,
         ("contentFile" -> "PRSQL") ~
         ("dsID" -> "PRSQL") ~
         ("controlGroup" -> "X") ~
@@ -59,20 +53,17 @@ object JSON {
           ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${s.disciplines(audience)}"))
       ))
 
-    for {
-      audiences <- readAudiences()
-      _ <- writeToFile(new File(sdoDir.getPath, JSON_CFG_FILENAME), pretty(render(sdoCfg(audiences))))
-    } yield ()
+    pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: String, mimeType: String, parentSDO: File): JObject =
+  def createFileCfg(fileLocation: String, mimeType: String, parentSDO: File): String =
     createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
 
-  def createFileCfg(fileLocation: String, mimeType: String, parentObjectId: String): JObject =
+  def createFileCfg(fileLocation: String, mimeType: String, parentObjectId: String): String =
     createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
 
-  private def createFileCfg(fileLocation: String, mimeType: String, memberOfRelation: JObject): JObject = {
-      ("namespace" -> "easy-file") ~
+  private def createFileCfg(fileLocation: String, mimeType: String, memberOfRelation: JObject): String = {
+      val json = ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           ("dsLocation" -> fileLocation) ~
             ("dsID" -> "EASY_FILE") ~
@@ -91,18 +82,19 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
+    pretty(render(json))
   }
 
-  def createDirCfg(dirName: String, parentSDO: File): JObject = {
+  def createDirCfg(dirName: String, parentSDO: File): String = {
     createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
   }
 
-  def createDirCfg(dirName: String, parentObjectId: String): JObject = {
+  def createDirCfg(dirName: String, parentObjectId: String): String = {
     createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
   }
 
-  private def createDirCfg(memberOfRelation: JObject): JObject = {
-      ("namespace" -> "easy-folder") ~
+  private def createDirCfg(memberOfRelation: JObject): String = {
+      val json = ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
             ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
@@ -114,5 +106,6 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
+    pretty(render(json))
   }
 }

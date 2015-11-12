@@ -1,18 +1,10 @@
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.File
-
-import Constants._
-import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 
-import scala.util.Try
 import scala.xml.{Elem, NodeSeq, XML}
 
 object FOXML {
-
-  def create(sdoDir: File, foxml: => String): Try[Unit] =
-    writeToFile(new File(sdoDir.getPath, FOXML_FILENAME), foxml)
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
     val dc = XML.loadString(emd.getDublinCoreMetadata.asXMLString())
