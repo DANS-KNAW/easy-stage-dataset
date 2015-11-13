@@ -1,8 +1,7 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.{FileInputStream, ByteArrayInputStream}
+import java.io.{ByteArrayInputStream, FileInputStream}
 
-import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemCsv, FileItemConf}
 import org.scalatest.{FlatSpec, Matchers}
 
 class FileItemCsvSpec extends FlatSpec with Matchers {

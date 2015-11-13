@@ -113,6 +113,32 @@ Steps:
         cd easy-stage-dataset
         mvn install
 
+TEST NOTES
+----------
+
+No tests are available that mock fedora or the database for files and folders.
+So run integration tests to check for regression.
+
+Run `stageFileItem.sh` to cover the logic that checks existence of datasets and folders or folder-SDO's.
+Reading a CSV is covered with a unit-test, creation of file/folder SDO's is covered by stageDataset.
+
+
+Steps for a regression test:
+
+* Create `apphome.sh` in the project root to override the var `APPHOME`
+  or create a `home` folder in the root of the project.
+  See also [installation and configuration](#installation-and-configuration).
+* Remove the content of the directory `out` (ignored by git like the above)
+* Process any example-bag you may find, for example:
+  * `stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
+  * `stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
+* Move the created `out` to another location, say `~/old`.
+* Repeat until OK:
+  * Clear the folders in `out`.
+  * Process the same bags with the new code.
+  * Compare the results: `diff -r ~/old target/test-out`
+
+
 [dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
 [easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11

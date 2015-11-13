@@ -106,9 +106,30 @@
                 <artifactId>exec-maven-plugin</artifactId>
             </plugin>
             <plugin>
-                <groupId>org.scalatest</groupId>
-                <artifactId>scalatest-maven-plugin</artifactId>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>
+    <profiles>
+        <profile>
+            <id>stageFileItem</id>
+            <activation>
+                <property>
+                    <name>stageFileItem</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>exec-maven-plugin</artifactId>
+                        <configuration>
+                            <mainClass>nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem</mainClass>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
