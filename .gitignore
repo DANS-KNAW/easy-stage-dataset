@@ -6,13 +6,13 @@ pom.xml.next
 release.properties
 dependency-reduced-pom.xml
 buildNumber.properties
-target/
 *.class
 *~
 *.swp
 *.iml
 .idea/
 .DS_Store
+apphome.sh
 home/
 out/
 
