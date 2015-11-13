@@ -3,6 +3,7 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import nl.knaw.dans.easy.stage.EasyStageDataset._
+import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
 import org.rogach.scallop.{singleArgConverter, ValueConverter, ScallopConf}
 import org.slf4j.LoggerFactory

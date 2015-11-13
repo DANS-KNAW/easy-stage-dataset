@@ -3,6 +3,9 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.dataset.Licenses
+import nl.knaw.dans.easy.stage.lib.Fedora
+
 case class Settings(ownerId: String,
                     submissionTimestamp: String,
                     bagStorageLocation: String,
@@ -14,6 +17,8 @@ case class Settings(ownerId: String,
                     fedoraUser: String,
                     fedoraPassword: String,
                     fedoraUrl: URL) {
-  val disciplines: Map[String,String] = Fedora.loadDisciplines(fedoraUrl.toString, fedoraUser, fedoraPassword)
+  Fedora.connect(fedoraUrl.toString, fedoraUser, fedoraPassword)
+
+  val disciplines: Map[String,String] = Fedora.disciplines
   val licenses: Map[String, File] = Licenses.getLicenses
 }

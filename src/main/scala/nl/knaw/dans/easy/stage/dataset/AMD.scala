@@ -1,18 +1,10 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.dataset
 
-import java.io.File
-
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.Util._
 import org.joda.time.DateTime
 
-import scala.util.Try
 import scala.xml.Elem
 
 object AMD {
-
-  def create(sdoDir: File)(implicit s: Settings): Try[Unit] =
-    writeToFile(new File(sdoDir.getPath, AMD_FILENAME), AMD(s.ownerId, s.submissionTimestamp).toString())
 
   /*
    * An exact timestamp is required, so valid ISO dates like 2015-09-01T12:01 won't do

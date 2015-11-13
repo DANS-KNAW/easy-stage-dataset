@@ -1,7 +1,9 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.lib.Constants
 import org.apache.commons.io.FileUtils
 
 import scala.util.Try

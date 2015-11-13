@@ -1,9 +1,10 @@
-package nl.knaw.dans.easy.stage
+package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
+
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
