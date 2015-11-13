@@ -42,9 +42,8 @@ object EasyStageFileItem {
       _             <- mkdirSafe(s.sdoSetDir)
       datasetSdoDir <- mkdirSafe(new File(s.sdoSetDir, s.datasetId.replace(":", "_")))
       sdoDir        <- mkdirSafe(new File(datasetSdoDir, toSdoName(s.filePath)))
-      parentSdoDir  =  if(s.filePath.getParentFile == null) datasetSdoDir
-                       else new File(datasetSdoDir, toSdoName(s.filePath.getParentFile))
-      _             <- if (parentId.isDefined || parentSdoDir.isDirectory) Success()
+      parentSdoDir  =  Option(s.filePath.getParentFile).map(f => new File(datasetSdoDir, toSdoName(f))).getOrElse(datasetSdoDir)
+      _             <- if (parentId.isDefined || parentSdoDir.isDirectory) Success(Unit)
                        else Failure(new scala.Exception(s"${parentSdoDir.getName} was not staged"))
       _             <- if (s.file.isDefined) createFileSdo(sdoDir, parentId, parentSdoDir)
                        else createFolderSdo(sdoDir, parentId, parentSdoDir)
