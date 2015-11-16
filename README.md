@@ -119,8 +119,9 @@ TEST NOTES
 No tests are available that mock fedora or the database for files and folders.
 So run integration tests to check for regression.
 
-Run `stageFileItem.sh` to cover the logic that checks existence of datasets and folders or folder-SDO's.
-Reading a CSV is covered with a unit-test, creation of file/folder SDO's is covered by stageDataset.
+Run `./stageFileItem.sh out/file-sdos src/test/resources/example.csv`
+to cover the logic that checks existence of datasets and folders in the repository or folder-SDO's on the file system.
+Reading a CSV is also covered with a unit-test, creation of file/folder SDO's is covered by stageDataset.
 
 
 Steps for a regression test:
@@ -130,8 +131,8 @@ Steps for a regression test:
   See also [installation and configuration](#installation-and-configuration).
 * Remove the content of the directory `out` (ignored by git like the above)
 * Process any example-bag you may find, for example:
-  * `stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
-  * `stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
+  * `./stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
+  * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
 * Move the created `out` to another location, say `~/old`.
 * Repeat until OK:
   * Clear the folders in `out`.

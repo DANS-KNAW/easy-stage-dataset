@@ -17,20 +17,32 @@ object EasyStageFileItem {
 
   def main(args: Array[String]) {
     val conf = new FileItemConf(args)
-    (if (conf.datasetId.isDefined) {
-      Array(FileItemSettings(conf))
-    } else {
-      if (conf.csvFile.isEmpty)
-        throw new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified")
-      FileItemCsv.read(new FileInputStream(conf.csvFile.apply()), conf).get
-    }).foreach { fileItemSettings =>
-      run(fileItemSettings) match {
-        case Success(_) => log.info(s"Staging SUCCESS of $fileItemSettings")
-        case Failure(t) => log.error(s"Staging FAIL of $fileItemSettings", t)
-          if(t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
-      }
+    getConfs(conf) match {
+      case Failure(t) => log.error(s"Staging FAIL", t)
+      case Success(seq) => if (seq.isEmpty) log.error(s"Empty CSV file") else
+        seq.foreach { conf =>
+          val settings = FileItemSettings(conf)
+          run(settings) match {
+            case Success(_) => log.info(s"Staging SUCCESS of $settings")
+            case Failure(t) => log.error(s"Staging FAIL of $settings", t)
+              if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
+          }
+        }
     }
   }
+
+  def getConfs(conf: FileItemConf): Try[Seq[FileItemConf]] =
+    if (conf.datasetId.isDefined)
+      Success(Seq(conf))
+    else if (conf.csvFile.isEmpty)
+      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
+    else {
+      val trailArgs = Array(conf.sdoSetDir.apply().toString)
+      val in = new FileInputStream(conf.csvFile.apply())
+      CSV(in, conf).flatMap(argsList => Success(argsList.map(
+          args => new FileItemConf(args ++ trailArgs)
+      )))
+    }
 
   def run(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"executing: $s")

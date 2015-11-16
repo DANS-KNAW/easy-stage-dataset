@@ -1,10 +1,14 @@
-package nl.knaw.dans.easy.stage.fileitem
+package nl.knaw.dans.easy.stage.lib
 
 import java.io.{ByteArrayInputStream, FileInputStream}
 
-import org.scalatest.{FlatSpec, Matchers}
+import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.fileitem.{FileItemConf, FileItemSettings}
+import org.scalatest.{Matchers, FlatSpec}
 
-class FileItemCsvSpec extends FlatSpec with Matchers {
+import scala.util.{Success, Failure}
+
+class CsvSpec extends FlatSpec with Matchers {
 
   val commandLineArgs = "target/test/sdo-set".split(" ")
   private val conf = new FileItemConf(commandLineArgs)
@@ -16,8 +20,8 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
     // TODO verify warning "Ignoring columns: xxx, STAGED-DIGITAL-OBJECT-SET"
     // as the logger sits on an object we can't use the trick of
     // https://github.com/DANS-KNAW/easy-update-solr-index/pull/12#issuecomment-146122207
-    the[Exception] thrownBy FileItemCsv.read(in, conf).get should have message
-      "Missing columns: FILE-PATH, IDENTIFIER"
+
+    CSV(in, conf) should failWithMessage("Missing columns: FILE-PATH, IDENTIFIER")
   }
 
   "proper csv file" should "render FileItemSettings" in {
@@ -32,7 +36,9 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
         |zz,easy-dataset:1,path/to/dir/qs.hs,src/test/resources/example-bag/data/quicksort.hs,eb0c93c460fac5cca0fd789d17c52daa,
         |
       """.stripMargin.getBytes)
-    val records: Array[FileItemSettings] = FileItemCsv.read(in, conf).get
+    val records = CSV(in, conf).get.map(
+      args => FileItemSettings(new FileItemConf(args ++ List(conf.sdoSetDir.apply().toString)))
+    ).toArray
     records should have length 2
     records(0).filePath.toString shouldBe "path/to/dir"
     records(0).file.isDefined shouldBe false
@@ -42,5 +48,6 @@ class FileItemCsvSpec extends FlatSpec with Matchers {
 
   "sample.csv" should "render one or more FileItemSettings" in {
     val exampleCSV = new FileInputStream("src/test/resources/example.csv")
-    FileItemCsv.read(exampleCSV, conf).get should not have length (0)
-  }}
+    CSV(exampleCSV, conf).get should not have length (0)
+  }
+}

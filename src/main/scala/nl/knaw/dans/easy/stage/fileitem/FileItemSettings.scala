@@ -45,6 +45,4 @@ object FileItemSettings {
   ) {
     override def toString = conf.builder.args.mkString(", ")
   }
-  def apply(args: Seq[String]): FileItemSettings =
-    FileItemSettings( new FileItemConf(args))
 }

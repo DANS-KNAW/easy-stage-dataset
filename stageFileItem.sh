@@ -3,7 +3,6 @@
 ARGS=$@
 APPHOME=home
 . apphome.sh
-
 mvn exec:java \
   -DstageFileItem \
   -Dapp.home=$APPHOME \
