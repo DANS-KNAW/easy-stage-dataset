@@ -1,6 +1,6 @@
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.InputStream
+import java.io.{File, FileInputStream, InputStream}
 
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser.parse
@@ -15,8 +15,8 @@ import scala.util.{Success, Failure, Try}
 object CSV {
   val log = LoggerFactory.getLogger(getClass)
 
-  def apply(in: InputStream, conf: ScallopConf): Try[Seq[Seq[String]]] =
-    getContent(in).flatMap(csv => {
+  def apply(in: File, conf: ScallopConf): Try[Seq[Seq[String]]] =
+    getContent(new FileInputStream(in)).flatMap(csv => {
       val head = csv.head
       val requiredHeaders = conf.builder.opts.filter(!_.isInstanceOf[TrailingArgsOption])
         .map(_.name).map(_.toUpperCase)

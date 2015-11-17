@@ -1,6 +1,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.{File, FileInputStream}
+import java.io.File
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -76,8 +76,7 @@ object EasyStageFileItem {
       Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
     else {
       val trailArgs = Array(conf.sdoSetDir.apply().toString)
-      val in = new FileInputStream(conf.csvFile.apply())
-      CSV(in, conf).flatMap(argsList => Success(argsList.map(
+      CSV(conf.csvFile.get.get, conf).flatMap(argsList => Success(argsList.map(
         args => new FileItemConf(args ++ trailArgs)
       )))
     }

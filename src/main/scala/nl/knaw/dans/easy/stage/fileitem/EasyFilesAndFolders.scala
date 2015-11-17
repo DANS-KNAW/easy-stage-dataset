@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 object EasyFilesAndFolders {
   val log = LoggerFactory.getLogger(getClass)
 
-  val conn = DriverManager.getConnection(props.getString("easy_stage_dataset_db_connection_url"))
+  val conn = DriverManager.getConnection(props.getString("db_connection_url"))
 
   def getPathId(path: File, datasetSid: String): Try[Option[String]] = Try {
     val query: PreparedStatement = conn.prepareStatement("SELECT pid FROM easy_folders WHERE dataset_sid = ? and path = ?")
