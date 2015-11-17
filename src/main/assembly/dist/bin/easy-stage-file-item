@@ -1,11 +1,7 @@
 #!/usr/bin/env bash
 
 BINPATH=`readlink -f $0`
-if [ $? -ne 0 ] ; then
-  APPHOME=`dirname \`dirname $0 \``
-else
-  APPHOME=`dirname \`dirname $BINPATH \``
-fi
+APPHOME=`dirname \`dirname $BINPATH \``
 
 java -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
      -Dapp.home=$APPHOME \

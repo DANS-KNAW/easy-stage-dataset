@@ -31,30 +31,15 @@ object EasyStageFileItem {
     }
   }
 
-  def getConfs(conf: FileItemConf): Try[Seq[FileItemConf]] =
-    if (conf.datasetId.isDefined)
-      Success(Seq(conf))
-    else if (conf.csvFile.isEmpty)
-      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
-    else {
-      val trailArgs = Array(conf.sdoSetDir.apply().toString)
-      val in = new FileInputStream(conf.csvFile.apply())
-      CSV(in, conf).flatMap(argsList => Success(argsList.map(
-          args => new FileItemConf(args ++ trailArgs)
-      )))
-    }
-
   def run(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"executing: $s")
     for {
-      _             <- if (Fedora.findObjects(s"pid~${s.datasetId}").nonEmpty) Success(Unit)
-                       else Failure(new Exception(s"${s.datasetId} does not exist"))
-      parentId      <- if(s.filePath.getParentFile == null) Success(Some(s.datasetId))
-                       else EasyFilesAndFolders.getPathId(s.filePath.getParentFile, s.datasetId)
-      _             <- mkdirSafe(s.sdoSetDir)
-      datasetSdoDir <- mkdirSafe(new File(s.sdoSetDir, s.datasetId.replace(":", "_")))
-      sdoDir        <- mkdirSafe(new File(datasetSdoDir, toSdoName(s.filePath)))
-      parentSdoDir  =  Option(s.filePath.getParentFile).map(f => new File(datasetSdoDir, toSdoName(f))).getOrElse(datasetSdoDir)
+      datasetId     <- getValidDatasetId(s)
+      parentId      <- getParentId(s.filePath, datasetId)
+      sdoSetDir     <- mkdirSafe(s.sdoSetDir)
+      datasetSdoDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
+      sdoDir        <- mkdirSafe(new File(datasetSdoDir, toSdoName(s.filePath.get)))
+      parentSdoDir  =  Option(s.filePath.get.getParentFile).map(f => new File(datasetSdoDir, toSdoName(f))).getOrElse(datasetSdoDir)
       _             <- if (parentId.isDefined || parentSdoDir.isDirectory) Success(Unit)
                        else Failure(new scala.Exception(s"${parentSdoDir.getName} was not staged"))
       _             <- if (s.file.isDefined) createFileSdo(sdoDir, parentId, parentSdoDir)
@@ -63,28 +48,69 @@ object EasyStageFileItem {
   }
 
   def createFileSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating file SDO: ${s.filePath}")
-    val location  = new File(s.storageBaseUrl, s.filePath.toString).toString
+    log.debug(s"Creating file SDO: ${s.filePath.get}")
+    val location  = new File(s.storageBaseUrl, s.filePath.get.toString).toString
     for {
       mime <- Try{s.format.get}
       _ <- Try{FileUtils.copyFileToDirectory(s.file.get, sdoDir)}
-      _ <- writeJsonCfg(sdoDir,if (parentId.isDefined)
-                JSON.createFileCfg(location, mime, parentId.get)
-           else JSON.createFileCfg(location, mime, parentSdoDir))
-      _ <- writeFoxml(sdoDir, getFileFOXML(s.filePath.getName, s.ownerId, mime))
+      _ <- writeJsonCfg(sdoDir,createFileCfg(parentId, parentSdoDir, location, mime))
+      _ <- writeFoxml(sdoDir, getFileFOXML(s.filePath.get.getName, s.ownerId, mime))
       _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
     } yield ()
   }
 
   def createFolderSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating folder SDO: ${s.filePath}")
+    val filePath = s.filePath.get
+    log.debug(s"Creating folder SDO: ${filePath}")
     for {
-      _ <- writeJsonCfg(sdoDir,if (parentId.isDefined)
-                JSON.createDirCfg(s.filePath.getName, parentId.get)
-           else JSON.createDirCfg(s.filePath.getName, parentSdoDir))
-      _ <- writeFoxml(sdoDir, getDirFOXML(s.filePath.getName, s.ownerId))
-      _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(s.filePath))
+      _ <- writeJsonCfg(sdoDir,createDirCfg(parentId, parentSdoDir, filePath.getName))
+      _ <- writeFoxml(sdoDir, getDirFOXML(filePath.getName, s.ownerId))
+      _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(filePath))
     } yield ()
+  }
+
+  private def getConfs(conf: FileItemConf): Try[Seq[FileItemConf]] =
+    if (conf.datasetId.isDefined)
+      Success(Seq(conf))
+    else if (conf.csvFile.isEmpty)
+      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
+    else {
+      val trailArgs = Array(conf.sdoSetDir.apply().toString)
+      val in = new FileInputStream(conf.csvFile.apply())
+      CSV(in, conf).flatMap(argsList => Success(argsList.map(
+        args => new FileItemConf(args ++ trailArgs)
+      )))
+    }
+
+  private def getValidDatasetId(s: FileItemSettings): Try[String] = {
+    val id = s.datasetId
+    if (id.isEmpty)
+      Failure(new Exception(s"no datasetId provided"))
+    else if (Fedora.findObjects(s"pid~${id.get}").isEmpty)
+      Failure(new Exception(s"${id.get} does not exist"))
+    else
+      Success(id.get)
+  }
+
+  private def getParentId(filePath: Option[File], datasetId: String): Try[Option[String]] = {
+    if(filePath.isEmpty)
+      Failure(new Exception(s"no filePath provided"))
+    else if (filePath.get.getParentFile == null)
+      Success(Some(datasetId))
+    else
+      EasyFilesAndFolders.getPathId(filePath.get.getParentFile, datasetId)
+  }
+
+  private def createFileCfg(parentId: Option[String], parentSdoDir: File, location: String, mime: String): String = {
+    if (parentId.isDefined)
+      JSON.createFileCfg(location, mime, parentId.get)
+    else JSON.createFileCfg(location, mime, parentSdoDir)
+  }
+
+  private def createDirCfg(parentId: Option[String], parentSdoDir: File, fileName: String): String = {
+    if (parentId.isDefined)
+      JSON.createDirCfg(fileName, parentId.get)
+    else JSON.createDirCfg(fileName, parentSdoDir)
   }
 
   private def toSdoName(path: File): String =

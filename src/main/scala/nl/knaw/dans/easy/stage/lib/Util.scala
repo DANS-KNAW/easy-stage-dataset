@@ -4,7 +4,7 @@ import java.io.File
 
 import org.slf4j.LoggerFactory
 
-import scala.util.Try
+import scala.util.{Failure, Try}
 
 object Util {
   val log = LoggerFactory.getLogger(getClass)
@@ -38,4 +38,12 @@ object Util {
     f.mkdir()
     f
   }
+
+  def mkdirSafe(f: Option[File]): Try[File] =
+    if (f.isEmpty) Failure(new Exception("no file provided"))
+    else Try {
+      log.debug(s"creating dir ${f.get}")
+      f.get.mkdir()
+      f.get
+    }
 }

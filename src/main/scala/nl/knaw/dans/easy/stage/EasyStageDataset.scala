@@ -89,10 +89,10 @@ object EasyStageDataset {
         parentId = None,
         parentSdoDir = new File(parentSDO)
       )(FileItemSettings(
-        sdoSetDir = s.sdoSetDir,
+        sdoSetDir = Some(s.sdoSetDir),
         file = Some(file),
         ownerId = s.ownerId,
-        filePath = new File(relativePath),
+        filePath = Some(new File(relativePath)),
         format = Some(mime)
       ))
     } yield ()
@@ -107,9 +107,9 @@ object EasyStageDataset {
         parentId = None,
         parentSdoDir = new File(parentSDO)
       )(FileItemSettings(
-        sdoSetDir = s.sdoSetDir,
+        sdoSetDir = Some(s.sdoSetDir),
         ownerId = s.ownerId,
-        filePath = new File(getRelativePath(folder))
+        filePath = Some(new File(getRelativePath(folder)))
       ))
     } yield ()
   }
