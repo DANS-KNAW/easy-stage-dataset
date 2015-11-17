@@ -61,7 +61,7 @@ object EasyStageFileItem {
 
   def createFolderSdo(sdoDir: File, parentId: Option[String], parentSdoDir: File)(implicit s: FileItemSettings): Try[Unit] = {
     val filePath = s.filePath.get
-    log.debug(s"Creating folder SDO: ${filePath}")
+    log.debug(s"Creating folder SDO: $filePath")
     for {
       _ <- writeJsonCfg(sdoDir,createDirCfg(parentId, parentSdoDir, filePath.getName))
       _ <- writeFoxml(sdoDir, getDirFOXML(filePath.getName, s.ownerId))
@@ -75,10 +75,13 @@ object EasyStageFileItem {
     else if (conf.csvFile.isEmpty)
       Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
     else {
-      val trailArgs = Array(conf.sdoSetDir.apply().toString)
-      CSV(conf.csvFile.get.get, conf).flatMap(argsList => Success(argsList.map(
-        args => new FileItemConf(args ++ trailArgs)
-      )))
+      val trailArgs = Seq(conf.sdoSetDir.apply().toString)
+      val file = conf.csvFile.apply()
+      CSV(file, conf).map {
+        case (ignored, csv) =>
+          log.warn(s"$file ignored columns: ${ignored.mkString(", ")}")
+          csv.getRows.map(options => new FileItemConf(options ++ trailArgs))
+      }
     }
 
   private def getValidDatasetId(s: FileItemSettings): Try[String] = {
