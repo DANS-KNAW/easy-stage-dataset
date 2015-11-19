@@ -27,11 +27,12 @@ class CSV(csv: Seq[Seq[String]]) {
 
 object CSV {
 
-  def apply(in: File, conf: ScallopConf): Try[(Seq[String],CSV)] =
-    getContent(new FileInputStream(in)).flatMap(csv => {
+  def apply (file: File, requiredHeaders: Seq[String]): Try[(Seq[String], CSV)] =
+    CSV(new FileInputStream(file),requiredHeaders)
+
+  def apply(in: InputStream, requiredHeaders: Seq[String]): Try[(Seq[String],CSV)] =
+    getContent(in).flatMap(csv => {
       val head = csv.head
-      val requiredHeaders = conf.builder.opts.filter(!_.isInstanceOf[TrailingArgsOption])
-        .map(_.name).map(_.toUpperCase)
       val ignoredHeaders = head.filter(!requiredHeaders.contains(_))
       val missingHeaders = requiredHeaders.filter(!head.toArray.contains(_))
 

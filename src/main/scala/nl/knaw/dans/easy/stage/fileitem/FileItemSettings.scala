@@ -2,6 +2,7 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.Conf
 import nl.knaw.dans.easy.stage.lib.Props._
 import org.joda.time.DateTime
 
@@ -29,18 +30,23 @@ case class FileItemSettings(sdoSetDir: Option[File],
                            )
 
 object FileItemSettings {
-  def apply(conf: FileItemConf): FileItemSettings = new FileItemSettings(
-    sdoSetDir = conf.sdoSetDir.get,
-    file = conf.file.get,
-    created = conf.created.get,
-    description = conf.description.get,
-    datasetId = conf.datasetId.get,
-    filePath = conf.filePath.get,
-    format = conf.format.get,
-    identifier =conf.identifier.get,
-    md5 = conf.md5.get,
-    title = conf.title.get
-  ) {
-    override def toString = conf.builder.args.mkString(", ")
-  }
+
+  def apply(conf: FileItemConf): FileItemSettings =
+    new FileItemSettings(
+      sdoSetDir = conf.sdoSetDir.get,
+      file = conf.file.get,
+      created = conf.created.get,
+      description = conf.description.get,
+      datasetId = conf.datasetId.get,
+      filePath = conf.filePath.get,
+      format = conf.format.get,
+      identifier =conf.identifier.get,
+      md5 = conf.md5.get,
+      title = conf.title.get
+    ) {
+      override def toString = conf.toString
+    }
+
+  def apply(args: Seq[String]): FileItemSettings =
+    FileItemSettings(new FileItemConf(args))
 }

@@ -84,10 +84,7 @@ object EasyStageDataset {
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
       mime <- readMimeType(relativePath)
-      _ <- EasyStageFileItem.createFileSdo(
-        sdoDir = sdoDir,
-        parentId = None,
-        parentSdoDir = new File(parentSDO)
+      _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO
       )(FileItemSettings(
         sdoSetDir = Some(s.sdoSetDir),
         file = Some(file),
@@ -102,10 +99,7 @@ object EasyStageDataset {
     log.debug(s"Creating folder SDO for $folder")
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _ <- EasyStageFileItem.createFolderSdo(
-        sdoDir = sdoDir,
-        parentId = None,
-        parentSdoDir = new File(parentSDO)
+      _ <- EasyStageFileItem.createFolderSdo(sdoDir, "objectSDO" -> parentSDO
       )(FileItemSettings(
         sdoSetDir = Some(s.sdoSetDir),
         ownerId = s.ownerId,

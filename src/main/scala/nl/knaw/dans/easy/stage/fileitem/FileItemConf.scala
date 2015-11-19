@@ -83,4 +83,8 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "a comma separated file with one column for each option " +
      "(additional columns are ignored) and one set of options per line",
     required = false)(shouldBeFile)
+
+  val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
+
+  override def toString = builder.args.mkString(", ")
 }

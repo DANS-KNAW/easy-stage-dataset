@@ -56,13 +56,7 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: String, mimeType: String, parentSDO: File): String =
-    createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
-
-  def createFileCfg(fileLocation: String, mimeType: String, parentObjectId: String): String =
-    createFileCfg(fileLocation, mimeType, ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
-
-  private def createFileCfg(fileLocation: String, mimeType: String, memberOfRelation: JObject): String = {
+  def createFileCfg(fileLocation: String, mimeType: String, parent: (String,String)): String = {
       val json = ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           ("dsLocation" -> fileLocation) ~
@@ -77,7 +71,7 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          memberOfRelation,
+          ("predicate" -> IS_MEMBER_OF) ~ parent,
           ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
@@ -85,15 +79,7 @@ object JSON {
     pretty(render(json))
   }
 
-  def createDirCfg(dirName: String, parentSDO: File): String = {
-    createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("objectSDO" -> parentSDO.getName))
-  }
-
-  def createDirCfg(dirName: String, parentObjectId: String): String = {
-    createDirCfg(("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/$parentObjectId"))
-  }
-
-  private def createDirCfg(memberOfRelation: JObject): String = {
+  def createDirCfg(parent: (String,String)): String = {
       val json = ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
@@ -101,7 +87,7 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          memberOfRelation,
+          ("predicate" -> IS_MEMBER_OF) ~ parent,
           ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
