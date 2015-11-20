@@ -1,6 +1,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.{File, FileInputStream}
+import java.io.File
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -17,18 +17,33 @@ object EasyStageFileItem {
 
   def main(args: Array[String]) {
     val conf = new FileItemConf(args)
-    getSettingsSeq(conf) match {
-      case Failure(t) => log.error(s"Staging FAIL of $conf", t)
-      case Success(seq) => if (seq.isEmpty) log.error(s"Empty CSV file") else
-        seq.foreach { settings =>
-          run(settings) match {
-            case Success(_) => log.info(s"Staging SUCCESS of $settings")
-            case Failure(t) => log.error(s"Staging FAIL of $settings", t)
-              if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
+    getSettingsRows(conf).map {
+      _.foreach { settings =>
+        run(settings)
+          .map(_ => log.info(s"Staging SUCCESS of $settings"))
+          .recover { case t: Throwable =>
+            log.error(s"Staging FAIL of $settings", t)
+            if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
           }
-        }
-    }
+      }
+    }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf", t) }
   }
+
+  private def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
+    if (conf.datasetId.isDefined)
+      Success(Seq(FileItemSettings(conf)))
+    else if (conf.csvFile.isEmpty)
+      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
+    else {
+      val trailArgs = Seq(conf.sdoSetDir.apply().toString)
+      CSV(conf.csvFile.apply(), conf.longOptionNames).map {
+        case (csv, warning) =>
+          warning.map(msg => log.warn(msg))
+          val rows = csv.getRows
+          if (rows.isEmpty) log.warn(s"Empty CSV file")
+          rows.map(options => FileItemSettings(options ++ trailArgs))
+      }
+    }
 
   def run(implicit s: FileItemSettings): Try[Unit] = {
     log.debug(s"executing: $s")
@@ -64,20 +79,6 @@ object EasyStageFileItem {
       _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(filePath))
     } yield ()
   }
-
-  private def getSettingsSeq(conf: FileItemConf): Try[Seq[FileItemSettings]] =
-    if (conf.datasetId.isDefined)
-      Success(Seq(FileItemSettings(conf)))
-    else if (conf.csvFile.isEmpty)
-      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
-    else {
-      val trailArgs = Seq(conf.sdoSetDir.apply().toString)
-      CSV(conf.csvFile.apply(), conf.longOptionNames.map(_.toUpperCase)).map {
-        case (ignored, csv) =>
-          log.warn(s"${conf.csvFile.apply()} ignored columns: ${ignored.mkString(", ")}")
-          csv.getRows.map(options => FileItemSettings(options ++ trailArgs))
-      }
-    }
 
   private def getValidDatasetId(s: FileItemSettings): Try[String] =
     if (s.datasetId.isEmpty)

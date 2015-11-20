@@ -130,14 +130,15 @@ Steps for a regression test:
   or create a `home` folder in the root of the project.
   See also [installation and configuration](#installation-and-configuration).
 * Remove the content of the directory `out` (ignored by git like the above)
-* build with maven
+* compile the old code with maven
 * Process any example-bag you may find, for example:
   * `./stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
   * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
 * Move the created `out` to another location, say `~/old`.
 * Repeat until OK:
+  * compile the new code with maven
   * Clear the folders in `out`.
-  * Process the same bags with the new code.
+  * Process the same bags.
   * Compare the results: `diff -r ~/old target/test-out`
 
 

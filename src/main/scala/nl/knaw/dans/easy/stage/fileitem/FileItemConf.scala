@@ -1,7 +1,7 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.util.UUID
+
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
 import org.rogach.scallop.{TrailingArgsOption, ScallopConf, ValueConverter, singleArgConverter}

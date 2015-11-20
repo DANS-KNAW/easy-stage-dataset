@@ -2,7 +2,6 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Conf
 import nl.knaw.dans.easy.stage.lib.Props._
 import org.joda.time.DateTime
 
