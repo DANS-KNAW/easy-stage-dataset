@@ -3,11 +3,14 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.net.URL
 
-import nl.knaw.dans.easy.stage.Constants._
-import nl.knaw.dans.easy.stage.FOXML._
-import nl.knaw.dans.easy.stage.Util._
+import nl.knaw.dans.easy.stage.dataset.Util._
+import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
+import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
+import nl.knaw.dans.easy.stage.lib.Constants._
+import nl.knaw.dans.easy.stage.lib.FOXML._
+import nl.knaw.dans.easy.stage.lib.JSON
+import nl.knaw.dans.easy.stage.lib.Util._
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -21,7 +24,7 @@ object EasyStageDataset {
 
     implicit val s = Settings(
       ownerId = props.getString("owner"),
-      submissionTimestamp = conf.submissionTimestamp().toString,
+      submissionTimestamp = conf.submissionTimestamp.apply().toString,
       bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
       sdoSetDir = conf.sdoSet(),
@@ -53,12 +56,13 @@ object EasyStageDataset {
     log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-      _ <- AMD.create(sdoDir)
+      _ <- writeAMD(sdoDir, AMD(s.ownerId, s.submissionTimestamp).toString())
       emd <- EMD.create(sdoDir)
-      _ <- FOXML.create(sdoDir, getDatasetFOXML(s.ownerId, emd))
-      _ <- PRSQL.create(sdoDir)
+      _ <- writeFoxml(sdoDir, getDatasetFOXML(s.ownerId, emd))
+      _ <- writePrsql(sdoDir, PRSQL.create())
       license <- AdditionalLicense.create(sdoDir)
-      _ <- JSON.createDatasetCfg(sdoDir, license)
+      audiences <- readAudiences()
+      _ <- writeJsonCfg(sdoDir, JSON.createDatasetCfg(license, audiences))
     } yield ()
   }
 
@@ -80,10 +84,14 @@ object EasyStageDataset {
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
       mime <- readMimeType(relativePath)
-      _ = FileUtils.copyFileToDirectory(file, sdoDir)
-      _ <- JSON.createFileCfg(s"${s.bagStorageLocation}/$relativePath", mime, parentSDO, sdoDir)
-      _ <- FOXML.create(sdoDir, getFileFOXML(file.getName, s.ownerId, mime))
-      _ <- EasyFileMetadata.create(sdoDir, file, mime)
+      _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO
+      )(FileItemSettings(
+        sdoSetDir = Some(s.sdoSetDir),
+        file = Some(file),
+        ownerId = s.ownerId,
+        filePath = Some(new File(relativePath)),
+        format = Some(mime)
+      ))
     } yield ()
   }
 
@@ -91,9 +99,12 @@ object EasyStageDataset {
     log.debug(s"Creating folder SDO for $folder")
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _ <- JSON.createDirCfg(folder.getName, parentSDO, sdoDir)
-      _ <- FOXML.create(sdoDir, getDirFOXML(folder.getName, s.ownerId))
-      _ <- EasyItemContainerMd.create(sdoDir, folder)
+      _ <- EasyStageFileItem.createFolderSdo(sdoDir, "objectSDO" -> parentSDO
+      )(FileItemSettings(
+        sdoSetDir = Some(s.sdoSetDir),
+        ownerId = s.ownerId,
+        filePath = Some(new File(getRelativePath(folder)))
+      ))
     } yield ()
   }
 
@@ -101,4 +112,15 @@ object EasyStageDataset {
     s.bagitDir.listFiles.find(_.getName == "data")
       .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
   }
+
+  def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
+    val sdoName = getRelativePath(fileOrDir).replace("/", "_").replace(".", "_") match {
+      case name if name.startsWith("_") => name.tail
+      case name => name
+    }
+    new File(s.sdoSetDir.getPath, sdoName)
+  }
+
+  def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
+    fileOrDir.getPath.replace(s.bagitDir.getPath, "")
 }
