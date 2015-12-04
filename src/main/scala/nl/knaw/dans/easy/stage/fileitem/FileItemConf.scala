@@ -74,15 +74,15 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   dependsOnAll(title, List(file))
   dependsOnAll(identifier, List(file))
 
-  val sdoSetDir = trailArg[File](
-    name = "staged-digital-object-set",
-    descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
-    required = true)(mayNotExist)
   val csvFile = trailArg[File](
     name = "csv-file",
     descr = "a comma separated file with one column for each option " +
      "(additional columns are ignored) and one set of options per line",
     required = false)(shouldBeFile)
+  val sdoSetDir = trailArg[File](
+    name = "staged-digital-object-set",
+    descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
+    required = true)(mayNotExist)
 
   val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
 

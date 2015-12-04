@@ -11,7 +11,7 @@ SYNOPSIS
                           <EASY-bag> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
-    easy-stage-file-item <staged-digital-object-set> <csv-file>
+    easy-stage-file-item <csv-file> <staged-digital-object-set>
 
 
 DESCRIPTION
@@ -73,12 +73,12 @@ ARGUMENTS for easy-stage-fileItem
          --version              Show version of this program
    
     trailing arguments:
-     staged-digital-object-set (required)   The resulting Staged Digital Object
-                                            directory (will be created if it does not
-                                            exist)
      csv-file (not required)                a comma separated file with one column
                                             for each option (additional columns are
                                             ignored) and one set of options per line
+     staged-digital-object-set (required)   The resulting Staged Digital Object
+                                            directory (will be created if it does not
+                                            exist)
 
 
 INSTALLATION AND CONFIGURATION
@@ -119,7 +119,7 @@ TEST NOTES
 No tests are available that mock fedora or the database for files and folders.
 So run integration tests to check for regression.
 
-Run `./stageFileItem.sh out/file-sdos src/test/resources/example.csv`
+Run `./stageFileItem.sh src/test/resources/example.csv out/file-sdos`
 to cover the logic that checks existence of datasets and folders in the repository or folder-SDO's on the file system.
 Reading a CSV is also covered with a unit-test, creation of file/folder SDO's is covered by stageDataset.
 
