@@ -129,17 +129,17 @@ Steps for a regression test:
 * Create `apphome.sh` in the project root to override the var `APPHOME`
   or create a `home` folder in the root of the project.
   See also [installation and configuration](#installation-and-configuration).
-* Remove the content of the directory `out` (ignored by git like the above)
-* compile the old code with maven
+* Remove the content of the directory `out` (ignored by git like apphome.sh and home)
+* use maven to compile a version of the code without the changes under test
 * Process any example-bag you may find, for example:
   * `./stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
   * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
 * Move the created `out` to another location, say `~/old`.
-* Repeat until OK:
+* Make your changes to the code and repeat until OK:
   * compile the new code with maven
   * Clear the folders in `out`.
   * Process the same bags.
-  * Compare the results: `diff -r ~/old target/test-out`
+  * Compare the results: `diff -r ~/old target/test-out` and check for changes you did not intend
 
 
 [dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
