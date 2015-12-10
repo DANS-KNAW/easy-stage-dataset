@@ -56,13 +56,16 @@ object EasyStageDataset {
     log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-      _ <- writeAMD(sdoDir, AMD(s.ownerId, s.submissionTimestamp).toString())
-      emd <- EMD.create(sdoDir)
-      _ <- writeFoxml(sdoDir, getDatasetFOXML(s.ownerId, emd))
-      _ <- writePrsql(sdoDir, PRSQL.create())
+      amdContent = AMD(s.ownerId, s.submissionTimestamp).toString()
+      emdContent <- EMD.create(sdoDir)
+      foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       license <- AdditionalLicense.create(sdoDir)
       audiences <- readAudiences()
-      _ <- writeJsonCfg(sdoDir, JSON.createDatasetCfg(license, audiences))
+      jsonCfgContent = JSON.createDatasetCfg(license, audiences)
+      _ <- writeAMD(sdoDir, amdContent)
+      _ <- writeFoxml(sdoDir, foxmlContent)
+      _ <- writePrsql(sdoDir, PRSQL.create())
+      _ <- writeJsonCfg(sdoDir, jsonCfgContent)
     } yield ()
   }
 
