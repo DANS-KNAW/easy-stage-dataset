@@ -53,9 +53,14 @@ object EasyStageFileItem {
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
       sdoDir           <- mkdirSafe(new File(datasetSdoSetDir, toSdoName(s.filePath.get)))
       parent           <- getParent(datasetSdoSetDir)
-      _                <- if (s.file.isDefined) createFileSdo(sdoDir, parent)
-                          else createFolderSdo(sdoDir, parent)
+      _                <- createItemSDO(sdoDir, parent)
     } yield ()
+  }
+
+  def createItemSDO(sdoDir: File, parent: (String, String)
+                   )(implicit s: FileItemSettings): Try[Unit] = {
+    if (s.file.isDefined) createFileSdo(sdoDir, parent)
+    else createFolderSdo(sdoDir, parent)
   }
 
   def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
@@ -64,7 +69,7 @@ object EasyStageFileItem {
     for {
       mime <- Try{s.format.get}
       _ <- Try{FileUtils.copyFileToDirectory(s.file.get, sdoDir)}
-      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(location, mime, parent))
+      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(location, mime, parent, s.subordinate))
       _ <- writeFoxml(sdoDir, getFileFOXML(s.filePath.get.getName, s.ownerId, mime))
       _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
     } yield ()
@@ -74,7 +79,7 @@ object EasyStageFileItem {
     val filePath = s.filePath.get
     log.debug(s"Creating folder SDO: $filePath")
     for {
-      _ <- writeJsonCfg(sdoDir,JSON.createDirCfg(parent))
+      _ <- writeJsonCfg(sdoDir,JSON.createDirCfg(parent, s.subordinate))
       _ <- writeFoxml(sdoDir, getDirFOXML(filePath.getName, s.ownerId))
       _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(filePath))
     } yield ()

@@ -56,7 +56,11 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: String, mimeType: String, parent: (String,String)): String = {
+  def createFileCfg(fileLocation: String,
+                    mimeType: String,
+                    parent: (String,String),
+                    subordinate: (String,String)
+                   ): String = {
       val json = ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           ("dsLocation" -> fileLocation) ~
@@ -72,14 +76,15 @@ object JSON {
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
           ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
+          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
     pretty(render(json))
   }
 
-  def createDirCfg(parent: (String,String)): String = {
+  def createDirCfg(parent: (String,String),
+                   dataset: (String,String)): String = {
       val json = ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
@@ -88,7 +93,7 @@ object JSON {
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
           ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ ("objectSDO" -> DATASET_SDO),
+          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))
