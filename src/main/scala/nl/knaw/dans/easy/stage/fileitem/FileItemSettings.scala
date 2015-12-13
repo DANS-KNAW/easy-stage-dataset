@@ -25,7 +25,9 @@ case class FileItemSettings(sdoSetDir: Option[File],
                             // as in SDO/*/EASY_FILE_METADATA
                             creatorRole: String = "DEPOSITOR",
                             visibleTo: String = "ANONYMOUS",
-                            accessibleTo: String = "NONE"
+                            accessibleTo: String = "NONE",
+
+                            subordinate: (String, String) = "objectSDO" -> "dataset"
                            )
 
 object FileItemSettings {
@@ -41,7 +43,8 @@ object FileItemSettings {
       format = conf.format.get,
       identifier =conf.identifier.get,
       md5 = conf.md5.get,
-      title = conf.title.get
+      title = conf.title.get,
+      subordinate = "object" -> conf.datasetId()
     ) {
       override def toString = conf.toString
     }
