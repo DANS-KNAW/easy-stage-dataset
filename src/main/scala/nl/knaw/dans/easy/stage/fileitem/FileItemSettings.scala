@@ -44,7 +44,7 @@ object FileItemSettings {
       identifier =conf.identifier.get,
       md5 = conf.md5.get,
       title = conf.title.get,
-      subordinate = "object" -> conf.datasetId()
+      subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
     ) {
       override def toString = conf.toString
     }

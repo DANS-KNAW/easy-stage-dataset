@@ -97,11 +97,11 @@ object EasyStageFileItem {
     if(s.filePath.isEmpty)
       Failure(new Exception(s"no filePath provided"))
     else if (s.filePath.get.getParentFile == null)
-      Success("object" -> s.datasetId.get)
+      Success("object" -> s"info:fedora/${s.datasetId.get}")
     else
       EasyFilesAndFolders.getPathId(s.filePath.get.getParentFile, s.datasetId.get) match {
         case Failure(t) => Failure(t)
-        case Success(Some(fileItemId)) => Success("object" -> fileItemId)
+        case Success(Some(fileItemId)) => Success("object" -> s"info:fedora/$fileItemId")
         case Success(None) =>
           val parentSdoDir = new File(datasetSdoSetDir, toSdoName(s.filePath.get.getParentFile))
           if (parentSdoDir.exists()) Success("objectSDO" -> parentSdoDir.getName)
