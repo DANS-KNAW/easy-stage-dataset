@@ -13,7 +13,7 @@ import scala.util.{Failure, Success, Try}
 object EasyFilesAndFolders {
   val log = LoggerFactory.getLogger(getClass)
 
-  val conn = DriverManager.getConnection(props.getString("db_connection_url"))
+  val conn = DriverManager.getConnection(props.getString("db-connection-url"))
 
   def getPathId(path: File, datasetSid: String): Try[Option[String]] = Try {
     val query: PreparedStatement = conn.prepareStatement("SELECT pid FROM easy_folders WHERE dataset_sid = ? and path = ?")
@@ -30,4 +30,21 @@ object EasyFilesAndFolders {
       Some(result)
     }
   }
+
+  def getExistingParent(pathInDataset: String, datasetId: String): Try[Option[String]] = Try {
+    val query: PreparedStatement = conn.prepareStatement("SELECT count(pid) FROM easy_folders WHERE path = ?")
+    val parentPath = pathInDataset
+      .split("/")
+      .scanLeft("")((acc, next) => acc + next + "/")
+      .reverse
+      .find(path => {
+          query.setString(1, path)
+          val resultSet = query.executeQuery()
+          if(!resultSet.next()) throw new RuntimeException("Count query returned no rows (?) A count query should ALWAYS return one row")
+          resultSet.getString("count") == "1"
+        })
+    query.close()
+    parentPath
+  }
+
 }

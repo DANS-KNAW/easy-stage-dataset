@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd">
+    <ddm:profile>
+        <dc:title>Minimal dataset</dc:title>
+        <dc:description>A dataset with no files and only minimal metadata</dc:description>
+        <dc:creator>A Creator</dc:creator>
+        <ddm:created>2015</ddm:created>
+        <ddm:audience>D10000</ddm:audience>
+        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
+    </ddm:profile>
+</ddm:DDM>

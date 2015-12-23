@@ -2,13 +2,14 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 import java.net.URL
+import java.nio.file.Path
 
 import nl.knaw.dans.easy.stage.dataset.Util._
 import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
 import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
-import nl.knaw.dans.easy.stage.lib.JSON
+import nl.knaw.dans.easy.stage.lib.{Fedora, JSON}
 import nl.knaw.dans.easy.stage.lib.Util._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
@@ -20,6 +21,7 @@ object EasyStageDataset {
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
+    Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
     val conf = new Conf(args)
 
     implicit val s = Settings(
@@ -31,9 +33,9 @@ object EasyStageDataset {
       URN = conf.urn(),
       DOI = conf.doi(),
       otherAccessDOI = conf.otherAccessDOI(),
-      fedoraUser = props.getString("fcrepo-user"),
-      fedoraPassword = props.getString("fcrepo-password"),
-      fedoraUrl = new URL(props.getString("fcrepo-service-url")))
+      fedoraUser = props.getString("fcrepo.user"),
+      fedoraPassword = props.getString("fcrepo.password"),
+      fedoraUrl = new URL(props.getString("fcrepo.url")))
 
     run match {
       case Success(_) => log.info("Staging SUCCESS")
@@ -42,7 +44,7 @@ object EasyStageDataset {
   }
 
   def run(implicit s: Settings): Try[Unit] = {
-    log.debug(s"settings = $s")
+    log.debug(s"Settings = $s")
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
@@ -59,9 +61,9 @@ object EasyStageDataset {
       amdContent = AMD(s.ownerId, s.submissionTimestamp).toString()
       emdContent <- EMD.create(sdoDir)
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
-      license <- AdditionalLicense.create(sdoDir)
+      mimeType <- AdditionalLicense.createOptionally(sdoDir)
       audiences <- readAudiences()
-      jsonCfgContent = JSON.createDatasetCfg(license, audiences)
+      jsonCfgContent = JSON.createDatasetCfg(mimeType, audiences)
       _ <- writeAMD(sdoDir, amdContent)
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())
@@ -83,16 +85,17 @@ object EasyStageDataset {
 
   private def createFileSdo(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
     log.debug(s"Creating file SDO for $file")
-    val relativePath = file.getPath.replaceFirst(s.bagitDir.getPath, "").substring(1)
+    val relativePath = getDatasetRelativePath(file).toString
     for {
       sdoDir <- mkdirSafe(getSDODir(file))
-      mime <- readMimeType(relativePath)
-      _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO
+      mime <- readMimeType(getBagRelativePath(file).toString)
+      _ <- EasyStageFileItem.createFileSdo(sdoDir, relativePath, "objectSDO" -> parentSDO
       )(FileItemSettings(
         sdoSetDir = Some(s.sdoSetDir),
-        file = Some(file),
+        pathInStorage = Some(new File(relativePath)),
+        storageBaseUrl = s.bagStorageLocation,
         ownerId = s.ownerId,
-        filePath = Some(new File(relativePath)),
+        pathInDataset = Some(new File(relativePath)),
         format = Some(mime)
       ))
     } yield ()
@@ -100,14 +103,13 @@ object EasyStageDataset {
 
   private def createFolderSdo(folder: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
     log.debug(s"Creating folder SDO for $folder")
+    val relativePath= getDatasetRelativePath(folder).toString
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _ <- EasyStageFileItem.createFolderSdo(sdoDir, "objectSDO" -> parentSDO
-      )(FileItemSettings(
-        sdoSetDir = Some(s.sdoSetDir),
-        ownerId = s.ownerId,
-        filePath = Some(new File(getRelativePath(folder)))
-      ))
+      _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(FileItemSettings(sdoSetDir = Some(s.sdoSetDir),
+                                        storageBaseUrl = s.bagStorageLocation,
+                                        ownerId = s.ownerId,
+                                        pathInDataset = Some(getDatasetRelativePath(folder).toFile)))
     } yield ()
   }
 
@@ -117,13 +119,17 @@ object EasyStageDataset {
   }
 
   def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
-    val sdoName = getRelativePath(fileOrDir).replace("/", "_").replace(".", "_") match {
+    val sdoName = getDatasetRelativePath(fileOrDir).toString.replace("/", "_").replace(".", "_") match {
       case name if name.startsWith("_") => name.tail
       case name => name
     }
     new File(s.sdoSetDir.getPath, sdoName)
   }
 
-  def getRelativePath(fileOrDir: File)(implicit s: Settings): String =
-    fileOrDir.getPath.replace(s.bagitDir.getPath, "")
+  private def getDatasetRelativePath(item: File)(implicit s: Settings): Path =
+    new File(s.bagitDir, "data").toPath.relativize(item.toPath)
+
+  private def getBagRelativePath(item: File)(implicit s: Settings): Path =
+    s.bagitDir.toPath.relativize(item.toPath)
+
 }

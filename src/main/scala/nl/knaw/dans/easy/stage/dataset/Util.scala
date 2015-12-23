@@ -9,7 +9,19 @@ import scala.xml.{Elem, XML}
 
 object Util {
 
-  class CompositeException(throwables: Seq[Throwable]) extends RuntimeException(throwables.foldLeft("")((msg, t) => s"$msg\n${t.getMessage}"))
+  class CompositeException(throwables: Seq[Throwable])
+    extends RuntimeException(throwables.foldLeft("Multiple failures:")((msg, t) => s"$msg\n${t.getClass}: ${t.getMessage}, ${getFirstDansFrame(t)}"))
+
+  private def getFirstDansFrame(t: Throwable): String = {
+    if(t.getStackTrace().length > 0) {
+      val st = t.getStackTrace()
+      st.find(_.getClassName.contains("nl.knaw.dans")) match {
+        case Some(el) => s"${el.getClassName}.${el.getMethodName} (${el.getFileName}, ${el.getLineNumber})"
+        case None => "<No DANS code in stacktrace ?>"
+      }
+    }
+    else "<Unknown error location>"
+  }
 
   implicit class TryExtensions(xs: Seq[Try[Unit]]) {
     def allSuccess: Try[Unit] =
