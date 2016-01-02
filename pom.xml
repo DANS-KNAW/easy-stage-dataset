@@ -55,7 +55,7 @@
         <dependency>
             <groupId>nl.knaw.dans.easy</groupId>
             <artifactId>ddm</artifactId>
-            <version>2.13</version>
+            <version>2.14-beta-4</version>
         </dependency>
         <dependency>
             <groupId>com.yourmediashelf.fedora.client</groupId>
@@ -104,6 +104,10 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
+                <groupId>org.scalatest</groupId>
+                <artifactId>scalatest-maven-plugin</artifactId>
             </plugin>
         </plugins>
     </build>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
+         xmlns:dc="http://purl.org/dc/elements/1.1/"
+         xmlns:dcterms="http://purl.org/dc/terms/"
+         xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd">
+    <ddm:profile>
+        <dc:title>Dataset with files and an additional license specified by an embedded template</dc:title>
+        <dc:description>A dataset with some files but no additional license</dc:description>
+        <dc:creator>A Creator</dc:creator>
+        <ddm:created>2015</ddm:created>
+        <ddm:audience>E18000</ddm:audience>
+        <ddm:accessRights>OPEN_ACCESS_FOR_REGISTERED_USERS</ddm:accessRights>
+    </ddm:profile>
+    <ddm:dcmiMetadata>
+        <dcterms:license><![CDATA[Copyright (c) <year>, <rightsHolder>
+These are my additional terms]]></dcterms:license>
+        <dcterms:rightsHolder>Mr Rights</dcterms:rightsHolder>
+    </ddm:dcmiMetadata>
+</ddm:DDM>

@@ -1,12 +1,14 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.net.URL
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
 import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML, getFileFOXML}
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
@@ -16,6 +18,8 @@ object EasyStageFileItem {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
+    val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
+    Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
     val conf = new FileItemConf(args)
     getSettingsRows(conf).map {
       _.foreach { settings =>
@@ -51,37 +55,64 @@ object EasyStageFileItem {
       datasetId        <- getValidDatasetId(s)
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
-      sdoDir           <- mkdirSafe(new File(datasetSdoSetDir, toSdoName(s.filePath.get)))
-      parent           <- getParent(datasetSdoSetDir)
-      _                <- createItemSDO(sdoDir, parent)
+      (parentId, parentPath, newElements)  <- getPathElements()
+      items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
+      _                = log.debug(s"Items to stage: $items")
+      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
+      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
     } yield ()
   }
 
-  def createItemSDO(sdoDir: File, parent: (String, String)
-                   )(implicit s: FileItemSettings): Try[Unit] = {
-    if (s.file.isDefined) createFileSdo(sdoDir, parent)
-    else createFolderSdo(sdoDir, parent)
+  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = Try {
+    // TODO: refactor this to remove the need for get and toString
+    EasyFilesAndFolders.getExistingParent(s.pathInDataset.get.toString, s.datasetId.get).get match {
+      case Some(path) =>
+        log.debug(s"Found parent path folder in repository: $path")
+        val parentId = EasyFilesAndFolders.getPathId(new File(path), s.datasetId.get).get.get
+        (parentId, path, s.pathInDataset.get.toString.replaceFirst(s"^$path", "").split("/").toSeq)
+      case None =>
+        log.debug("No parent path found in repository, using dataset as parent")
+        (s.datasetId.get, "", s.pathInDataset.get.toString.split("/").toSeq)
+    }
+
   }
 
-  def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating file SDO: ${s.filePath.get}")
-    val location  = new File(s.storageBaseUrl, s.filePath.get.toString).toString
+  def getItemsToStage(pathElements: Seq[String], datasetSdoSet: File, existingFolderId: String): Seq[(File, String, (String, String))] = {
+    getPaths(pathElements)
+    .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
+      items match {
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, ("object" -> existingFolderId))
+        case seq =>
+          val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
+          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, ("objectSDO" -> parentFolderSdoName))
+      }
+    })
+  }
+
+  def getPaths(path: Seq[String]): Seq[String] =
+    if(path.isEmpty) Seq()
+    else path.tail.scanLeft(path(0))((acc, next) => s"$acc/$next")
+
+
+  def createFileSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
+    log.debug(s"Creating file SDO: ${path}")
+    sdoDir.mkdir()
+    val location  = new URL(new URL(s.storageBaseUrl), s.pathInStorage.get.toString).toString
     for {
       mime <- Try{s.format.get}
-      _ <- Try{FileUtils.copyFileToDirectory(s.file.get, sdoDir)}
       _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(location, mime, parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getFileFOXML(s.filePath.get.getName, s.ownerId, mime))
+      _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
       _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
     } yield ()
   }
 
-  def createFolderSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    val filePath = s.filePath.get
-    log.debug(s"Creating folder SDO: $filePath")
+  def createFolderSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
+    log.debug(s"Creating folder SDO: $path")
+    sdoDir.mkdir()
     for {
       _ <- writeJsonCfg(sdoDir,JSON.createDirCfg(parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getDirFOXML(filePath.getName, s.ownerId))
-      _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(filePath))
+      _ <- writeFoxml(sdoDir, getDirFOXML(path, s.ownerId))
+      _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(path))
     } yield ()
   }
 
@@ -93,21 +124,6 @@ object EasyStageFileItem {
     else
       Success(s.datasetId.get)
 
-  private def getParent(datasetSdoSetDir: File)(implicit s: FileItemSettings): Try[(String,String)] =
-    if(s.filePath.isEmpty)
-      Failure(new Exception(s"no filePath provided"))
-    else if (s.filePath.get.getParentFile == null)
-      Success("object" -> s"info:fedora/${s.datasetId.get}")
-    else
-      EasyFilesAndFolders.getPathId(s.filePath.get.getParentFile, s.datasetId.get) match {
-        case Failure(t) => Failure(t)
-        case Success(Some(fileItemId)) => Success("object" -> s"info:fedora/$fileItemId")
-        case Success(None) =>
-          val parentSdoDir = new File(datasetSdoSetDir, toSdoName(s.filePath.get.getParentFile))
-          if (parentSdoDir.exists()) Success("objectSDO" -> parentSdoDir.getName)
-          else Failure(new Exception(s"${parentSdoDir.getName} was not staged"))
-        }
-
-  private def toSdoName(path: File): String =
-    path.toString.replaceAll("[/.]", "_").replaceAll("^_", "")
+  def toSdoName(path: String): String =
+    path.replaceAll("[/.]", "_").replaceAll("^_", "")
 }

@@ -26,53 +26,26 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
   val mayNotExist = singleArgConverter[File](conv = new File(_))
   val shouldBeFile = singleArgConverter[File](conv = {f =>
-    if (!new File(f).isFile) {
-      log.error(s"$f is not an existing file")
-      throw new IllegalArgumentException()
-    }
+    if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
     new File(f)
   })
 
-  val filePath = opt[File](
-    name = "file-path", short = 'p',
-    descr = "the path that the file should get in the dataset " +
-     "or the folder that should be created in the dataset"
-    )(mayNotExist)
-  val identifier = opt[String](
-    name = "identifier", short = 'u',
-    descr = "dcterms property")
-  val title = opt[List[String]](
-    name = "title",
-    descr = "dcterms property title and optional alternatives")
-  val description = opt[String](
-    name = "description",
-    descr = "dcterms property description")
+  val pathInDataset = opt[File](
+    name = "path-in-dataset", short = 'p',
+    descr = "the path that the file or folder should get in the dataset")(mayNotExist)
   val format = opt[String](
     name = "format", noshort = true,
     descr = "dcterms property format, the mime type of the file")
-  val created = opt[DateTime](
-    name = "created",
-    descr = "dcterms property, date-time when the file was created")
-  val file = opt[File](
-    name = "file",
-    descr = "File to stage for ingest into Fedora, if omitted a folder is staged " +
-     "(requires dataset-id, md5 and format)"
-    )(shouldBeFile)
-  val md5 = opt[String](
-    name = "md5",
-    descr = "MD5 checksum of the file to stage")
+  val pathInStorage = opt[File](
+    name = "path-in-storage",
+    descr = "Path of the file in storage, relative to the storage-base-url, if omitted a folder is staged")(mayNotExist)
   val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csf-file is required")
-  codependent(datasetId,filePath)
-  codependent(file,format)
-  dependsOnAll(file, List(datasetId))
-  dependsOnAll(md5, List(file))
-  dependsOnAll(created, List(file))
-  dependsOnAll(description, List(file))
-  dependsOnAll(title, List(file))
-  dependsOnAll(identifier, List(file))
+  codependent(datasetId,pathInDataset)
+  codependent(pathInStorage,format)
+  dependsOnAll(pathInStorage, List(datasetId))
 
   val csvFile = trailArg[File](
     name = "csv-file",

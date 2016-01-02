@@ -1,40 +1,87 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
+import org.joda.time.DateTime
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Constants
 import org.apache.commons.io.FileUtils
 
-import scala.util.Try
-import scala.xml.XML
+import scala.util.{Failure, Success, Try}
+import scala.xml.{MetaData, Node, Elem, XML}
 
 object AdditionalLicense {
+  type MimeType = String
 
-  def create(sdo: File)(implicit s: Settings): Try[Option[File]] =
+  def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] =
+   if((getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license").size == 0) Success(None)
+   else create(sdo).map(m => Some(m))
+
+  def create(sdo: File)(implicit s: Settings): Try[MimeType] =
     for {
-      original <- getAdditionalLicense()
-      copied <- copyAdditionalLicense(original, sdo)
-    } yield copied
+      (template, mime) <- getAdditionalLicenseTemplate()
+      rightsHolder <- getRightsHolder()
+      year <- getYear()
+      _ <- copyAdditionalLicense(template, rightsHolder, year, sdo)
+    } yield mime
 
-  def getAdditionalLicense()(implicit s: Settings): Try[Option[File]] = Try {
+  def getAdditionalLicenseTemplate()(implicit s: Settings): Try[(String, MimeType)] = Try {
+    val licenses = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license"
+    licenses.toSeq match {
+      case Seq(license) =>
+          if(hasXsiType(license, "http://purl.org/dc/terms/", "URI")) {
+            val licenseTemplateFile = s.licenses(license.text)
+            (FileUtils.readFileToString(licenseTemplateFile), getLicenseMimeType(licenseTemplateFile.getName))
+          }
+          else (license.text, "text/plain")
+      case licenses => throw new RuntimeException(s"Found ${licenses.size} dcterms:license elements. There should be exactly one")
+    }
+  }
+
+  def hasXsiType(e: Node, attributeNamespace: String, attributeValue: String): Boolean =
+   e.head.attribute("http://www.w3.org/2001/XMLSchema-instance", "type") match {
+     case Some(Seq(n)) => n.text.split("\\:") match {
+       case Array(pref, label) => e.head.getNamespace(pref) == attributeNamespace && label == attributeValue
+       case _ => false
+     }
+     case _ => false
+   }
+
+  def getLicenseMimeType(licenseFileName: String): MimeType =
+    licenseFileName.split("\\.").last match {
+      case "txt" => "text/plain"
+      case "html" => "text/html"
+      case ext => throw new IllegalArgumentException(s"Unknown extension for license: .$ext")
+    }
+
+
+  def getDdmXml()(implicit s: Settings): Try[Elem] = Try {
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists) {
       throw new RuntimeException("Unable to find `metadata/dataset.xml` in bag.")
     }
-    val licenses = XML.loadFile(ddm) \\ "DDM" \ "dcmiMetadata" \ "license"
-    licenses match {
-      case Seq() => None
-      case Seq(license) => Some(s.licenses(license.text))
-      case licences => sys.error(s"Found ${licences.size} dcterms:license elements. Only one additional license allowed")
-    }
+    XML.loadFile(ddm)
   }
 
-  def copyAdditionalLicense(file: Option[File], sdo: File): Try[Option[File]] = Try {
-    file.map(f => {
-      val additionalLicenseFile = new File(sdo, Constants.ADDITIONAL_LICENSE)
-      FileUtils.copyFile(f, additionalLicenseFile)
-      additionalLicenseFile
-    })
+  def copyAdditionalLicense(template: String, rightsHolder: String, year: String, sdo: File): Try[File] = Try {
+    val additionalLicenseFile = new File(sdo, Constants.ADDITIONAL_LICENSE)
+    val content = template
+      .replace("<rightsHolder>", rightsHolder)
+      .replace("<year>", year)
+    FileUtils.write(additionalLicenseFile, content)
+    additionalLicenseFile
   }
+
+  def getRightsHolder()(implicit s: Settings): Try[String] = Try {
+    val rightsHolders = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "rightsHolder"
+    if(rightsHolders.size == 0) throw new RuntimeException("No dcterms:rightsHolder element found. There should be at least one")
+    else rightsHolders.toList.map(_.text).mkString(", ")
+  }
+
+  def getYear()(implicit s: Settings): Try[String] = Try {
+    val years = getDdmXml().get \\ "DDM" \ "profile" \ "created"
+    if(years.size == 1) DateTime.parse(years.head.text).getYear.toString
+    else throw new RuntimeException(s"${years.size} ddm:created elements found. There must be exactly one")
+  }
+
 }

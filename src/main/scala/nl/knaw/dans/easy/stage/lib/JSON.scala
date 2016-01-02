@@ -1,10 +1,6 @@
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.File
-
 import nl.knaw.dans.easy.stage.Settings
-import nl.knaw.dans.easy.stage.lib.Constants._
-import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -16,7 +12,8 @@ object JSON {
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
   val DATASET_ARCHIVAL_STORAGE_LOCATION = "http://dans.knaw.nl/ontologies/relations#datasetArchivalStorageLocation"
 
-  def createDatasetCfg(license: Option[File], audiences: Seq[String])(implicit s: Settings): String = {
+  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): String = {
+
     val datastreams =
       List(
         ("contentFile" -> "AMD") ~
@@ -28,16 +25,17 @@ object JSON {
         ("contentFile" -> "EMD") ~
         ("dsID" -> "EMD") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")        ,
+        ("mimeType" -> "text/xml"),
+
         ("contentFile" -> "PRSQL") ~
         ("dsID" -> "PRSQL") ~
         ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")) ++
-      license.toList.map(f =>
+        ("mimeType" -> "text/xml")) ++ // N.B. an empty line after this will cause a compilation failure
+        mimeType.toList.map(_ =>
         ("contentFile" -> "ADDITIONAL_LICENSE") ~
         ("dsID" -> "ADDITIONAL_LICENSE") ~
         ("controlGroup" -> "M") ~
-        ("mimeType" -> "text/plain"))
+        ("mimeType" -> mimeType.get))
 
     def sdoCfg(audiences: Seq[String]) =
       ("namespace" -> "easy-dataset") ~
@@ -67,8 +65,6 @@ object JSON {
             ("dsID" -> "EASY_FILE") ~
             ("controlGroup" -> "R") ~
             ("mimeType" -> mimeType)
-          //        ("checksumType" -> "SHA-1") ~
-          //        ("checksum" -> "d4484a61da2d91194f4401e2c761ba8b63bfeb29") // TODO: FILL IN REAL CHECKSUM !!!!
           ,
           ("contentFile" -> "EASY_FILE_METADATA") ~
             ("dsID" -> "EASY_FILE_METADATA") ~
