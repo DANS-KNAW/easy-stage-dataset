@@ -3,8 +3,7 @@
          xmlns:dc="http://purl.org/dc/elements/1.1/"
          xmlns:dcterms="http://purl.org/dc/terms/"
          xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <ddm:profile>
         <dc:title>Dataset with files and an additional license specified by a URI</dc:title>
         <dc:description>A dataset with some files but no additional license</dc:description>

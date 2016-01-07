@@ -2,8 +2,7 @@
 <ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
          xmlns:dc="http://purl.org/dc/elements/1.1/"
          xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2015/12/ddm.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
     <ddm:profile>
         <dc:title>Minimal dataset</dc:title>
         <dc:description>A dataset with no files and only minimal metadata</dc:description>
