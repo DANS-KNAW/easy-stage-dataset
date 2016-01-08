@@ -84,7 +84,7 @@ object EasyStageFileItem {
       case Some(path) =>
         log.debug(s"Found parent path folder in repository: $path")
         val parentId = EasyFilesAndFolders.getPathId(new File(path), s.datasetId.get).get.get
-        (parentId, path, s.pathInDataset.get.toString.replaceFirst(s"^$path", "").split("/").toSeq)
+        (parentId, path, s.pathInDataset.get.toString.replaceFirst(s"^$path/", "").split("/").toSeq)
       case None =>
         log.debug("No parent path found in repository, using dataset as parent")
         (s.datasetId.get, "", s.pathInDataset.get.toString.split("/").toSeq)

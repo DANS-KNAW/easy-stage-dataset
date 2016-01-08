@@ -33,12 +33,13 @@ object EasyFilesAndFolders {
 
   def getExistingParent(pathInDataset: String, datasetId: String): Try[Option[String]] = Try {
     val query: PreparedStatement = conn.prepareStatement("SELECT count(pid) FROM easy_folders WHERE path = ?")
-    val parentPath = pathInDataset
+    val subPaths = pathInDataset
       .split("/")
       .scanLeft("")((acc, next) => acc + next + "/")
       .reverse
-      .map(_.replaceAll("/$",""))
-      .find(path => {
+      .map(_.replaceAll("/$", ""))
+      .filter(!_.isEmpty)
+    val parentPath = subPaths.find(path => {
         query.setString(1, path)
         val resultSet = query.executeQuery()
         // TODO don't forget to close the query?
