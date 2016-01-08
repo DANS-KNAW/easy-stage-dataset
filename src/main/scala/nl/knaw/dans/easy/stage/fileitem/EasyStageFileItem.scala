@@ -81,19 +81,14 @@ object EasyStageFileItem {
     if (parentPath.isEmpty) new File(path) // prevent a leading slash
     else new File(parentPath, path)
 
-  /** @return (existingParentId, existingParentPath, newItems) */
-  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = Try {
-    // TODO: refactor this to remove the need for get and toString
-    EasyFilesAndFolders.getExistingAncestor(s.pathInDataset.get.toString, s.datasetId.get).get match {
-      case Some(path) =>
-        log.debug(s"Found parent path folder in repository: $path")
-        val parentId = EasyFilesAndFolders.getPathId(new File(path), s.datasetId.get).get.get
-        (parentId, path, s.pathInDataset.get.toString.replaceFirst(s"^$path/", "").split("/").toSeq)
-      case None =>
-        log.debug("No parent path found in repository, using dataset as parent")
-        (s.datasetId.get, "", s.pathInDataset.get.toString.split("/").toSeq)
-    }
-
+  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
+    val file = s.pathInDataset.get
+    EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
+      .map { case (parentPath, parentId) =>
+        log.debug(s"Parent in repository: $parentId $parentPath")
+        val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
+        (parentId, parentPath, newItems.toSeq)
+      }
   }
 
   def getItemsToStage(pathElements: Seq[String], datasetSdoSet: File, existingFolderId: String): Seq[(File, String, (String, String))] = {
