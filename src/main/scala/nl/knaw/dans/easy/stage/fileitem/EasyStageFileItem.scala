@@ -24,7 +24,6 @@ import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML, getFileFOXML}
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -96,21 +95,21 @@ object EasyStageFileItem {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, ("object" -> existingFolderId))
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, ("objectSDO" -> parentFolderSdoName))
+          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
       }
     })
   }
 
   def getPaths(path: Seq[String]): Seq[String] =
     if(path.isEmpty) Seq()
-    else path.tail.scanLeft(path(0))((acc, next) => s"$acc/$next")
+    else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
 
 
   def createFileSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating file SDO: ${path}")
+    log.debug(s"Creating file SDO: $path")
     sdoDir.mkdir()
     val location  = new URL(new URL(s.storageBaseUrl), s.pathInStorage.get.toString).toString
     for {
