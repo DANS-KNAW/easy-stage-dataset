@@ -81,9 +81,10 @@ object EasyStageFileItem {
     if (parentPath.isEmpty) new File(path) // prevent a leading slash
     else new File(parentPath, path)
 
+  /** @return (existingParentId, existingParentPath, newItems) */
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = Try {
     // TODO: refactor this to remove the need for get and toString
-    EasyFilesAndFolders.getExistingParent(s.pathInDataset.get.toString, s.datasetId.get).get match {
+    EasyFilesAndFolders.getExistingAncestor(s.pathInDataset.get.toString, s.datasetId.get).get match {
       case Some(path) =>
         log.debug(s"Found parent path folder in repository: $path")
         val parentId = EasyFilesAndFolders.getPathId(new File(path), s.datasetId.get).get.get

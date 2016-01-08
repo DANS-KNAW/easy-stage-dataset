@@ -45,23 +45,25 @@ object EasyFilesAndFolders {
     }
   }
 
-  def getExistingParent(pathInDataset: String, datasetId: String): Try[Option[String]] = Try {
+  def getExistingAncestor(pathInDataset: String, datasetId: String): Try[Option[String]] = Try {
     val query: PreparedStatement = conn.prepareStatement("SELECT count(pid) FROM easy_folders WHERE path = ?")
-    val subPaths = pathInDataset
-      .split("/")
-      .scanLeft("")((acc, next) => acc + next + "/")
-      .reverse
-      .map(_.replaceAll("/$", ""))
-      .filter(!_.isEmpty)
-    val parentPath = subPaths.find(path => {
+    try {
+      val ancestors = pathInDataset
+        .split("/")
+        .scanLeft("")((acc, next) => acc + next + "/")
+        .reverse
+        .map(_.replaceAll("/$", ""))
+        .filter(!_.isEmpty)
+      ancestors.find(path => {
         query.setString(1, path)
         val resultSet = query.executeQuery()
-        // TODO don't forget to close the query?
-        if(!resultSet.next()) throw new RuntimeException("Count query returned no rows (?) A count query should ALWAYS return one row")
+        if (!resultSet.next()) throw new RuntimeException("Count query returned no rows (?) A count query should ALWAYS return one row")
         resultSet.getString("count") == "1"
       })
-    query.close()
-    parentPath
+    }
+    finally {
+      query.close()
+    }
   }
 
 }
