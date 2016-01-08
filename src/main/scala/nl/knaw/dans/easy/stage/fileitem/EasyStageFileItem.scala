@@ -72,10 +72,14 @@ object EasyStageFileItem {
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
-      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
-      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
+      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
     } yield ()
   }
+
+  def fullPath(parentPath: String, path: String): File =
+    if (parentPath.isEmpty) new File(path) // prevent a leading slash
+    else new File(parentPath, path)
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = Try {
     // TODO: refactor this to remove the need for get and toString
