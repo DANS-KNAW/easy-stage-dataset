@@ -24,7 +24,6 @@ import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML, getFileFOXML}
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -73,44 +72,44 @@ object EasyStageFileItem {
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
-      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
-      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, new File(new File(parentPath), path).toString, parentRelation) }
+      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
     } yield ()
   }
 
-  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = Try {
-    // TODO: refactor this to remove the need for get and toString
-    EasyFilesAndFolders.getExistingParent(s.pathInDataset.get.toString, s.datasetId.get).get match {
-      case Some(path) =>
-        log.debug(s"Found parent path folder in repository: $path")
-        val parentId = EasyFilesAndFolders.getPathId(new File(path), s.datasetId.get).get.get
-        (parentId, path, s.pathInDataset.get.toString.replaceFirst(s"^$path", "").split("/").toSeq)
-      case None =>
-        log.debug("No parent path found in repository, using dataset as parent")
-        (s.datasetId.get, "", s.pathInDataset.get.toString.split("/").toSeq)
-    }
+  def fullPath(parentPath: String, path: String): File =
+    if (parentPath.isEmpty) new File(path) // prevent a leading slash
+    else new File(parentPath, path)
 
+  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
+    val file = s.pathInDataset.get
+    EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
+      .map { case (parentPath, parentId) =>
+        log.debug(s"Parent in repository: $parentId $parentPath")
+        val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
+        (parentId, parentPath, newItems.toSeq)
+      }
   }
 
   def getItemsToStage(pathElements: Seq[String], datasetSdoSet: File, existingFolderId: String): Seq[(File, String, (String, String))] = {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, ("object" -> existingFolderId))
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, ("objectSDO" -> parentFolderSdoName))
+          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
       }
     })
   }
 
   def getPaths(path: Seq[String]): Seq[String] =
     if(path.isEmpty) Seq()
-    else path.tail.scanLeft(path(0))((acc, next) => s"$acc/$next")
+    else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
 
 
   def createFileSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating file SDO: ${path}")
+    log.debug(s"Creating file SDO: $path")
     sdoDir.mkdir()
     val location  = new URL(new URL(s.storageBaseUrl), s.pathInStorage.get.toString).toString
     for {
