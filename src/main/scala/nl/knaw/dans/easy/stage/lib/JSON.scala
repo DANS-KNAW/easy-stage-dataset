@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
+import java.net.URL
+
 import nl.knaw.dans.easy.stage.Settings
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -25,7 +27,7 @@ object JSON {
   val HAS_MODEL = "info:fedora/fedora-system:def/model#hasModel"
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
-  val DATASET_ARCHIVAL_STORAGE_LOCATION = "http://dans.knaw.nl/ontologies/relations#datasetArchivalStorageLocation"
+  val STORED_IN_DARKARCHIVE = "http://dans.knaw.nl/ontologies/relations#storedInDarkArchive"
 
   def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): String = {
 
@@ -61,7 +63,7 @@ object JSON {
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
-        ("predicate" -> DATASET_ARCHIVAL_STORAGE_LOCATION) ~ ("object" -> s.bagStorageLocation) ~ ("isLiteral" -> true)
+        ("predicate" -> STORED_IN_DARKARCHIVE) ~ ("object" -> "true") ~ ("isLiteral" -> true)
         ) ++ audiences.map(audience =>
           ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${s.disciplines(audience)}"))
       ))
@@ -69,14 +71,14 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: String,
+  def createFileCfg(fileLocation: URL,
                     mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String)
                    ): String = {
       val json = ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
-          ("dsLocation" -> fileLocation) ~
+          ("dsLocation" -> fileLocation.toString) ~
             ("dsID" -> "EASY_FILE") ~
             ("controlGroup" -> "R") ~
             ("mimeType" -> mimeType)
