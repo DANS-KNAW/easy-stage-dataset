@@ -16,14 +16,16 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.net.URL
 
 import nl.knaw.dans.easy.stage.lib.Props._
 
 case class FileItemSettings(sdoSetDir: Option[File],
                             datasetId: Option[String] = None,
-                            pathInStorage: Option[File] = None,
+                            dsLocation: Option[URL] = None,
+                            unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
+                            size: Option[Long] = None,
                             ownerId: String = props.getString("owner"),
-                            storageBaseUrl: String = props.getString("storage-base-url"),
                             pathInDataset: Option[File],
                             format: Option[String] = None,
 
@@ -40,7 +42,8 @@ object FileItemSettings {
   def apply(conf: FileItemConf): FileItemSettings =
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
-      pathInStorage = conf.pathInStorage.get,
+      dsLocation = conf.dsLocation.get,
+      size = conf.size.get,
       datasetId = conf.datasetId.get,
       pathInDataset = conf.pathInDataset.get,
       format = conf.format.get,

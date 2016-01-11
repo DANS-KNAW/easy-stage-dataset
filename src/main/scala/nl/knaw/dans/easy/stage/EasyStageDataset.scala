@@ -42,7 +42,6 @@ object EasyStageDataset {
     implicit val s = Settings(
       ownerId = props.getString("owner"),
       submissionTimestamp = conf.submissionTimestamp.apply().toString,
-      bagStorageLocation = props.getString("storage-base-url"),
       bagitDir = conf.bag(),
       sdoSetDir = conf.sdoSet(),
       URN = conf.urn(),
@@ -107,8 +106,8 @@ object EasyStageDataset {
       _ <- EasyStageFileItem.createFileSdo(sdoDir, relativePath, "objectSDO" -> parentSDO
       )(FileItemSettings(
         sdoSetDir = Some(s.sdoSetDir),
-        pathInStorage = Some(new File(relativePath)),
-        storageBaseUrl = s.bagStorageLocation,
+        dsLocation = None,
+        size = Some(file.length),
         ownerId = s.ownerId,
         pathInDataset = Some(new File(relativePath)),
         format = Some(mime)
@@ -122,7 +121,6 @@ object EasyStageDataset {
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
       _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(FileItemSettings(sdoSetDir = Some(s.sdoSetDir),
-                                        storageBaseUrl = s.bagStorageLocation,
                                         ownerId = s.ownerId,
                                         pathInDataset = Some(getDatasetRelativePath(folder).toFile)))
     } yield ()

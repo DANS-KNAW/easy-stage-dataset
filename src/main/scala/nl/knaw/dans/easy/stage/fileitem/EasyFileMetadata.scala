@@ -23,7 +23,7 @@ object EasyFileMetadata {
         <name>{s.pathInDataset.get.getName}</name>
         <path>{s.pathInDataset.get}</path>
         <mimeType>{s.format.getOrElse("application/octet-stream")}</mimeType>
-        <size>{s.pathInStorage.get.length}</size>
+        <size>{s.size.get}</size>
         <creatorRole>{s.creatorRole}</creatorRole>
         <visibleTo>{s.visibleTo}</visibleTo>
         <accessibleTo>{s.accessibleTo}</accessibleTo>
