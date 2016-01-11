@@ -22,12 +22,12 @@ deposits must conform to [BagIt] format.
 
 To prepare the deposit for inclusion in EASY `easy-stage-dataset` performs the following tasks:
 
-1. It generates the metadata required for an EASY dataset:
-   * Administrative Metadata
-   * EASY Metadata (descriptive metadata)
-   * ...
-2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
-3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
+ 1. It generates the metadata required for an EASY dataset:
+    * Administrative Metadata
+    * EASY Metadata (descriptive metadata)
+    * ...
+ 2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
+ 3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
 
 The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository.
 The command `easy-stage-file-item` executes step 3 to stage a file for ingestion into an existing dataset.
@@ -55,19 +55,19 @@ ARGUMENTS for easy-stage-dataset
 ARGUMENTS for easy-stage-fileItem
 ---------------------------------
 
-    -i, --dataset-id  <arg>        id of the dataset in Fedora that should receive
-                                   the file to stage (requires file-path). If
-                                   omitted the trailing argument csf-file is
-                                   required
-        --format  <arg>            dcterms property format, the mime type of the
-                                   file
-    -p, --path-in-dataset  <arg>   the path that the file or folder should get in
-                                   the dataset
-        --path-in-storage  <arg>   Path of the file in storage, relative to the
-                                   storage-base-url, if omitted a folder is staged
-        --help                     Show help message
-        --version                  Show version of this program
-   
+    -i, --dataset-id  <arg>            id of the dataset in Fedora that should
+                                       receive the file to stage (requires
+                                       file-path). If omitted the trailing argument
+                                       csf-file is required
+    -d, --datastream-location  <arg>   http URL to redirect to
+        --format  <arg>                dcterms property format, the mime type of the
+                                       file
+    -p, --path-in-dataset  <arg>       the path that the file or folder should get
+                                       in the dataset
+    -s, --size  <arg>                  Size in bytes of the file data
+        --help                         Show help message
+        --version                      Show version of this program
+
     trailing arguments:
      csv-file (not required)                a comma separated file with one column
                                             for each option (additional columns are
@@ -75,7 +75,6 @@ ARGUMENTS for easy-stage-fileItem
      staged-digital-object-set (required)   The resulting Staged Digital Object
                                             directory (will be created if it does not
                                             exist)
-
 
 INSTALLATION AND CONFIGURATION
 ------------------------------

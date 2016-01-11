@@ -23,7 +23,6 @@ import nl.knaw.dans.easy.stage.lib.Fedora
 
 case class Settings(ownerId: String,
                     submissionTimestamp: String,
-                    bagStorageLocation: String,
                     bagitDir: File,
                     sdoSetDir: File,
                     URN: String,

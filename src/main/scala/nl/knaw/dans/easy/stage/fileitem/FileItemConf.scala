@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.net.URL
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
@@ -51,16 +52,19 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val format = opt[String](
     name = "format", noshort = true,
     descr = "dcterms property format, the mime type of the file")
-  val pathInStorage = opt[File](
-    name = "path-in-storage",
-    descr = "Path of the file in storage, relative to the storage-base-url, if omitted a folder is staged")(mayNotExist)
+  val dsLocation = opt[URL](
+    name = "datastream-location",
+    descr = "http URL to redirect to")
+  val size = opt[Long](
+    name = "size",
+    descr = "Size in bytes of the file data")
   val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csf-file is required")
   codependent(datasetId,pathInDataset)
-  codependent(pathInStorage,format)
-  dependsOnAll(pathInStorage, List(datasetId))
+  codependent(dsLocation,format)
+  dependsOnAll(dsLocation, List(datasetId))
 
   val csvFile = trailArg[File](
     name = "csv-file",
