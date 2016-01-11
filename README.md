@@ -29,8 +29,11 @@ To prepare the deposit for inclusion in EASY `easy-stage-dataset` performs the f
  2. It stages a digital object to represent the entire dataset for ingest in Fedora, using the metadata generated in 1.
  3. It stages a digital object for each file and folder in the dataset for ingest in Fedora.
 
-The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository.
-The command `easy-stage-file-item` executes step 3 to stage a file for ingestion into an existing dataset.
+The results of steps 1-3 can be ingested into the EASY Fedora Commons Repository. See the wiki section
+about the [export-import] cycle as `easy-export-dataset` also creates Staged Digital Objects.
+
+References to files in external storage such as audio/video files can be added to existing datasets with 
+the command `easy-stage-file-item`. It executes step 3 to stage one or more files for ingestion.
 
 
 ARGUMENTS for easy-stage-dataset
@@ -62,19 +65,21 @@ ARGUMENTS for easy-stage-fileItem
     -d, --datastream-location  <arg>   http URL to redirect to
         --format  <arg>                dcterms property format, the mime type of the
                                        file
-    -p, --path-in-dataset  <arg>       the path that the file or folder should get
-                                       in the dataset
+    -p, --path-in-dataset  <arg>       the path that the file should get in the
+                                       dataset, a staged digital object is created
+                                       for the file and the ancestor folders that
+                                       don't yet exist in the dataset
     -s, --size  <arg>                  Size in bytes of the file data
         --help                         Show help message
         --version                      Show version of this program
 
-    trailing arguments:
-     csv-file (not required)                a comma separated file with one column
+   trailing arguments:
+    csv-file (not required)                 a comma separated file with one column
                                             for each option (additional columns are
                                             ignored) and one set of options per line
-     staged-digital-object-set (required)   The resulting Staged Digital Object
-                                            directory (will be created if it does not
-                                            exist)
+    staged-digital-object-sets (required)   The resulting directory with Staged
+                                            Digital Object directories per dataset
+                                            (will be created if it does not exist) 
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
@@ -140,4 +145,4 @@ Steps for a regression test:
 [dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
 [easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
-
+[export-import]: https://github.com/DANS-KNAW/easy-export-dataset/wiki#the-export-import-cycle

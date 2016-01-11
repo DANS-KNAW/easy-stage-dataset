@@ -48,7 +48,8 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   val pathInDataset = opt[File](
     name = "path-in-dataset", short = 'p',
-    descr = "the path that the file or folder should get in the dataset")(mayNotExist)
+    descr = "the path that the file should get in the dataset, a staged digital object is created" +
+      " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
   val format = opt[String](
     name = "format", noshort = true,
     descr = "dcterms property format, the mime type of the file")
@@ -72,8 +73,9 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
      "(additional columns are ignored) and one set of options per line",
     required = false)(shouldBeFile)
   val sdoSetDir = trailArg[File](
-    name = "staged-digital-object-set",
-    descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
+    name = "staged-digital-object-sets",
+    descr = "The resulting directory with Staged Digital Object directories per dataset" +
+      " (will be created if it does not exist)",
     required = true)(mayNotExist)
 
   val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
