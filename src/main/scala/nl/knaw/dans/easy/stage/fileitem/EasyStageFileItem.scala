@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.net.URL
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -72,7 +71,7 @@ object EasyStageFileItem {
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
-      _                <- items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
       _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
     } yield ()
   }

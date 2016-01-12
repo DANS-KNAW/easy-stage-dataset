@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import scala.util.Try
-import scala.xml.Elem
 
 object EasyFileMetadata {
   def apply(s: FileItemSettings): Try[String] = Try {
@@ -24,7 +23,7 @@ object EasyFileMetadata {
       <name>{s.pathInDataset.get.getName}</name>
       <path>{s.pathInDataset.get}</path>
       <mimeType>{s.format.getOrElse("application/octet-stream")}</mimeType>
-      <size>{s.size.get}</size>
+      <size>{s.size.getOrElse(0ß)}</size>
       <creatorRole>{s.creatorRole}</creatorRole>
       <visibleTo>{s.visibleTo}</visibleTo>
       <accessibleTo>{s.accessibleTo}</accessibleTo>
