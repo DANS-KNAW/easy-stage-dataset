@@ -31,7 +31,7 @@ object EasyFilesAndFolders {
   val conn = DriverManager.getConnection(props.getString("db-connection-url"))
 
   def getExistingAncestor(file: File, datasetId: String): Try[(String,String)] = {
-    val query: PreparedStatement = conn.prepareStatement("SELECT pid FROM easy_folders WHERE path = ?")
+    val query: PreparedStatement = conn.prepareStatement(s"SELECT pid FROM easy_folders WHERE (path = ? or path = ? || '/') and dataset_sid = '$datasetId'")
 
     @tailrec
     def get(file: File): (String,String) =
@@ -39,6 +39,7 @@ object EasyFilesAndFolders {
         (datasetId,"")
       else {
         query.setString(1, file.getParent)
+        query.setString(2, file.getParent)
         val resultSet = query.executeQuery()
         if (resultSet.next())
           (file.getParent, resultSet.getString("pid"))
@@ -47,7 +48,7 @@ object EasyFilesAndFolders {
 
     Try {
       try {
-        get(file.getParentFile)
+        get(file)
       }
       finally {
         query.close()
