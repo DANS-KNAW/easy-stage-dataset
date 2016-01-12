@@ -36,7 +36,7 @@ object EasyFilesAndFolders {
     @tailrec
     def get(file: File): (String,String) =
       if(file==null)
-        (datasetId,"")
+        ("",datasetId)
       else {
         query.setString(1, file.getParent)
         val resultSet = query.executeQuery()
@@ -47,7 +47,7 @@ object EasyFilesAndFolders {
 
     Try {
       try {
-        get(file.getParentFile)
+        get(file)
       }
       finally {
         query.close()

@@ -84,7 +84,7 @@ object EasyStageFileItem {
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
     EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
-      .map { case (parentId, parentPath) =>
+      .map { case (parentPath, parentId) =>
         log.debug(s"Parent in repository: $parentId $parentPath")
         val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
         (parentId, parentPath, newItems.toSeq)
