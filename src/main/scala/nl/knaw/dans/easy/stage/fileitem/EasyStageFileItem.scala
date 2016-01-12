@@ -1,22 +1,21 @@
 /**
- * Copyright (C) 2015-2016 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *         http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+  * Copyright (C) 2015-2016 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+  *
+  * Licensed under the Apache License, Version 2.0 (the "License");
+  * you may not use this file except in compliance with the License.
+  * You may obtain a copy of the License at
+  *
+  *         http://www.apache.org/licenses/LICENSE-2.0
+  *
+  * Unless required by applicable law or agreed to in writing, software
+  * distributed under the License is distributed on an "AS IS" BASIS,
+  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  * See the License for the specific language governing permissions and
+  * limitations under the License.
+  */
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.net.URL
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -73,7 +72,7 @@ object EasyStageFileItem {
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
       _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
-      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
     } yield ()
   }
 
@@ -93,14 +92,14 @@ object EasyStageFileItem {
 
   def getItemsToStage(pathElements: Seq[String], datasetSdoSet: File, existingFolderId: String): Seq[(File, String, (String, String))] = {
     getPaths(pathElements)
-    .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
-      items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
-        case seq =>
-          val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
-      }
-    })
+      .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
+        items match {
+          case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
+          case seq =>
+            val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
+            seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
+        }
+      })
   }
 
   def getPaths(path: Seq[String]): Seq[String] =
@@ -115,7 +114,8 @@ object EasyStageFileItem {
       mime <- Try{s.format.get}
       _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.dsLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
       _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
-      _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
+    fmd <- EasyFileMetadata(s)
+      _ <- writeFileMetadata(sdoDir, fmd)
     } yield ()
   }
 
