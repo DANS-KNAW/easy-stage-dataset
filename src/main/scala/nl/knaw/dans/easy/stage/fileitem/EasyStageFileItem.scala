@@ -73,7 +73,7 @@ object EasyStageFileItem {
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
       _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
-      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
     } yield ()
   }
 
@@ -95,7 +95,7 @@ object EasyStageFileItem {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> s"info:fedora/$existingFolderId")
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
           seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
@@ -115,7 +115,8 @@ object EasyStageFileItem {
       mime <- Try{s.format.get}
       _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.dsLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
       _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
-      _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
+      fmd <- EasyFileMetadata(s)
+      _ <- writeFileMetadata(sdoDir, fmd)
     } yield ()
   }
 
