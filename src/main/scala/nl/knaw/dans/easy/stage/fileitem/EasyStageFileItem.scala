@@ -95,7 +95,7 @@ object EasyStageFileItem {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> s"info:fedora/$existingFolderId")
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
           seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
