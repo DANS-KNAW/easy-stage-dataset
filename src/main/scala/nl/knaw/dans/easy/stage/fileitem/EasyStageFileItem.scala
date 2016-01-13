@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.net.URL
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -72,14 +71,14 @@ object EasyStageFileItem {
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
-      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
-      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
     } yield ()
   }
 
-  def fullPath(parentPath: String, path: String): File =
-    if (parentPath.isEmpty) new File(path) // prevent a leading slash
-    else new File(parentPath, path)
+  def relPath(parentPath: String, path: String): String =
+    if (parentPath.isEmpty) new File(path).toString // prevent a leading slash
+    else new File(parentPath, path).toString
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
@@ -113,7 +112,7 @@ object EasyStageFileItem {
     sdoDir.mkdir()
     for {
       mime <- Try{s.format.get}
-      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.dsLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
+      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
       _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
       fmd <- EasyFileMetadata(s)
       _ <- writeFileMetadata(sdoDir, fmd)

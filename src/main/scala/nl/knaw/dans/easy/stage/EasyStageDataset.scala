@@ -105,11 +105,10 @@ object EasyStageDataset {
       mime <- readMimeType(getBagRelativePath(file).toString)
       _ <- EasyStageFileItem.createFileSdo(sdoDir, relativePath, "objectSDO" -> parentSDO
       )(FileItemSettings(
-        sdoSetDir = Some(s.sdoSetDir),
-        dsLocation = None,
-        size = Some(file.length),
+        sdoSetDir = s.sdoSetDir,
         ownerId = s.ownerId,
-        pathInDataset = Some(new File(relativePath)),
+        pathInDataset = new File(relativePath),
+        size = Some(file.length),
         format = Some(mime)
       ))
     } yield ()
@@ -120,9 +119,8 @@ object EasyStageDataset {
     val relativePath= getDatasetRelativePath(folder).toString
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(FileItemSettings(sdoSetDir = Some(s.sdoSetDir),
-                                        ownerId = s.ownerId,
-                                        pathInDataset = Some(getDatasetRelativePath(folder).toFile)))
+      fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile, None, None)
+      _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
     } yield ()
   }
 

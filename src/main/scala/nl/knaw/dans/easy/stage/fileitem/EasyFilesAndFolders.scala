@@ -23,7 +23,7 @@ import nl.knaw.dans.easy.stage.lib.Props.props
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
-import scala.util.{Success, Try}
+import scala.util.Try
 
 object EasyFilesAndFolders {
   val log = LoggerFactory.getLogger(getClass)

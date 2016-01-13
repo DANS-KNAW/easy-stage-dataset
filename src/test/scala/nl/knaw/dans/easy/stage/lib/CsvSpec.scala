@@ -17,13 +17,12 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.{ByteArrayInputStream, FileInputStream}
 
-import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemConf}
+import nl.knaw.dans.easy.stage.fileitem.FileItemConf
 import org.scalatest.{FlatSpec, Matchers}
 
 class CsvSpec extends FlatSpec with Matchers {
 
-  private val commandLineArgs = "target/test/sdo-set".split(" ")
-  private val conf = new FileItemConf(commandLineArgs)
+  private val conf = FileItemConf.dummy
 
   "apply" should "fail with too few headers in the input" in {
     val in = new ByteArrayInputStream (
@@ -36,5 +35,11 @@ class CsvSpec extends FlatSpec with Matchers {
   it should "fail with uppercase in any of the required headers" in {
     val in = new ByteArrayInputStream ("".stripMargin.getBytes)
     (the[Exception] thrownBy CSV(in, Seq("ABc", "def")).get).getMessage should include ("not supported")
+  }
+
+  it should "accept example.csv" in {
+    val in = new FileInputStream ("src/test/resources/example.csv")
+    val (csv,_) = CSV(in, conf.longOptionNames).get
+    csv.getRows.size shouldBe 5
   }
 }

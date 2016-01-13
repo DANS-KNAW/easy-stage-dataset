@@ -64,7 +64,7 @@ ARGUMENTS for easy-stage-fileItem
                                        csf-file is required
     -d, --datastream-location  <arg>   http URL to redirect to
         --format  <arg>                dcterms property format, the mime type of the
-                                       file
+                                       file (default 'application/octet-stream')
     -p, --path-in-dataset  <arg>       the path that the file should get in the
                                        dataset, a staged digital object is created
                                        for the file and the ancestor folders that

@@ -15,15 +15,10 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{ByteArrayOutputStream, File}
-import java.lang.System.clearProperty
-
-import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.ScallopConf
-import org.scalatest.{Matchers, FlatSpec}
+import java.io.File
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
-import scala.collection.JavaConverters._
+import org.rogach.scallop.ScallopConf
 
 class ConfSpec extends AbstractConfSpec {
 

@@ -22,8 +22,8 @@ object EasyFileMetadata {
       <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
         <name>{s.pathInDataset.get.getName}</name>
         <path>{s.pathInDataset.get}</path>
-        <mimeType>{s.format.getOrElse("application/octet-stream")}</mimeType>
-        <size>{s.size.getOrElse(0)}</size>
+        <mimeType>{s.format.get}</mimeType>
+        <size>{s.size.get}</size>
         <creatorRole>{s.creatorRole}</creatorRole>
         <visibleTo>{s.visibleTo}</visibleTo>
         <accessibleTo>{s.accessibleTo}</accessibleTo>

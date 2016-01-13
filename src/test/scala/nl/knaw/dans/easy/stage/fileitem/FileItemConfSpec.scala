@@ -20,5 +20,9 @@ import org.rogach.scallop.ScallopConf
 
 class FileItemConfSpec extends AbstractConfSpec {
 
-  override def getConf: ScallopConf = new FileItemConf("-".split(" "))
+  override def getConf: ScallopConf = FileItemConf.dummy
+
+  "constructor" should "accept example.csv" in {
+    new FileItemConf("src/test/resources/example.csv outdir".split(" "))
+  }
 }
