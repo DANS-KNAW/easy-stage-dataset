@@ -73,13 +73,13 @@ ARGUMENTS for easy-stage-fileItem
         --help                         Show help message
         --version                      Show version of this program
 
-   trailing arguments:
-    csv-file (not required)                 a comma separated file with one column
-                                            for each option (additional columns are
-                                            ignored) and one set of options per line
-    staged-digital-object-sets (required)   The resulting directory with Staged
-                                            Digital Object directories per dataset
-                                            (will be created if it does not exist) 
+    trailing arguments:
+     csv-file (not required)                 a comma separated file with one column
+                                             for each option (additional columns are
+                                             ignored) and one set of options per line
+     staged-digital-object-sets (required)   The resulting directory with Staged
+                                             Digital Object directories per dataset
+                                             (will be created if it does not exist) 
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
