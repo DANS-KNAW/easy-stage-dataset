@@ -20,5 +20,5 @@ import org.rogach.scallop.ScallopConf
 
 class FileItemConfSpec extends AbstractConfSpec {
 
-  override def getConf: ScallopConf = new FileItemConf("-".split(" "))
+  override def getConf: ScallopConf = FileItemConf.dummy
 }

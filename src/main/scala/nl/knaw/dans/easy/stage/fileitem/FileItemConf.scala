@@ -19,8 +19,7 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.lib.Version
-import org.joda.time.DateTime
-import org.rogach.scallop.{TrailingArgsOption, ScallopConf, ValueConverter, singleArgConverter}
+import org.rogach.scallop._
 import org.slf4j.LoggerFactory
 
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
@@ -38,8 +37,12 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
             |Options:
             |""".stripMargin)
 
-
-  implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
+  val httpUrl: ValueConverter[URL] = singleArgConverter[URL](s => {
+    val result = new URL(s)
+    if(result.getProtocol == null || !result.getProtocol.startsWith("http"))
+      throw new IllegalArgumentException(s"$s should have protocol http")
+    result
+  })
   val mayNotExist = singleArgConverter[File](conv = new File(_))
   val shouldBeFile = singleArgConverter[File](conv = {f =>
     if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
@@ -51,11 +54,11 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "the path that the file should get in the dataset, a staged digital object is created" +
       " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
   val format = opt[String](
-    name = "format", noshort = true,
-    descr = "dcterms property format, the mime type of the file")
+    name = "format", noshort = true, // default applied when assigned to FileItemSettings
+    descr = "dcterms property format, the mime type of the file (default 'application/octet-stream')")
   val dsLocation = opt[URL](
     name = "datastream-location",
-    descr = "http URL to redirect to")
+    descr = "http URL to redirect to")(httpUrl)
   val size = opt[Long](
     name = "size",
     descr = "Size in bytes of the file data")
@@ -63,9 +66,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csf-file is required")
-  codependent(datasetId,pathInDataset)
-  codependent(dsLocation,format)
-  dependsOnAll(dsLocation, List(datasetId))
 
   val csvFile = trailArg[File](
     name = "csv-file",
@@ -78,7 +78,16 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
       " (will be created if it does not exist)",
     required = true)(mayNotExist)
 
+  dependsOnAll(format,List(datasetId,pathInDataset,size,dsLocation))
+  dependsOnAll(datasetId,List(pathInDataset,size,dsLocation))
+  conflicts(csvFile,List(datasetId,pathInDataset,size,dsLocation))
+  requireOne(csvFile,datasetId)
+
   val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
 
   override def toString = builder.args.mkString(", ")
+}
+
+object FileItemConf {
+  val dummy = new FileItemConf("-ii -dhttp:// -pp -s0 --format f outdir".split(" "))
 }

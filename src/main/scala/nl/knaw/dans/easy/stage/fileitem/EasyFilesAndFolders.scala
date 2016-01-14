@@ -23,11 +23,9 @@ import nl.knaw.dans.easy.stage.lib.Props.props
 import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
-import scala.util.{Success, Try}
+import scala.util.Try
 
 object EasyFilesAndFolders {
-  val log = LoggerFactory.getLogger(getClass)
-
   val conn = DriverManager.getConnection(props.getString("db-connection-url"))
 
   def getExistingAncestor(file: File, datasetId: String): Try[(String,String)] = {

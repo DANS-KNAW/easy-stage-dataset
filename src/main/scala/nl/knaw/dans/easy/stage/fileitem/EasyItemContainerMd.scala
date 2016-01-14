@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.File
-
 object EasyItemContainerMd {
 
   def apply(path: String): String = {
