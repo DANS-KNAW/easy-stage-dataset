@@ -26,8 +26,6 @@ import scala.annotation.tailrec
 import scala.util.Try
 
 object EasyFilesAndFolders {
-  val log = LoggerFactory.getLogger(getClass)
-
   val conn = DriverManager.getConnection(props.getString("db-connection-url"))
 
   def getExistingAncestor(file: File, datasetId: String): Try[(String,String)] = {

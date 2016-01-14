@@ -19,7 +19,7 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.lib.Version
-import org.rogach.scallop.{ScallopConf, TrailingArgsOption, ValueConverter, singleArgConverter}
+import org.rogach.scallop._
 import org.slf4j.LoggerFactory
 
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
@@ -66,8 +66,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csf-file is required")
-  codependent(datasetId,pathInDataset,size,dsLocation)
-  dependsOnAll(format,List(datasetId))
 
   val csvFile = trailArg[File](
     name = "csv-file",
@@ -79,6 +77,10 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "The resulting directory with Staged Digital Object directories per dataset" +
       " (will be created if it does not exist)",
     required = true)(mayNotExist)
+
+  dependsOnAll(format,List(datasetId,pathInDataset,size,dsLocation))
+  dependsOnAll(datasetId,List(pathInDataset,size,dsLocation))
+  conflicts(csvFile,List(datasetId,pathInDataset,size,dsLocation))
   requireOne(csvFile,datasetId)
 
   val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)

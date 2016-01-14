@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.net.MalformedURLException
 
 import org.scalatest.{Matchers, FlatSpec}
 import EasyStageFileItem._
@@ -37,5 +38,16 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "return only a file item if path contains one element" in {
     getItemsToStage(Seq("file.txt"), file("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((file("dataset-sdo-set/file_txt"), "file.txt", "object" -> "info:fedora/easy-folder:123"))
+  }
+
+  "getSettingsRows" should "fail with dummy conf" in {
+    (the[MalformedURLException] thrownBy getSettingsRows(FileItemConf.dummy).get).getMessage shouldBe null
+  }
+
+  ignore should "process example.csv" in {
+    // TODO fix MalformedURLException, the logged arguments applied on the command line are fine
+    val conf = new FileItemConf("src/test/resources/example.csv outdir".split(" "))
+    val rows = getSettingsRows(conf).get
+    rows.size shouldBe 5
   }
 }

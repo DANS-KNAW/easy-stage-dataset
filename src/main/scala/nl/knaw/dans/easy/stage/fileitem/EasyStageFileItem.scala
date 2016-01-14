@@ -46,7 +46,7 @@ object EasyStageFileItem {
     }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf", t) }
   }
 
-  private def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
+  def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
     if (conf.datasetId.isDefined)
       Success(Seq(FileItemSettings(conf)))
     else if (conf.csvFile.isEmpty)
@@ -58,7 +58,10 @@ object EasyStageFileItem {
           warning.map(msg => log.warn(msg))
           val rows = csv.getRows
           if (rows.isEmpty) log.warn(s"Empty CSV file")
-          rows.map(options => FileItemSettings(options ++ trailArgs))
+          rows.map{options =>
+            log.info(options.mkString(" "))
+            FileItemSettings(options ++ trailArgs)
+          }
       }
     }
 
