@@ -58,7 +58,7 @@ object FileItemSettings {
 
   /** new file or folder for an existing dataset */
   def apply(conf: FileItemConf): FileItemSettings =
-    new FileItemSettings(
+      new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
       datastreamLocation = conf.dsLocation.get,
       size = conf.size.get,
