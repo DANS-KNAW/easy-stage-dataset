@@ -72,10 +72,18 @@ object EasyStageFileItem {
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
       (parentId, parentPath, newElements)  <- getPathElements()
-      items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
-      _                = log.debug(s"Items to stage: $items")
-      _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
-      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
+      _                <- createItems(parentId, parentPath, newElements, datasetSdoSetDir)
+    } yield ()
+  }
+
+  def createItems(parentId: String, parentPath: String, newElements: Seq[String],datasetSdoSetDir: File
+                 )(implicit s: FileItemSettings): Try[Unit] = {
+    log.debug(s"executing: $s")
+    for {
+      items <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
+      _     = log.debug(s"Items to stage: $items")
+      _     <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
+      _     <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
     } yield ()
   }
 
@@ -114,11 +122,13 @@ object EasyStageFileItem {
     log.debug(s"Creating file SDO: $path")
     sdoDir.mkdir()
     for {
-      mime <- Try{s.format.get}
-      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
-      fmd <- EasyFileMetadata(s)
-      _ <- writeFileMetadata(sdoDir, fmd)
+      mime         <- Try{s.format.get}
+      cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
+      _            <- writeJsonCfg(sdoDir, cfgContent)
+      foxmlContent <- Try{ getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime)}
+      _            <- writeFoxml(sdoDir, foxmlContent)
+      fmd          <- EasyFileMetadata(s)
+      _            <- writeFileMetadata(sdoDir, fmd)
     } yield ()
   }
 

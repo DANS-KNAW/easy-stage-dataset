@@ -15,9 +15,10 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.File
+import java.io.{FileInputStream, File}
 
 import org.apache.commons.io.FileUtils._
+import org.apache.commons.io.IOUtils
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatest.words.ResultOfATypeInvocation
 
@@ -38,8 +39,23 @@ trait CustomMatchers {
     }
   }
 
+  class SameContentMatcher(file: File) extends Matcher[File] {
+    def apply(left: File) = {
+      val leftContent = IOUtils.toString(new FileInputStream(left))
+      val fileContent = IOUtils.toString(new FileInputStream(file))
+      MatchResult(
+        leftContent == fileContent,
+        s"$left did not have same content as $file", // TODO add {leftContent diff fileContent} when it works
+        s"$left has same content as $file"
+      )
+    }
+  }
+
   /** usage example: new File(...) should containTrimmed("...") */
   def containTrimmed(content: String) = new ContentMatcher(content)
+
+  /** usage example: new File(...) should haveSameContentAs("...") */
+  def haveSameContentAs(file: File) = new SameContentMatcher(file)
 }
 
 object CustomMatchers extends CustomMatchers

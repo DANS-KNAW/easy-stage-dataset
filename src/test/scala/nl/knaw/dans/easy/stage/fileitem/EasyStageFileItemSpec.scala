@@ -15,10 +15,12 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.File
+import java.io.{FileInputStream, File}
 
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
+import org.apache.commons.io.IOUtils
 import org.scalatest.{FlatSpec, Matchers}
+import nl.knaw.dans.easy.stage.CustomMatchers._
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
@@ -47,5 +49,25 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "create multiple rows from example.csv" in {
     val args = "src/test/resources/example.csv outdir".split(" ")
     getSettingsRows(new FileItemConf(args)).get.size shouldBe 5
+  }
+
+  "createItems" should "create some SDOs" in {
+    val args = "--dataset-id easy-dataset:1 --size 1 --format video/mpeg --path-in-dataset original/newSub/file.mpeg --datastream-location http://x.nl/l/d target/testsdo".split(" ")
+    implicit val settings = FileItemSettings(args)
+    val sdoSetDir = new File("target/testSDO")
+    sdoSetDir.mkdirs()
+    createItems("easy-folder:1","original",Seq("newSub","file.mpeg"),sdoSetDir)
+    List(
+      "newSub/cfg.json",
+      "newSub/EASY_ITEM_CONTAINER_MD",
+      "newSub/fo.xml",
+      "newSub_file_mpeg/cfg.json",
+      "newSub_file_mpeg/EASY_FILE_METADATA",
+      "newSub_file_mpeg/fo.xml"
+    ).foreach(f => {
+      val actual = new File(sdoSetDir, f)
+      val expected = new File("src/test/resources/expectedSDO",f)
+      actual should haveSameContentAs(expected)
+    })
   }
 }

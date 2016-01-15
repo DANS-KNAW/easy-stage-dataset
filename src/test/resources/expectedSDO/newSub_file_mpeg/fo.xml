@@ -1,0 +1,16 @@
+<foxml:digitalObject VERSION="1.1" xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:foxml="info:fedora/fedora-system:def/foxml#">
+      <foxml:objectProperties>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE="file.mpeg"/>
+        <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE="{{ easy_stage_dataset_owner }}"/>
+      </foxml:objectProperties>
+      <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
+        <foxml:datastreamVersion ID="DC1.0" LABEL="Dublin Core Record" MIMETYPE="text/xml" FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/">
+          <foxml:xmlContent>
+            <oai_dc:dc xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/" xmlns="">
+        <dc:title>file.mpeg</dc:title><dc:type>video/mpeg</dc:type>
+      </oai_dc:dc>
+          </foxml:xmlContent>
+        </foxml:datastreamVersion>
+      </foxml:datastream>
+    </foxml:digitalObject>
