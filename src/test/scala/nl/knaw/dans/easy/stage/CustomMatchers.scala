@@ -45,7 +45,7 @@ trait CustomMatchers {
       val fileContent = IOUtils.toString(new FileInputStream(file))
       MatchResult(
         leftContent == fileContent,
-        s"$left did not have same content as $file", // TODO add {leftContent diff fileContent} when it works
+        s"$left did not have same content as $file", // TODO add {leftContent diff fileContent} if it works
         s"$left has same content as $file"
       )
     }

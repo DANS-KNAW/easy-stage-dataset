@@ -15,12 +15,17 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.{FileInputStream, File}
+import java.io.File
+import java.net.URL
 
-import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
-import org.apache.commons.io.IOUtils
-import org.scalatest.{FlatSpec, Matchers}
 import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
+import nl.knaw.dans.easy.stage.lib.Fedora
+import org.scalatest.{FlatSpec, Matchers}
+
+import scala.collection.immutable.HashMap
+import scala.reflect.io.Path
+import scala.util.{Failure, Success, Try}
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
@@ -51,23 +56,117 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     getSettingsRows(new FileItemConf(args)).get.size shouldBe 5
   }
 
-  "createItems" should "create some SDOs" in {
-    val args = "--dataset-id easy-dataset:1 --size 1 --format video/mpeg --path-in-dataset original/newSub/file.mpeg --datastream-location http://x.nl/l/d target/testsdo".split(" ")
-    implicit val settings = FileItemSettings(args)
-    val sdoSetDir = new File("target/testSDO")
-    sdoSetDir.mkdirs()
-    createItems("easy-folder:1","original",Seq("newSub","file.mpeg"),sdoSetDir)
-    List(
-      "newSub/cfg.json",
-      "newSub/EASY_ITEM_CONTAINER_MD",
-      "newSub/fo.xml",
-      "newSub_file_mpeg/cfg.json",
-      "newSub_file_mpeg/EASY_FILE_METADATA",
-      "newSub_file_mpeg/fo.xml"
-    ).foreach(f => {
-      val actual = new File(sdoSetDir, f)
-      val expected = new File("src/test/resources/expectedSDO",f)
-      actual should haveSameContentAs(expected)
-    })
+  "main" should "report a configuration problem" in {
+    val args = "src/test/resources/example.csv target/testSDO".split(" ")
+    the[Exception] thrownBy EasyStageFileItem.main(args) should
+      have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
   }
+
+  "run" should "create expected file item SDOs" in {
+    EasyStageFileItem.run(new FileItemSettings(
+      sdoSetDir = Some(file("target/testSDO")),
+      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      size = Some(1),
+      datasetId = Some("easy-dataset:1"),
+      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      format = Some("video/mpeg"),
+      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
+        "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
+      )),
+      fedora = mockFedora(HashMap(
+        "pid~easy-dataset:1" -> Seq("easy-dataset:1")
+      ))
+    ))
+    //TODO check might suffer from insignificant changes as white space or irrelevant order
+    shouldBeEqual(
+      Path("target/testSDO/easy-dataset_1"),
+      Path("src/test/resources/expectedFileItemSDOs")
+    )
+    Path("target/testSDO").deleteRecursively()
+  }
+
+  it should "report a missing size" in {
+    the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
+      sdoSetDir = Some(file("target/testSDO")),
+      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      size = None,
+      datasetId = Some("easy-dataset:1"),
+      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      format = None,
+      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
+        "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
+      )),
+      fedora = mockFedora(HashMap(
+        "pid~easy-dataset:1" -> Seq("easy-dataset:1")
+      ))
+    )).get should have message "None.get"
+    // the message is vague, a proper FileItemConf/EasyStageDataset
+    // should take care of something clearer for the end user
+  }
+
+  it should "report a fedora error" in {
+    the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
+      sdoSetDir = Some(file("target/testSDO")),
+      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      size = Some(1),
+      datasetId = Some("easy-dataset:1"),
+      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      format = Some("video/mpeg"),
+      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
+        "easy-dataset:1 original/newSub/file.mpeg" -> Failure(new Exception("mocked error"))
+      )),
+      fedora = mockFedora(HashMap(
+        "pid~easy-dataset:1" -> Seq("easy-dataset:1")
+      ))
+    )).get should have message "mocked error"
+  }
+
+  it should "report the dataset does not exist" in {
+    the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
+      sdoSetDir = Some(file("target/testSDO")),
+      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      size = Some(1),
+      datasetId = Some("easy-dataset:1"),
+      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      format = Some("video/mpeg"),
+      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
+        "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
+      )),
+      fedora = mockFedora(HashMap(
+        "pid~easy-dataset:1" -> Seq() // TODO findObjects should return a Try
+      ))
+    )).get should have message "easy-dataset:1 does not exist in repository"
+  }
+
+  def shouldBeEqual(actualPath: Path, expectedPath: Path): Unit = {
+    // file names
+    getRelativeFiles(actualPath) shouldBe getRelativeFiles(expectedPath)
+    // content of the files
+    actualPath.walk.toSeq.zip(
+      expectedPath.walk.toSeq
+    ).foreach {
+      case (actual, expected) =>
+        file(actual.toString) should haveSameContentAs(file(expected.toString))
+    }
+  }
+
+  def getRelativeFiles(path: Path): List[String] =
+    path.walk.map(_.toString.replaceAll(path.toString()+"/", "")).toList
+
+
+  def mockEasyFilesAndFolders(expectations: Map[String,Try[(String,String)]]): EasyFilesAndFolders =
+    new EasyFilesAndFolders {
+      override def getExistingAncestor(file: File, datasetId: String): Try[(String, String)] =
+        expectations.get(s"$datasetId $file").get
+    }
+
+  def mockFedora(expectations: Map[String,Seq[String]]): Fedora =
+    new Fedora {
+      override def findObjects(query: String, acc: Seq[String], token: Option[String]): Seq[String] =
+        expectations.get(query).get
+    }
 }

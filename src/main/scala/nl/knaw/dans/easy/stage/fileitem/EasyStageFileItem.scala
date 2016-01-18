@@ -59,8 +59,8 @@ object EasyStageFileItem {
           val rows = csv.getRows
           if (rows.isEmpty) log.warn(s"Empty CSV file")
           rows.map{options =>
-            log.info(options.mkString(" "))
-            FileItemSettings(options ++ trailArgs)
+            log.info("Options: "+options.mkString(" "))
+            FileItemSettings(new FileItemConf(options ++ trailArgs))
           }
       }
     }
@@ -72,18 +72,10 @@ object EasyStageFileItem {
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
       (parentId, parentPath, newElements)  <- getPathElements()
-      _                <- createItems(parentId, parentPath, newElements, datasetSdoSetDir)
-    } yield ()
-  }
-
-  def createItems(parentId: String, parentPath: String, newElements: Seq[String],datasetSdoSetDir: File
-                 )(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"executing: $s")
-    for {
-      items <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
-      _     = log.debug(s"Items to stage: $items")
-      _     <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
-      _     <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
+      items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
+      _                = log.debug(s"Items to stage: $items")
+      _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
     } yield ()
   }
 
@@ -93,7 +85,7 @@ object EasyStageFileItem {
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
-    EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
+    s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
       .map { case (parentPath, parentId) =>
         log.debug(s"Parent in repository: $parentId $parentPath")
         val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
@@ -145,7 +137,7 @@ object EasyStageFileItem {
   private def getValidDatasetId(s: FileItemSettings): Try[String] =
     if (s.datasetId.isEmpty)
       Failure(new Exception(s"no datasetId provided"))
-    else if (Fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
+    else if (s.fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
       Failure(new Exception(s"${s.datasetId.get} does not exist in repository"))
     else
       Success(s.datasetId.get)
