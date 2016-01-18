@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
-import java.io.File
+import java.io.{StringReader, File}
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
@@ -25,10 +25,13 @@ import org.apache.commons.io.FileUtils.readFileToString
 import org.json4s._
 import org.json4s.native._
 import org.scalatest.{FlatSpec, Matchers}
+import org.xml.sax.InputSource
+import org.xml.sax.helpers.DefaultHandler
 
 import scala.collection.immutable.HashMap
 import scala.reflect.io.Path
 import scala.util.{Failure, Success, Try}
+import scala.xml.{Node, XML}
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
@@ -80,7 +83,6 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
       ))
     ))
-    //TODO check might suffer from insignificant changes as white space or irrelevant order
     shouldBeEqual(
       Path("target/testSDO/easy-dataset_1"),
       Path("src/test/resources/expectedFileItemSDOs")
@@ -154,10 +156,17 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     ).foreach {
       case (actual, expected) if actual.endsWith("cfg.json") =>
         readCfgJson(expected) shouldBe readCfgJson(actual)
-      case (actual, expected) => // TODO fix irrelevant differences for XML's
+      case (actual, expected) if actual.endsWith("fo.xml") =>
+        // TODO fix irrelevant differences for fo.xml
         new File(actual) should haveSameContentAs(new File(expected))
+      case (actual, expected) =>
+        // metadata of a file or folder
+        readFlatXml(actual) shouldBe readFlatXml(expected)
     }
   }
+
+  def readFlatXml(file: String): Seq[Node] =
+    XML.loadFile(file).descendant.toSeq.filter(n => n.toString().startsWith("<")).sortBy(n => n.label)
 
   type S2S = Map[String, String]
   type S2A = Map[String, Any]
