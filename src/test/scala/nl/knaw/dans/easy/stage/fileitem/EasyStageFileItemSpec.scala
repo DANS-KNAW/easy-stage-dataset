@@ -144,7 +144,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   def shouldBeEqual(actualPath: Path, expectedPath: Path): Unit = {
     // file names
-    getRelativeFiles(actualPath) shouldBe getRelativeFiles(expectedPath)
+    getRelativeFiles(actualPath).toSet shouldBe getRelativeFiles(expectedPath).toSet
     // content of the files
     actualPath.walk.toSeq.zip(
       expectedPath.walk.toSeq
