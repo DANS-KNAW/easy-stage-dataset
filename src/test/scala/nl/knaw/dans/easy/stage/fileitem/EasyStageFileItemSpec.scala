@@ -21,6 +21,9 @@ import java.net.URL
 import nl.knaw.dans.easy.stage.CustomMatchers._
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.lib.Fedora
+import org.apache.commons.io.FileUtils.readFileToString
+import org.json4s._
+import org.json4s.native._
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.immutable.HashMap
@@ -29,22 +32,21 @@ import scala.util.{Failure, Success, Try}
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
-  def file(p: String) = new File(p)
 
   "getItemsToStage" should "return list of SDO with parent relations that are internally consistent" in {
-    getItemsToStage(Seq("path", "to", "new", "file.txt"), file("dataset-sdo-set"), "easy-folder:123") shouldBe
-    Seq((file("dataset-sdo-set/path"), "path", "object" -> "info:fedora/easy-folder:123"),
-      (file("dataset-sdo-set/path_to"), "path/to", "objectSDO" -> "path"),
-      (file("dataset-sdo-set/path_to_new"), "path/to/new", "objectSDO" -> "path_to"),
-      (file("dataset-sdo-set/path_to_new_file_txt"), "path/to/new/file.txt", "objectSDO" -> "path_to_new"))
+    getItemsToStage(Seq("path", "to", "new", "file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe
+    Seq((new File("dataset-sdo-set/path"), "path", "object" -> "info:fedora/easy-folder:123"),
+      (new File("dataset-sdo-set/path_to"), "path/to", "objectSDO" -> "path"),
+      (new File("dataset-sdo-set/path_to_new"), "path/to/new", "objectSDO" -> "path_to"),
+      (new File("dataset-sdo-set/path_to_new_file_txt"), "path/to/new/file.txt", "objectSDO" -> "path_to_new"))
   }
 
   it should "return an empty Seq when given one" in {
-    getItemsToStage(Seq(), file("dataset-sdo-set"), "easy-folder:123") shouldBe Seq()
+    getItemsToStage(Seq(), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq()
   }
 
   it should "return only a file item if path contains one element" in {
-    getItemsToStage(Seq("file.txt"), file("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((file("dataset-sdo-set/file_txt"), "file.txt", "object" -> "info:fedora/easy-folder:123"))
+    getItemsToStage(Seq("file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((new File("dataset-sdo-set/file_txt"), "file.txt", "object" -> "info:fedora/easy-folder:123"))
   }
 
   "getSettingsRows" should "create a single row from dummy conf" in {
@@ -64,11 +66,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   "run" should "create expected file item SDOs" in {
     EasyStageFileItem.run(new FileItemSettings(
-      sdoSetDir = Some(file("target/testSDO")),
+      sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
-      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
       subordinate = "object" -> s"info:fedora/easy-dataset:1",
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
@@ -88,11 +90,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "report a missing size" in {
     the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
-      sdoSetDir = Some(file("target/testSDO")),
+      sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
       datasetId = Some("easy-dataset:1"),
-      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = None,
       subordinate = "object" -> s"info:fedora/easy-dataset:1",
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
@@ -108,11 +110,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "report a fedora error" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
-      sdoSetDir = Some(file("target/testSDO")),
+      sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
-      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
       subordinate = "object" -> s"info:fedora/easy-dataset:1",
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
@@ -126,11 +128,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "report the dataset does not exist" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
-      sdoSetDir = Some(file("target/testSDO")),
+      sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
-      pathInDataset = Some(file("original/newSub/file.mpeg")),
+      pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
       subordinate = "object" -> s"info:fedora/easy-dataset:1",
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
@@ -142,20 +144,32 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     )).get should have message "easy-dataset:1 does not exist in repository"
   }
 
-  def shouldBeEqual(actualPath: Path, expectedPath: Path): Unit = {
+  def shouldBeEqual(actualSdoSet: Path, expectedSdoSet: Path): Unit = {
+
     // file names
-    getRelativeFiles(actualPath).toSet shouldBe getRelativeFiles(expectedPath).toSet
-    // content of the files
-    actualPath.walk.toSeq.zip(
-      expectedPath.walk.toSeq
+    getRelativeFiles(actualSdoSet) shouldBe getRelativeFiles(expectedSdoSet)
+    // we need a predictable order on both sides
+    actualSdoSet.walk.toSeq.map(_.path).sortBy(s => s).zip(
+      expectedSdoSet.walk.toSeq.map(_.path).sortBy(s => s)
     ).foreach {
-      case (actual, expected) =>
-        file(actual.toString) should haveSameContentAs(file(expected.toString))
+      case (actual, expected) if actual.endsWith("cfg.json") =>
+        readCfgJson(expected) shouldBe readCfgJson(actual)
+      case (actual, expected) => // TODO fix irrelevant differences for XML's
+        new File(actual) should haveSameContentAs(new File(expected))
     }
   }
 
-  def getRelativeFiles(path: Path): List[String] =
-    path.walk.map(_.toString.replaceAll(path.toString()+"/", "")).toList
+  def readCfgJson(file: String): (Option[String], Option[Set[Map[String, String]]], Option[Set[Map[String, String]]]) = {
+    val content = readFileToString(new File(file))
+    val map = parseJson(content).values.asInstanceOf[Map[String,Any]]
+    val namespace = map.get("namespace").map(_.asInstanceOf[String])
+    val datastreams = map.get("datastreams").map(_.asInstanceOf[List[Map[String,String]]].toSet[Map[String,String]])
+    val relations = map.get("relations").map(_.asInstanceOf[List[Map[String,String]]].toSet[Map[String,String]])
+    (namespace,datastreams,relations)
+  }
+
+  def getRelativeFiles(path: Path): Set[String] =
+    path.walk.map(_.toString.replaceAll(path.toString()+"/", "")).toSet
 
 
   def mockEasyFilesAndFolders(expectations: Map[String,Try[(String,String)]]): EasyFilesAndFolders =
