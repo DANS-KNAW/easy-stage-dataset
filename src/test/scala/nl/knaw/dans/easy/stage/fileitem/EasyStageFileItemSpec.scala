@@ -159,12 +159,14 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     }
   }
 
-  def readCfgJson(file: String): (Option[String], Option[Set[Map[String, String]]], Option[Set[Map[String, String]]]) = {
+  type S2S = Map[String, String]
+  type S2A = Map[String, Any]
+  def readCfgJson(file: String): (Option[String], Option[Set[S2S]], Option[Set[S2S]]) = {
     val content = readFileToString(new File(file))
-    val map = parseJson(content).values.asInstanceOf[Map[String,Any]]
+    val map = parseJson(content).values.asInstanceOf[S2A]
     val namespace = map.get("namespace").map(_.asInstanceOf[String])
-    val datastreams = map.get("datastreams").map(_.asInstanceOf[List[Map[String,String]]].toSet[Map[String,String]])
-    val relations = map.get("relations").map(_.asInstanceOf[List[Map[String,String]]].toSet[Map[String,String]])
+    val datastreams = map.get("datastreams").map(_.asInstanceOf[List[S2S]].toSet[S2S])
+    val relations = map.get("relations").map(_.asInstanceOf[List[S2S]].toSet[S2S])
     (namespace,datastreams,relations)
   }
 
