@@ -8,5 +8,5 @@
     <root level="error">
         <appender-ref ref="CONSOLE" />
     </root>
-    <logger name="nl.knaw.dans.easy.stage" level="info" />
+    <logger name="nl.knaw.dans.easy.stage" level="off" />
 </configuration>
