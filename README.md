@@ -1,5 +1,6 @@
 easy-stage-dataset
 ==================
+[![Build Status](https://travis-ci.org/DANS-KNAW/easy-stage-dataset.svg?branch=master)](https://travis-ci.org/DANS-KNAW/easy-stage-dataset)
 
 Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
 
