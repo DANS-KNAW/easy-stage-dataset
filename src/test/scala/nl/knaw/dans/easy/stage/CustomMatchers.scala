@@ -15,9 +15,10 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.File
+import java.io.{FileInputStream, File}
 
 import org.apache.commons.io.FileUtils._
+import org.apache.commons.io.IOUtils
 import org.scalatest.matchers.{MatchResult, Matcher}
 import org.scalatest.words.ResultOfATypeInvocation
 

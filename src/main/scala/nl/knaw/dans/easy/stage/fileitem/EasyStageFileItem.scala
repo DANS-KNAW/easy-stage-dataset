@@ -59,8 +59,8 @@ object EasyStageFileItem {
           val rows = csv.getRows
           if (rows.isEmpty) log.warn(s"Empty CSV file")
           rows.map{options =>
-            log.info(options.mkString(" "))
-            FileItemSettings(options ++ trailArgs)
+            log.info("Options: "+options.mkString(" "))
+            FileItemSettings(new FileItemConf(options ++ trailArgs))
           }
       }
     }
@@ -85,7 +85,7 @@ object EasyStageFileItem {
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
-    EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
+    s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
       .map { case (parentPath, parentId) =>
         log.debug(s"Parent in repository: $parentId $parentPath")
         val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
@@ -114,11 +114,13 @@ object EasyStageFileItem {
     log.debug(s"Creating file SDO: $path")
     sdoDir.mkdir()
     for {
-      mime <- Try{s.format.get}
-      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
-      fmd <- EasyFileMetadata(s)
-      _ <- writeFileMetadata(sdoDir, fmd)
+      mime         <- Try{s.format.get}
+      cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
+      _            <- writeJsonCfg(sdoDir, cfgContent)
+      foxmlContent <- Try{ getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime)}
+      _            <- writeFoxml(sdoDir, foxmlContent)
+      fmd          <- EasyFileMetadata(s)
+      _            <- writeFileMetadata(sdoDir, fmd)
     } yield ()
   }
 
@@ -135,7 +137,7 @@ object EasyStageFileItem {
   private def getValidDatasetId(s: FileItemSettings): Try[String] =
     if (s.datasetId.isEmpty)
       Failure(new Exception(s"no datasetId provided"))
-    else if (Fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
+    else if (s.fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
       Failure(new Exception(s"${s.datasetId.get} does not exist in repository"))
     else
       Success(s.datasetId.get)

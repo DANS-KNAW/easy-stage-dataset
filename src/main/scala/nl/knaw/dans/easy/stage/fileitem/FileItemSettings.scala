@@ -18,9 +18,10 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props._
 
-case class FileItemSettings private (sdoSetDir: Option[File],
+case class FileItemSettings (sdoSetDir: Option[File],
                                      datasetId: Option[String],
                                      datastreamLocation: Option[URL],
                                      unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
@@ -33,6 +34,8 @@ case class FileItemSettings private (sdoSetDir: Option[File],
                                      creatorRole: String = "DEPOSITOR",
                                      visibleTo: String = "ANONYMOUS",
                                      accessibleTo: String = "NONE",
+                                     fedora: Fedora = Fedora,
+                                     easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
                                      subordinate: (String, String))
 
@@ -58,7 +61,7 @@ object FileItemSettings {
 
   /** new file or folder for an existing dataset */
   def apply(conf: FileItemConf): FileItemSettings =
-      new FileItemSettings(
+    new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
       datastreamLocation = conf.dsLocation.get,
       size = conf.size.get,
@@ -69,7 +72,4 @@ object FileItemSettings {
     ) {
       override def toString = conf.toString
     }
-
-  def apply(args: Seq[String]): FileItemSettings =
-    FileItemSettings(new FileItemConf(args))
 }

@@ -22,7 +22,11 @@ import scala.annotation.tailrec
 import scala.collection.JavaConversions._
 import scala.xml.XML
 
-object Fedora {
+trait Fedora {
+  def findObjects(query: String, acc: Seq[String] = Nil, token: Option[String] = None): Seq[String]
+}
+
+object Fedora extends Fedora {
   val findObjectsBatchSize = 25
 
   def setFedoraConnectionSettings(fedoraServiceUrl: String, fedoraUser: String, fedoraPassword: String): Unit = {
