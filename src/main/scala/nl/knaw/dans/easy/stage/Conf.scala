@@ -19,7 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopConf, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ScallopOption, ScallopConf, ValueConverter, singleArgConverter}
 import org.slf4j.LoggerFactory
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
@@ -49,18 +49,15 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     new File(f)
   })
 
-  val submissionTimestamp = opt[DateTime](
+  val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
     name = "submission-timestamp", short = 't',
-    descr = "Timestamp in ISO8601 format",
-    required = true)
-  val urn = opt[String](
+    descr = "Timestamp in ISO8601 format")
+  val urn: ScallopOption[String] = opt[String](
     name = "urn", short = 'u',
-    descr = "The URN to assign to the new dataset in EASY",
-    required = true)
-  val doi = opt[String](
+    descr = "The URN to assign to the new dataset in EASY")
+  val doi: ScallopOption[String] = opt[String](
     name = "doi", short = 'd',
-    descr = "The DOI to assign to the new dataset in EASY",
-    required = true)
+    descr = "The DOI to assign to the new dataset in EASY")
   val otherAccessDOI = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
@@ -73,4 +70,9 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)(mayNotExist)
+  codependent(urn,doi)
+}
+
+object Conf {
+  val dummy = new Conf(". -".split(" "))
 }
