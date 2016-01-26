@@ -1,0 +1,22 @@
+{
+  "namespace":"easy-folder",
+  "datastreams":[{
+    "contentFile":"EASY_ITEM_CONTAINER_MD",
+    "dsID":"EASY_ITEM_CONTAINER_MD",
+    "mimeType":"text/xml",
+    "controlGroup":"X"
+  }],
+  "relations":[{
+    "object":"info:fedora/easy-folder:1",
+    "predicate":"http://dans.knaw.nl/ontologies/relations#isMemberOf"
+  },{
+    "predicate":"info:fedora/fedora-system:def/model#hasModel",
+    "object":"info:fedora/easy-model:EDM1FOLDER"
+  },{
+    "predicate":"http://dans.knaw.nl/ontologies/relations#isSubordinateTo",
+    "object":"info:fedora/easy-dataset:1"
+  },{
+    "predicate":"info:fedora/fedora-system:def/model#hasModel",
+    "object":"info:fedora/dans-container-item-v1"
+  }]
+}

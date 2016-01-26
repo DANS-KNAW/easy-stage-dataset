@@ -25,8 +25,12 @@ import org.slf4j.LoggerFactory
 import scala.annotation.tailrec
 import scala.util.Try
 
-object EasyFilesAndFolders {
-  val conn = DriverManager.getConnection(props.getString("db-connection-url"))
+trait EasyFilesAndFolders {
+  def getExistingAncestor(file: File, datasetId: String): Try[(String,String)]
+}
+
+object EasyFilesAndFolders extends EasyFilesAndFolders{
+  lazy val conn = DriverManager.getConnection(props.getString("db-connection-url"))
 
   def getExistingAncestor(file: File, datasetId: String): Try[(String,String)] = {
     val query: PreparedStatement = conn.prepareStatement(

@@ -35,7 +35,9 @@ object EMD {
       return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
     }
     for {
-      emd <- getEasyMetadata(ddm).map(addIdentifiers)
+      emd <- getEasyMetadata(ddm)
+      _   = s.URN.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
+      _   = s.DOI.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDOI)))
       _   <- writeEMD(sdoDir, new EmdMarshaller(emd).getXmlString)
     } yield emd
   }
@@ -52,15 +54,17 @@ object EMD {
       case t: Throwable => Failure(t)
     }
 
-  private def addIdentifiers(emd: EasyMetadata)(implicit s: Settings): EasyMetadata = {
-    val doi = new BasicIdentifier(s.DOI)
-    doi.setScheme(if (s.otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
-    doi.setIdentificationSystem(new URI("http://dx.doi.org"))
-    emd.getEmdIdentifier.add(doi)
-    val pid = new BasicIdentifier(s.URN)
-    pid.setScheme(EmdConstants.SCHEME_PID)
-    pid.setIdentificationSystem(new URI("http://www.persistent-identifier.nl"))
-    emd.getEmdIdentifier.add(pid)
-    emd
+  def wrapUrn(urn: String): BasicIdentifier = {
+    val basicId = new BasicIdentifier(urn)
+    basicId.setScheme(EmdConstants.SCHEME_PID)
+    basicId.setIdentificationSystem(new URI("http://www.persistent-identifier.nl"))
+    basicId
+  }
+
+  def wrapDoi(doi: String, otherAccessDOI: Boolean): BasicIdentifier = {
+    val basicId = new BasicIdentifier(doi)
+    basicId.setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
+    basicId.setIdentificationSystem(new URI("http://dx.doi.org"))
+    basicId
   }
 }

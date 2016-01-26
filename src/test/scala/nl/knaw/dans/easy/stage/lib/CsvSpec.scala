@@ -36,10 +36,4 @@ class CsvSpec extends FlatSpec with Matchers {
     val in = new ByteArrayInputStream ("".stripMargin.getBytes)
     (the[Exception] thrownBy CSV(in, Seq("ABc", "def")).get).getMessage should include ("not supported")
   }
-
-  it should "accept example.csv" in {
-    val in = new FileInputStream ("src/test/resources/example.csv")
-    val (csv,_) = CSV(in, conf.longOptionNames).get
-    csv.getRows.size shouldBe 5
-  }
 }
