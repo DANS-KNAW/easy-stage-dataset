@@ -15,19 +15,14 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{ByteArrayOutputStream, File}
-import java.lang.System.clearProperty
-
-import org.apache.commons.configuration.PropertiesConfiguration
-import org.rogach.scallop.ScallopConf
-import org.scalatest.{Matchers, FlatSpec}
+import java.io.File
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
-import scala.collection.JavaConverters._
+import org.rogach.scallop.ScallopConf
 
 class ConfSpec extends AbstractConfSpec {
 
-  override def getConf: ScallopConf = new Conf("-t 2015 -u urn -d doi . -".split(" "))
+  override def getConf: ScallopConf = Conf.dummy
 
   "first banner line" should "be part of README.md and pom.xml" in {
     val description = helpInfo.split("\n")(1)

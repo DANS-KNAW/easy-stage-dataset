@@ -1,5 +1,6 @@
 easy-stage-dataset
 ==================
+[![Build Status](https://travis-ci.org/DANS-KNAW/easy-stage-dataset.svg?branch=master)](https://travis-ci.org/DANS-KNAW/easy-stage-dataset)
 
 Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
 
@@ -64,7 +65,7 @@ ARGUMENTS for easy-stage-fileItem
                                        csf-file is required
     -d, --datastream-location  <arg>   http URL to redirect to
         --format  <arg>                dcterms property format, the mime type of the
-                                       file
+                                       file (default 'application/octet-stream')
     -p, --path-in-dataset  <arg>       the path that the file should get in the
                                        dataset, a staged digital object is created
                                        for the file and the ancestor folders that
@@ -73,13 +74,13 @@ ARGUMENTS for easy-stage-fileItem
         --help                         Show help message
         --version                      Show version of this program
 
-   trailing arguments:
-    csv-file (not required)                 a comma separated file with one column
-                                            for each option (additional columns are
-                                            ignored) and one set of options per line
-    staged-digital-object-sets (required)   The resulting directory with Staged
-                                            Digital Object directories per dataset
-                                            (will be created if it does not exist) 
+    trailing arguments:
+     csv-file (not required)                 a comma separated file with one column
+                                             for each option (additional columns are
+                                             ignored) and one set of options per line
+     staged-digital-object-sets (required)   The resulting directory with Staged
+                                             Digital Object directories per dataset
+                                             (will be created if it does not exist) 
 
 INSTALLATION AND CONFIGURATION
 ------------------------------

@@ -20,19 +20,59 @@ import java.net.URL
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
+import org.apache.commons.configuration.PropertiesConfiguration
+import org.joda.time.DateTime
 
 case class Settings(ownerId: String,
-                    submissionTimestamp: String,
+                    submissionTimestamp: DateTime = new DateTime(),
                     bagitDir: File,
                     sdoSetDir: File,
-                    URN: String,
-                    DOI: String,
+                    URN: Option[String] = None,
+                    DOI: Option[String] = None,
                     otherAccessDOI: Boolean = false,
                     fedoraUser: String,
                     fedoraPassword: String,
                     fedoraUrl: URL) {
   Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
 
-  val disciplines: Map[String,String] = Fedora.disciplines
+  val disciplines: Map[String, String] = Fedora.disciplines
   val licenses: Map[String, File] = Licenses.getLicenses
+}
+
+object Settings {
+
+  /** backward compatible call for EasyIngestFlow */
+  def apply(ownerId: String,
+            submissionTimestamp: String,
+            bagitDir: File,
+            sdoSetDir: File,
+            URN: String,
+            DOI: String,
+            otherAccessDOI: Boolean,
+            fedoraUser: String,
+            fedoraPassword: String,
+            fedoraUrl: URL) =
+    new Settings(ownerId = ownerId,
+      submissionTimestamp = DateTime.parse(submissionTimestamp),
+      bagitDir = bagitDir,
+      sdoSetDir = sdoSetDir,
+      URN = Some(URN),
+      DOI = Some(DOI),
+      otherAccessDOI = otherAccessDOI,
+      fedoraUser = fedoraUser,
+      fedoraPassword = fedoraPassword,
+      fedoraUrl = fedoraUrl)
+
+  def apply(conf: Conf, props: PropertiesConfiguration) =
+    new Settings(
+      ownerId = props.getString("owner"),
+      submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
+      bagitDir = conf.bag(),
+      sdoSetDir = conf.sdoSet(),
+      URN = conf.urn.get,
+      DOI = conf.doi.get,
+      otherAccessDOI = conf.otherAccessDOI(),
+      fedoraUser = props.getString("fcrepo.user"),
+      fedoraPassword = props.getString("fcrepo.password"),
+      fedoraUrl = new URL(props.getString("fcrepo.url")))
 }

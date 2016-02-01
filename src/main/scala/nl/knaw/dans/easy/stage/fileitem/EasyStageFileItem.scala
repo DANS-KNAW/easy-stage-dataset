@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.net.URL
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -47,7 +46,7 @@ object EasyStageFileItem {
     }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf", t) }
   }
 
-  private def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
+  def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
     if (conf.datasetId.isDefined)
       Success(Seq(FileItemSettings(conf)))
     else if (conf.csvFile.isEmpty)
@@ -59,7 +58,10 @@ object EasyStageFileItem {
           warning.map(msg => log.warn(msg))
           val rows = csv.getRows
           if (rows.isEmpty) log.warn(s"Empty CSV file")
-          rows.map(options => FileItemSettings(options ++ trailArgs))
+          rows.map{options =>
+            log.info("Options: "+options.mkString(" "))
+            FileItemSettings(new FileItemConf(options ++ trailArgs))
+          }
       }
     }
 
@@ -72,18 +74,18 @@ object EasyStageFileItem {
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
-      _                = items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
-      _                = items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, fullPath(parentPath, path).toString, parentRelation) }
+      _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
     } yield ()
   }
 
-  def fullPath(parentPath: String, path: String): File =
-    if (parentPath.isEmpty) new File(path) // prevent a leading slash
-    else new File(parentPath, path)
+  def relPath(parentPath: String, path: String): String =
+    if (parentPath.isEmpty) new File(path).toString // prevent a leading slash
+    else new File(parentPath, path).toString
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
-    EasyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
+    s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
       .map { case (parentPath, parentId) =>
         log.debug(s"Parent in repository: $parentId $parentPath")
         val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
@@ -95,7 +97,7 @@ object EasyStageFileItem {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> existingFolderId)
+        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> s"info:fedora/$existingFolderId")
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
           seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
@@ -112,10 +114,13 @@ object EasyStageFileItem {
     log.debug(s"Creating file SDO: $path")
     sdoDir.mkdir()
     for {
-      mime <- Try{s.format.get}
-      _ <- writeJsonCfg(sdoDir, JSON.createFileCfg(s.dsLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime))
-      _ <- writeFileMetadata(sdoDir, EasyFileMetadata(s).toString())
+      mime         <- Try{s.format.get}
+      cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
+      _            <- writeJsonCfg(sdoDir, cfgContent)
+      foxmlContent <- Try{ getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime)}
+      _            <- writeFoxml(sdoDir, foxmlContent)
+      fmd          <- EasyFileMetadata(s)
+      _            <- writeFileMetadata(sdoDir, fmd)
     } yield ()
   }
 
@@ -132,7 +137,7 @@ object EasyStageFileItem {
   private def getValidDatasetId(s: FileItemSettings): Try[String] =
     if (s.datasetId.isEmpty)
       Failure(new Exception(s"no datasetId provided"))
-    else if (Fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
+    else if (s.fedora.findObjects(s"pid~${s.datasetId.get}").isEmpty)
       Failure(new Exception(s"${s.datasetId.get} does not exist in repository"))
     else
       Success(s.datasetId.get)

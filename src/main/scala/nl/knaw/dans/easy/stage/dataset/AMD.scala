@@ -21,23 +21,20 @@ import scala.xml.Elem
 
 object AMD {
 
-  /*
-   * An exact timestamp is required, so valid ISO dates like 2015-09-01T12:01 won't do
-   */
-  def normalizeTimestamp (t: String): String = DateTime.parse(t).toString
+  def apply(depositorId: String, submissionTimestamp: DateTime, draft: Boolean): Elem = {
 
-  def apply(depositorId: String, submissionTimestamp: String): Elem = {
-    val normalizedSubmissiontimestamp = normalizeTimestamp(submissionTimestamp)
+    val lastState = {if (draft) "DRAFT" else "SUBMITTED"}
+
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
-      <datasetState>SUBMITTED</datasetState>
+      <datasetState>{lastState}</datasetState>
       <previousState>DRAFT</previousState>
-      <lastStateChange>{normalizedSubmissiontimestamp}</lastStateChange>
+      <lastStateChange>{submissionTimestamp}</lastStateChange>
       <depositorId>{depositorId}</depositorId>
       <stateChangeDates>
         <damd:stateChangeDate>
           <fromState>DRAFT</fromState>
-          <toState>SUBMITTED</toState>
-          <changeDate>{normalizedSubmissiontimestamp}</changeDate>
+          <toState>{lastState}</toState>
+          <changeDate>{submissionTimestamp}</changeDate>
         </damd:stateChangeDate>
       </stateChangeDates>
       <groupIds></groupIds>

@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
 import java.nio.file.Path
 
 import nl.knaw.dans.easy.stage.dataset.Util._
@@ -24,8 +23,8 @@ import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
 import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
-import nl.knaw.dans.easy.stage.lib.{Fedora, JSON}
 import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.easy.stage.lib.{Fedora, JSON}
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
 
@@ -37,20 +36,8 @@ object EasyStageDataset {
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
     Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
-    val conf = new Conf(args)
 
-    implicit val s = Settings(
-      ownerId = props.getString("owner"),
-      submissionTimestamp = conf.submissionTimestamp.apply().toString,
-      bagitDir = conf.bag(),
-      sdoSetDir = conf.sdoSet(),
-      URN = conf.urn(),
-      DOI = conf.doi(),
-      otherAccessDOI = conf.otherAccessDOI(),
-      fedoraUser = props.getString("fcrepo.user"),
-      fedoraPassword = props.getString("fcrepo.password"),
-      fedoraUrl = new URL(props.getString("fcrepo.url")))
-
+    implicit val s = Settings(new Conf(args),props)
     run match {
       case Success(_) => log.info("Staging SUCCESS")
       case Failure(t) => log.error("Staging FAIL", t)
@@ -72,7 +59,7 @@ object EasyStageDataset {
     log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-      amdContent = AMD(s.ownerId, s.submissionTimestamp).toString()
+      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty).toString()
       emdContent <- EMD.create(sdoDir)
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       mimeType <- AdditionalLicense.createOptionally(sdoDir)
@@ -105,11 +92,10 @@ object EasyStageDataset {
       mime <- readMimeType(getBagRelativePath(file).toString)
       _ <- EasyStageFileItem.createFileSdo(sdoDir, relativePath, "objectSDO" -> parentSDO
       )(FileItemSettings(
-        sdoSetDir = Some(s.sdoSetDir),
-        dsLocation = None,
-        size = Some(file.length),
+        sdoSetDir = s.sdoSetDir,
         ownerId = s.ownerId,
-        pathInDataset = Some(new File(relativePath)),
+        pathInDataset = new File(relativePath),
+        size = Some(file.length),
         format = Some(mime)
       ))
     } yield ()
@@ -120,9 +106,8 @@ object EasyStageDataset {
     val relativePath= getDatasetRelativePath(folder).toString
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(FileItemSettings(sdoSetDir = Some(s.sdoSetDir),
-                                        ownerId = s.ownerId,
-                                        pathInDataset = Some(getDatasetRelativePath(folder).toFile)))
+      fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile, None, None)
+      _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
     } yield ()
   }
 

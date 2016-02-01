@@ -17,13 +17,12 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.{ByteArrayInputStream, FileInputStream}
 
-import nl.knaw.dans.easy.stage.fileitem.{FileItemSettings, FileItemConf}
+import nl.knaw.dans.easy.stage.fileitem.FileItemConf
 import org.scalatest.{FlatSpec, Matchers}
 
 class CsvSpec extends FlatSpec with Matchers {
 
-  private val commandLineArgs = "target/test/sdo-set".split(" ")
-  private val conf = new FileItemConf(commandLineArgs)
+  private val conf = FileItemConf.dummy
 
   "apply" should "fail with too few headers in the input" in {
     val in = new ByteArrayInputStream (

@@ -18,40 +18,58 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props._
 
-case class FileItemSettings(sdoSetDir: Option[File],
-                            datasetId: Option[String] = None,
-                            dsLocation: Option[URL] = None,
-                            unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
-                            size: Option[Long] = None,
-                            ownerId: String = props.getString("owner"),
-                            pathInDataset: Option[File],
-                            format: Option[String] = None,
+case class FileItemSettings (sdoSetDir: Option[File],
+                                     datasetId: Option[String],
+                                     datastreamLocation: Option[URL],
+                                     unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
+                                     size: Option[Long],
+                                     ownerId: String = props.getString("owner"),
+                                     pathInDataset: Option[File],
+                                     format: Option[String] = None,
 
-                            // as in SDO/*/EASY_FILE_METADATA
-                            creatorRole: String = "DEPOSITOR",
-                            visibleTo: String = "ANONYMOUS",
-                            accessibleTo: String = "NONE",
+                                     // as in SDO/*/EASY_FILE_METADATA
+                                     creatorRole: String = "DEPOSITOR",
+                                     visibleTo: String = "ANONYMOUS",
+                                     accessibleTo: String = "NONE",
+                                     fedora: Fedora = Fedora,
+                                     easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
-                            subordinate: (String, String) = "objectSDO" -> "dataset"
-                           )
+                                     subordinate: (String, String))
 
 object FileItemSettings {
 
+  /** new file or folder for a new dataset */
+  def apply(sdoSetDir: File,
+            ownerId: String,
+            pathInDataset: File,
+            format: Option[String],
+            size: Option[Long]
+           ) =
+    new FileItemSettings(
+      sdoSetDir = Some(sdoSetDir),
+      datasetId = None,
+      datastreamLocation = None,
+      size = size,
+      ownerId = ownerId,
+      pathInDataset = Some(pathInDataset),
+      format = format,
+      subordinate = "objectSDO" -> "dataset"
+    )
+
+  /** new file or folder for an existing dataset */
   def apply(conf: FileItemConf): FileItemSettings =
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
-      dsLocation = conf.dsLocation.get,
+      datastreamLocation = conf.dsLocation.get,
       size = conf.size.get,
       datasetId = conf.datasetId.get,
       pathInDataset = conf.pathInDataset.get,
-      format = conf.format.get,
+      format = if (conf.format.isDefined) conf.format.get else Some("application/octet-stream"),
       subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
     ) {
       override def toString = conf.toString
     }
-
-  def apply(args: Seq[String]): FileItemSettings =
-    FileItemSettings(new FileItemConf(args))
 }
