@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
+import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Try}
@@ -25,7 +26,15 @@ object Util {
   val log = LoggerFactory.getLogger(getClass)
 
   def writeToFile(f: File, s: String): Try[Unit] =
-    Try { scala.tools.nsc.io.File(f).writeAll(s) }
+    /*
+     * DO NOT USE THE SCALA File CLASS TO WRITE THE XML.
+     * It does not have a Charset parameter, so it will try to write in the
+     * platform's default Charset, resulting in question marks for characters that
+     * are not in that Charset.
+     *
+     * See: https://drivenbydata.atlassian.net/browse/EASY-984
+     */
+    Try { FileUtils.write(f, s, "UTF-8")}
 
   def writeJsonCfg(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "cfg.json"), content)
@@ -41,6 +50,9 @@ object Util {
 
   def writeEMD(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EMD"), content)
+
+  def writeDC(sdoDir: File, content: String): Try[Unit] =
+    writeToFile(new File(sdoDir, "DC"), content)
 
   def writeFileMetadata(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EASY_FILE_METADATA"), content)

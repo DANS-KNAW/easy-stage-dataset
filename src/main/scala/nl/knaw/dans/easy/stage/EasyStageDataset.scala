@@ -64,7 +64,7 @@ object EasyStageDataset {
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       mimeType <- AdditionalLicense.createOptionally(sdoDir)
       audiences <- readAudiences()
-      jsonCfgContent = JSON.createDatasetCfg(mimeType, audiences)
+      jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
       _ <- writeAMD(sdoDir, amdContent)
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())

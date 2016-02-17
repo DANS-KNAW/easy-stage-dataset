@@ -38,7 +38,14 @@ object EMD {
       emd <- getEasyMetadata(ddm)
       _   = s.URN.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
       _   = s.DOI.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDOI)))
-      _   <- writeEMD(sdoDir, new EmdMarshaller(emd).getXmlString)
+          /*
+           * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
+           * platform's default Charset, which may not be what we expect.
+           *
+           * See https://drivenbydata.atlassian.net/browse/EASY-984
+           */
+      _   <- writeEMD(sdoDir, new String(new EmdMarshaller(emd).getXmlByteArray, "UTF-8"))
+
     } yield emd
   }
 

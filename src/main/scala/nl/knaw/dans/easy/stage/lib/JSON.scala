@@ -21,6 +21,8 @@ import nl.knaw.dans.easy.stage.Settings
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
+import scala.util.Try
+
 object JSON {
   val HAS_DOI = "http://dans.knaw.nl/ontologies/relations#hasDoi"
   val HAS_PID = "http://dans.knaw.nl/ontologies/relations#hasPid"
@@ -29,7 +31,11 @@ object JSON {
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
   val STORED_IN_DARKARCHIVE = "http://dans.knaw.nl/ontologies/relations#storedInDarkArchive"
 
-  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): String = {
+  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String]= Try {
+    def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
+    checkProvided("DOI", s.DOI)
+    checkProvided("URN", s.URN)
+    mimeType.toList.map(_ => checkProvided("Additional license MIME-type", mimeType))
 
     val datastreams =
       List(
