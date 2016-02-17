@@ -60,14 +60,18 @@ object FileItemSettings {
     )
 
   /** new file or folder for an existing dataset */
-  def apply(conf: FileItemConf): FileItemSettings =
+  def apply(conf: FileItemConf) =
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
       datastreamLocation = conf.dsLocation.get,
       size = conf.size.get,
+      accessibleTo = conf.accessibleTo.get.map(_.trim).filter(_.nonEmpty).getOrElse("ANONYMOUS"),
+      visibleTo = conf.visibleTo.get.map(_.trim).filter(_.nonEmpty).getOrElse("NONE"),
+      creatorRole = conf.creatorRole.get.map(_.trim).filter(_.nonEmpty).getOrElse("DEPOSITOR"),
+      ownerId = conf.ownerId.get.map(_.trim).filter(_.nonEmpty).getOrElse(props.getString("owner")),
       datasetId = conf.datasetId.get,
       pathInDataset = conf.pathInDataset.get,
-      format = if (conf.format.isDefined) conf.format.get else Some("application/octet-stream"),
+      format = conf.format.orElse( Some("application/octet-stream")).get,
       subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
     ) {
       override def toString = conf.toString

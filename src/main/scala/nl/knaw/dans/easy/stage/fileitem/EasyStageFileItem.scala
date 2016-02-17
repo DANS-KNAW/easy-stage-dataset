@@ -31,7 +31,9 @@ object EasyStageFileItem {
   val log = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
+    log.debug(s"app.home = ${System.getProperty("app.home")}")
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
+    //props.save(System.out)
     Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
     val conf = new FileItemConf(args)
     getSettingsRows(conf).map {
@@ -43,7 +45,7 @@ object EasyStageFileItem {
             if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
           }
       }
-    }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf", t) }
+    }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf with repo url ${props.getString("fcrepo.url")}", t) }
   }
 
   def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =

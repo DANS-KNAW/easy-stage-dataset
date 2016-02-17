@@ -65,8 +65,27 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
-     "If omitted the trailing argument csf-file is required")
-
+     "If omitted the trailing argument csv-file is required")
+  val accessibleTo = opt[String] (
+    name = "accessible-to", noshort = true,
+    descr = "specifies the accessibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
+    "(defaults to ANONYMOUS)"
+  )
+  val visibleTo = opt[String] (
+    name = "visible-to", noshort = true,
+    descr = "specifies the visibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
+    "(defaults to NONE)"
+  )
+  val creatorRole = opt[String](
+    name = "creator-role", noshort = true,
+    descr = "specifies the role of the file item creator; either one of [DEPOSITOR,ARCHIVIST] " +
+    "(defaults to DEPOSITOR)"
+  )
+  val ownerId = opt[String](
+    name = "owner-id", noshort = true,
+    descr = "specifies the id of the owner/creator of the file item " +
+    "(defaults to the one configured in the application configuration file)"
+  )
   val csvFile = trailArg[File](
     name = "csv-file",
     descr = "a comma separated file with one column for each option " +
@@ -77,6 +96,8 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "The resulting directory with Staged Digital Object directories per dataset" +
       " (will be created if it does not exist)",
     required = true)(mayNotExist)
+
+  mainOptions = Seq(datasetId, dsLocation, pathInDataset, size, format)
 
   dependsOnAll(format,List(datasetId,pathInDataset,size,dsLocation))
   dependsOnAll(datasetId,List(pathInDataset,size,dsLocation))
