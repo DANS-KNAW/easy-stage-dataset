@@ -51,9 +51,6 @@ object Util {
   def writeEMD(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EMD"), content)
 
-  def writeDC(sdoDir: File, content: String): Try[Unit] =
-    writeToFile(new File(sdoDir, "DC"), content)
-
   def writeFileMetadata(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EASY_FILE_METADATA"), content)
 
