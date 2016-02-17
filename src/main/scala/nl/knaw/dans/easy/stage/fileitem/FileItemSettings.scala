@@ -47,7 +47,7 @@ object FileItemSettings {
             pathInDataset: File,
             format: Option[String],
             size: Option[Long]
-           ): FileItemSettings =
+           ) =
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
       datasetId = None,
@@ -60,7 +60,7 @@ object FileItemSettings {
     )
 
   /** new file or folder for an existing dataset */
-  def apply(conf: FileItemConf): FileItemSettings =
+  def apply(conf: FileItemConf) =
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.get,
       datastreamLocation = conf.dsLocation.get,
