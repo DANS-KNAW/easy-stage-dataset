@@ -23,7 +23,7 @@ object FOXML {
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
     /*
-     * NOTE: DO NOT USER THE asXMLString method. It uses the platform's default charset, which can lead to unexpected
+     * NOTE: DO NOT USE THE asXMLString method. It uses the platform's default charset, which can lead to unexpected
      * problems with the output.
      *
      * See https://drivenbydata.atlassian.net/browse/EASY-984
