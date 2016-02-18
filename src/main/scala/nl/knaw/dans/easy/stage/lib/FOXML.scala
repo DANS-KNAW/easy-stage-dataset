@@ -22,7 +22,13 @@ import scala.xml.{Elem, NodeSeq, XML}
 object FOXML {
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
-    val dc = XML.loadString(emd.getDublinCoreMetadata.asXMLString())
+    /*
+     * NOTE: DO NOT USE THE asXMLString method. It uses the platform's default charset, which can lead to unexpected
+     * problems with the output.
+     *
+     * See https://drivenbydata.atlassian.net/browse/EASY-984
+     */
+    val dc = XML.load(emd.getDublinCoreMetadata.asXMLInputStream())
     getFOXML(emd.getPreferredTitle, ownerId, dc).toString()
   }
 

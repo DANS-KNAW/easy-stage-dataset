@@ -45,6 +45,7 @@ object EMD {
            * See https://drivenbydata.atlassian.net/browse/EASY-984
            */
       _   <- writeEMD(sdoDir, new String(new EmdMarshaller(emd).getXmlByteArray, "UTF-8"))
+
     } yield emd
   }
 

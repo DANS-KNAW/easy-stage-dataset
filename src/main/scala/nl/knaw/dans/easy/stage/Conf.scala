@@ -70,7 +70,6 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)(mayNotExist)
-  codependent(urn,doi)
 }
 
 object Conf {
