@@ -28,6 +28,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
                                      size: Option[Long],
                                      ownerId: String = props.getString("owner"),
                                      pathInDataset: Option[File],
+                                     title:  Option[String] = None,
                                      format: Option[String] = None,
 
                                      // as in SDO/*/EASY_FILE_METADATA
@@ -46,6 +47,7 @@ object FileItemSettings {
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
+            title: Option[String],
             size: Option[Long]
            ) =
     new FileItemSettings(
@@ -56,6 +58,7 @@ object FileItemSettings {
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
+      title = title,
       subordinate = "objectSDO" -> "dataset"
     )
 

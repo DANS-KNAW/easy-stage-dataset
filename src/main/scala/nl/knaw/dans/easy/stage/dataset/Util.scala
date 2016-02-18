@@ -20,7 +20,7 @@ import java.io.File
 import nl.knaw.dans.easy.stage.Settings
 
 import scala.util.{Failure, Success, Try}
-import scala.xml.{Elem, XML}
+import scala.xml.{NodeSeq, Elem, XML}
 
 object Util {
 
@@ -55,6 +55,16 @@ object Util {
     if (mimes.size != 1)
       throw new scala.RuntimeException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
     mimes(0).text
+  }
+
+  def readTitle(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
+    val titles = for {
+      file <- loadXML("metadata/files.xml") \\ "files" \ "file"
+      if (file \ "@filepath").text == filePath
+      title <- file \ "title"
+    } yield title
+    if(titles.size == 1) Option(titles(0).text)
+    else None
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
