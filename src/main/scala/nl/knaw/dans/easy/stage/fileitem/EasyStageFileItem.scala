@@ -77,7 +77,7 @@ object EasyStageFileItem {
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
       _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
-      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, relPath(parentPath, path), parentRelation) }
+      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, parentRelation) }
     } yield ()
   }
 
@@ -112,14 +112,14 @@ object EasyStageFileItem {
     else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
 
 
-  def createFileSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating file SDO: $path")
+  def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
+    log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
       mime         <- Try{s.format.get}
       cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
       _            <- writeJsonCfg(sdoDir, cfgContent)
-      foxmlContent <- Try{ getFileFOXML(s.pathInDataset.get.getName, s.ownerId, mime)}
+      foxmlContent <- Try{ getFileFOXML(s.title.getOrElse(s.pathInDataset.get.getName), s.ownerId, mime)}
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)

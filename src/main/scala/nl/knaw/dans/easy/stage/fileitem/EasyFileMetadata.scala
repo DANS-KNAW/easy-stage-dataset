@@ -15,13 +15,18 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
+import java.io.File
+
 import scala.util.Try
 
 object EasyFileMetadata {
   def apply(s: FileItemSettings): Try[String] = Try {
+      val parentPath = s.pathInDataset.get.getParentFile
+      val fileName = s.title.getOrElse(s.pathInDataset.get.getName)
+
       <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
-        <name>{s.pathInDataset.get.getName}</name>
-        <path>{s.pathInDataset.get}</path>
+        <name>{fileName}</name>
+        <path>{new File(parentPath, fileName)}</path>
         <mimeType>{s.format.get}</mimeType>
         <size>{s.size.get}</size>
         <creatorRole>{s.creatorRole}</creatorRole>
