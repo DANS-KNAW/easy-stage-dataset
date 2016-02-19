@@ -46,7 +46,7 @@ object AdditionalLicense {
       case Seq(license) =>
           if(hasXsiType(license, "http://purl.org/dc/terms/", "URI")) {
             val licenseTemplateFile = s.licenses(license.text)
-            (FileUtils.readFileToString(licenseTemplateFile), getLicenseMimeType(licenseTemplateFile.getName))
+            (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), getLicenseMimeType(licenseTemplateFile.getName))
           }
           else (license.text, "text/plain")
       case licenses => throw new RuntimeException(s"Found ${licenses.size} dcterms:license elements. There should be exactly one")
@@ -83,7 +83,7 @@ object AdditionalLicense {
     val content = template
       .replace("<rightsHolder>", rightsHolder)
       .replace("<year>", year)
-    FileUtils.write(additionalLicenseFile, content)
+    FileUtils.write(additionalLicenseFile, content, "UTF-8")
     additionalLicenseFile
   }
 
