@@ -53,7 +53,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "create multiple rows from example.csv" in {
     val args = "src/test/resources/example.csv outdir".split(" ")
-    getSettingsRows(new FileItemConf(args)).get.size shouldBe 5
+    val rows = getSettingsRows(new FileItemConf(args)).get
+    rows.size shouldBe 5
   }
 
   "main" should "report a configuration problem" in {

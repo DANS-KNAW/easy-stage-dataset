@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.fileitem.FileItemSettings.{creatorRoles, accessCategories}
 import nl.knaw.dans.easy.stage.lib.Version
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory
@@ -48,14 +49,23 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
     new File(f)
   })
+  val accessCategory = singleArgConverter[String](conv = { s =>
+    if (!accessCategories.contains(s) && !s.isEmpty) throw new IllegalArgumentException(s"$s is not a valid access category")
+    s
+  })
+  val roles = singleArgConverter[String](conv = {s =>
+    if (!creatorRoles.contains(s) && !s.isEmpty) throw new IllegalArgumentException(s"$s is not a valid creator role")
+    s
+  })
 
   val pathInDataset = opt[File](
     name = "path-in-dataset", short = 'p',
     descr = "the path that the file should get in the dataset, a staged digital object is created" +
       " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
   val format = opt[String](
-    name = "format", noshort = true, // default applied when assigned to FileItemSettings
-    descr = "dcterms property format, the mime type of the file (default 'application/octet-stream')")
+    name = "format", short = 'f',
+    descr = "dcterms property format, the mime type of the file",
+    default = Some("application/octet-stream"))
   val dsLocation = opt[URL](
     name = "datastream-location",
     descr = "http URL to redirect to")(httpUrl)
@@ -67,24 +77,21 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csv-file is required")
   val accessibleTo = opt[String] (
-    name = "accessible-to", noshort = true,
-    descr = "specifies the accessibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
-    "(defaults to ANONYMOUS)"
-  )
+    name = "accessible-to", short = 'a',
+    descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(",")}]",
+    default = Some("ANONYMOUS"))//(accessCategory)
   val visibleTo = opt[String] (
-    name = "visible-to", noshort = true,
-    descr = "specifies the visibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
-    "(defaults to NONE)"
-  )
+    name = "visible-to", short = 'v',
+    descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(",")}",
+    default = Some("ANONYMOUS"))//(accessCategory)
   val creatorRole = opt[String](
-    name = "creator-role", noshort = true,
-    descr = "specifies the role of the file item creator; either one of [DEPOSITOR,ARCHIVIST] " +
-    "(defaults to DEPOSITOR)"
-  )
+    name = "creator-role", short = 'c',
+    descr = s"specifies the role of the file item creator; either one of [[${creatorRoles.mkString(",")}]",
+    default = Some("NONE"))//(roles)
   val ownerId = opt[String](
     name = "owner-id", noshort = true,
     descr = "specifies the id of the owner/creator of the file item " +
-    "(defaults to the one configured in the application configuration file)"
+      "(defaults to the one configured in the application configuration file)"
   )
   val csvFile = trailArg[File](
     name = "csv-file",
