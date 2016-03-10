@@ -51,6 +51,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
 }
 
 object FileItemSettings {
+  val defaultFormat = "application/octet-stream"
   val defaultCreatorRole = "DEPOSITOR"
   val defaultVisibleTo = "ANONYMOUS"
   val defaultAccessibleTo = "NONE"

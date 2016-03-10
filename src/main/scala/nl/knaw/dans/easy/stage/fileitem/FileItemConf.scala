@@ -57,7 +57,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val format = opt[String](
     name = "format", short = 'f',
     descr = "dcterms property format, the mime type of the file",
-    default = Some("application/octet-stream"))
+    default = Some(defaultFormat))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultFormat)))
   val dsLocation = opt[URL](
     name = "datastream-location",
     descr = "http URL to redirect to")(httpUrl)
@@ -116,6 +116,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 object FileItemConf {
   val dummy = new FileItemConf("-ii -dhttp:// -pp -s0 --format f outdir".split(" "))
 
+  /** provides a default value for and instance created from a CSV line */
   def replaceEmptyValueWith(default: String): (String) => String = {
     s => if (s.trim.isEmpty) default else s
   }
