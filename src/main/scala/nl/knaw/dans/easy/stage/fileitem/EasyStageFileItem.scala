@@ -51,8 +51,6 @@ object EasyStageFileItem {
   def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
     if (conf.datasetId.isDefined)
       Success(Seq(FileItemSettings(conf)))
-    else if (conf.csvFile.isEmpty)
-      Failure(new Exception("neither datasetId (option -i) nor CSV file (optional trail argument) specified"))
     else {
       val trailArgs = Seq(conf.sdoSetDir.apply().toString)
       CSV(conf.csvFile.apply(), conf.longOptionNames).map {

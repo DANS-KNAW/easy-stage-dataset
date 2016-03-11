@@ -18,6 +18,8 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.fileitem.FileItemConf._
+import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Version
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory
@@ -48,14 +50,14 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
     new File(f)
   })
-
   val pathInDataset = opt[File](
     name = "path-in-dataset", short = 'p',
     descr = "the path that the file should get in the dataset, a staged digital object is created" +
       " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
   val format = opt[String](
-    name = "format", noshort = true, // default applied when assigned to FileItemSettings
-    descr = "dcterms property format, the mime type of the file (default 'application/octet-stream')")
+    name = "format", short = 'f',
+    descr = "dcterms property format, the mime type of the file",
+    default = Some(defaultFormat))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultFormat)))
   val dsLocation = opt[URL](
     name = "datastream-location",
     descr = "http URL to redirect to")(httpUrl)
@@ -67,24 +69,22 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csv-file is required")
   val accessibleTo = opt[String] (
-    name = "accessible-to", noshort = true,
-    descr = "specifies the accessibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
-    "(defaults to ANONYMOUS)"
-  )
+    name = "accessible-to", short = 'a',
+    descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(",")}]",
+    default = Some(defaultAccessibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultAccessibleTo)))
   val visibleTo = opt[String] (
-    name = "visible-to", noshort = true,
-    descr = "specifies the visibility of the file item; either one of [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] " +
-    "(defaults to NONE)"
-  )
+    name = "visible-to", short = 'v',
+    descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(",")}",
+    default = Some(defaultVisibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultVisibleTo)))
   val creatorRole = opt[String](
-    name = "creator-role", noshort = true,
-    descr = "specifies the role of the file item creator; either one of [DEPOSITOR,ARCHIVIST] " +
-    "(defaults to DEPOSITOR)"
-  )
+    name = "creator-role", short = 'c',
+    descr = s"specifies the role of the file item creator; either one of [${creatorRoles.mkString(",")}]",
+    default = Some(defaultCreatorRole))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultCreatorRole)))
+
   val ownerId = opt[String](
     name = "owner-id", noshort = true,
     descr = "specifies the id of the owner/creator of the file item " +
-    "(defaults to the one configured in the application configuration file)"
+      "(defaults to the one configured in the application configuration file)"
   )
   val csvFile = trailArg[File](
     name = "csv-file",
@@ -104,6 +104,10 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   conflicts(csvFile,List(datasetId,pathInDataset,size,dsLocation))
   requireOne(csvFile,datasetId)
 
+  validate(accessibleTo) (s => validateValue(s, accessCategories))
+  validate(visibleTo) (s => validateValue(s, accessCategories))
+  validate(creatorRole) (s => validateValue(s, creatorRoles))
+
   val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
 
   override def toString = builder.args.mkString(", ")
@@ -111,4 +115,16 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
 object FileItemConf {
   val dummy = new FileItemConf("-ii -dhttp:// -pp -s0 --format f outdir".split(" "))
+
+  /** provides a default value for and instance created from a CSV line */
+  def replaceEmptyValueWith(default: String): (String) => String = {
+    s => if (s.trim.isEmpty) default else s
+  }
+
+  def validateValue(actualValue: String, expectedValues: Array[String]): Either[String, Unit] = {
+    if (expectedValues.contains(actualValue))
+      Right(())
+    else
+      Left(s"accessibleTo is '$actualValue' but should be one of $expectedValues")
+  }
 }

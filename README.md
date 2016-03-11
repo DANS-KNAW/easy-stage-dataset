@@ -69,23 +69,23 @@ ARGUMENTS for easy-stage-fileItem
                                          for the file and the ancestor folders that
                                          don't yet exist in the dataset
       -s, --size  <arg>                  Size in bytes of the file data
-          --format  <arg>                dcterms property format, the mime type of the
-                                         file (default 'application/octet-stream')
-    
-          --accessible-to  <arg>         specifies the accessibility of the file item;
+      -f, --format  <arg>                dcterms property format, the mime type of the
+                                         file (default = application/octet-stream)
+
+      -a, --accessible-to  <arg>         specifies the accessibility of the file item;
                                          either one of
-                                         [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE] 
-                                         (defaults to ANONYMOUS)
-          --creator-role  <arg>          specifies the role of the file item creator;
-                                         either one of [DEPOSITOR,ARCHIVIST] (defaults
-                                         to DEPOSITOR)
+                                         [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE]
+                                         (default = NONE)
+      -c, --creator-role  <arg>          specifies the role of the file item creator;
+                                         either one of [ARCHIVIST,DEPOSITOR]
+                                         (default = DEPOSITOR)
           --owner-id  <arg>              specifies the id of the owner/creator of the
                                          file item (defaults to the one configured in
                                          the application configuration file)
-          --visible-to  <arg>            specifies the visibility of the file item;
+      -v, --visible-to  <arg>            specifies the visibility of the file item;
                                          either one of
-                                         [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE]
-                                         (defaults to NONE)
+                                         [ANONYMOUS,KNOWN,RESTRICTED_REQUEST,RESTRICTED_GROUP,NONE
+                                         (default = ANONYMOUS)
           --help                         Show help message
           --version                      Show version of this program
     
