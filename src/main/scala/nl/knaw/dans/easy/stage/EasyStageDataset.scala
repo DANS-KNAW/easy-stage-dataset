@@ -97,6 +97,7 @@ object EasyStageDataset {
         ownerId = s.ownerId,
         pathInDataset = new File(relativePath),
         size = Some(file.length),
+        isMendeley = Some(s.isMendeley),
         format = Some(mime),
         title = title
       ))
@@ -108,7 +109,7 @@ object EasyStageDataset {
     val relativePath= getDatasetRelativePath(folder).toString
     for {
       sdoDir <- mkdirSafe(getSDODir(folder))
-      fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile, None, None, None)
+      fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile, None, None, None, None)
       _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
     } yield ()
   }

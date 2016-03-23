@@ -68,6 +68,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -115,6 +116,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = None,
@@ -135,6 +137,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -153,6 +156,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -175,6 +179,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
+      isMendeley = Some(true),
       format = Some("text/plain"),
       title = Some("A nice title"))
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
@@ -195,6 +200,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
+      isMendeley = Some(true),
       format = Some("text/plain"),
       title = None)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")

@@ -22,13 +22,12 @@ import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
-import scala.util.Try
-
 case class FileItemSettings (sdoSetDir: Option[File],
                              datasetId: Option[String],
                              datastreamLocation: Option[URL],
                              unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
                              size: Option[Long],
+                             isMendeley: Option[Boolean],
                              ownerId: String = props.getString("owner"),
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
@@ -64,7 +63,8 @@ object FileItemSettings {
             pathInDataset: File,
             format: Option[String],
             title: Option[String],
-            size: Option[Long]
+            size: Option[Long],
+            isMendeley: Option[Boolean]
            ) =
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
@@ -72,6 +72,7 @@ object FileItemSettings {
       datasetId = None,
       datastreamLocation = None,
       size = size,
+      isMendeley = isMendeley,
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
@@ -86,6 +87,7 @@ object FileItemSettings {
       sdoSetDir = conf.sdoSetDir.get,
       datastreamLocation = conf.dsLocation.get,
       size = conf.size.get,
+      isMendeley = conf.isMendeley.get,
       accessibleTo = conf.accessibleTo(),
       visibleTo = conf.visibleTo(),
       creatorRole = conf.creatorRole(),

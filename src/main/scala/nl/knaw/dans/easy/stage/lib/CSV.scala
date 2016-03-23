@@ -53,7 +53,7 @@ object CSV {
 
   /** @return (new instance, warning) */
   def apply(in: InputStream, requiredHeaders: Seq[String]): Try[(CSV, Option[String])] =
-    if (requiredHeaders.map(_.toLowerCase)!=requiredHeaders)
+    if (requiredHeaders.map(_.toLowerCase) != requiredHeaders)
       Failure(new Exception("required headers with uppercase are not supported " +
         "because we right-case the generated commandline options to lowercase"))
     else getContent(in).flatMap(csv => {
@@ -65,8 +65,8 @@ object CSV {
       if (missingHeaders.nonEmpty)
         Failure(new Exception(s"Missing columns: ${missingHeaders.mkString(", ")}"))
       else Success((
-        new CSV(csv,requiredHeaders),
-        Some (s"Ignored columns: ${ignoredHeaders.toArray.deep}")
+        new CSV(csv, requiredHeaders),
+        Some(s"Ignored columns: ${ignoredHeaders.toArray.deep}")
         ))
     })
 

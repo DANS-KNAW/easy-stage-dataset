@@ -64,6 +64,10 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val size = opt[Long](
     name = "size",
     descr = "Size in bytes of the file data")
+  val isMendeley = opt[Boolean](
+    name = "is-mendeley", short = 'm',
+    descr = """Stage the dataset as a "mendeley dataset"""",
+    default = Some(false))
   val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
