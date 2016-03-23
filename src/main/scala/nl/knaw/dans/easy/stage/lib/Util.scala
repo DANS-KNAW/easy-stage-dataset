@@ -54,6 +54,10 @@ object Util {
   def writeFileMetadata(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EASY_FILE_METADATA"), content)
 
+  def copyFile(sdoDir: File, file: File): Try[Unit] = Try {
+    FileUtils.copyFile(file, new File(sdoDir, "EASY_FILE"))
+  }
+
   def writeItemContainerMetadata(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EASY_ITEM_CONTAINER_MD"), content)
 
