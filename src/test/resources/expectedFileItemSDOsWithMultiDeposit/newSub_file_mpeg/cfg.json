@@ -1,9 +1,9 @@
 {
   "namespace":"easy-file",
   "datastreams":[{
-    "dsLocation":"http://x.nl/l/d",
+    "contentFile":"EASY_FILE",
     "dsID":"EASY_FILE",
-    "controlGroup":"R",
+    "controlGroup":"M",
     "mimeType":"video/mpeg"
   },{
     "contentFile":"EASY_FILE_METADATA",

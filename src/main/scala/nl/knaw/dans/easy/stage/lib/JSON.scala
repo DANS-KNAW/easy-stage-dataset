@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage.lib
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -80,15 +81,14 @@ object JSON {
   def createFileCfg(fileLocation: URL,
                     mimeType: String,
                     parent: (String,String),
-                    subordinate: (String,String)
-                   ): String = {
-      val json = ("namespace" -> "easy-file") ~
+                    subordinate: (String,String))(implicit settings: FileItemSettings): String = {
+    def mendeleyJSON = {
+      ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           ("dsLocation" -> fileLocation.toString) ~
             ("dsID" -> "EASY_FILE") ~
             ("controlGroup" -> "R") ~
-            ("mimeType" -> mimeType)
-          ,
+            ("mimeType" -> mimeType),
           ("contentFile" -> "EASY_FILE_METADATA") ~
             ("dsID" -> "EASY_FILE_METADATA") ~
             ("controlGroup" -> "X") ~
@@ -97,8 +97,31 @@ object JSON {
           ("predicate" -> IS_MEMBER_OF) ~ parent,
           ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
-        ))
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
+    }
+
+    def multiDepositJSON = {
+      ("namespace" -> "easy-file") ~
+        ("datastreams" -> List(
+          ("contentFile" -> "EASY_FILE") ~
+            ("dsID" -> "EASY_FILE") ~
+            ("controlGroup" -> "M") ~
+            ("mimeType" -> mimeType),
+          ("contentFile" -> "EASY_FILE_METADATA") ~
+            ("dsID" -> "EASY_FILE_METADATA") ~
+            ("controlGroup" -> "X") ~
+            ("mimeType" -> "text/xml"))) ~
+        ("relations" -> List(
+          ("predicate" -> IS_MEMBER_OF) ~ parent,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
+          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
+    }
+
+    val json = settings.isMendeley
+      .filter(identity) // only b == true
+      .map(_ => mendeleyJSON)
+      .getOrElse(multiDepositJSON)
     pretty(render(json))
   }
 
