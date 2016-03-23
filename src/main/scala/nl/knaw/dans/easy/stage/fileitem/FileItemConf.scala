@@ -64,6 +64,9 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val size = opt[Long](
     name = "size",
     descr = "Size in bytes of the file data")
+  val file = opt[File](
+    name = "file-location", short = 'l',
+    descr = "The file to be staged (only required for copying in case of non-mendeley use case)")(shouldBeFile)
   val isMendeley = opt[Boolean](
     name = "is-mendeley", short = 'm',
     descr = """Stage the dataset as a "mendeley dataset"""",

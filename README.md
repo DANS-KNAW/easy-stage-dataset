@@ -80,6 +80,8 @@ ARGUMENTS for easy-stage-fileItem
       -c, --creator-role  <arg>          specifies the role of the file item creator;
                                          either one of [ARCHIVIST,DEPOSITOR]
                                          (default = DEPOSITOR)
+      -l, --file-location  <arg>         The file to be staged (only required for
+                                         copying in case of non-mendeley use case)
       -m, --is-mendeley                  Stage the dataset as a "mendeley dataset"
           --owner-id  <arg>              specifies the id of the owner/creator of the
                                          file item (defaults to the one configured in

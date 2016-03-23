@@ -66,6 +66,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   "run" should "create expected file item SDOs in the mendeley use case" in {
     EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       isMendeley = Some(true),
@@ -114,6 +115,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "create expected file item SDOs in the multi-deposit use case" in {
     EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       isMendeley = Some(false),
@@ -162,6 +164,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a missing size" in {
     the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
       isMendeley = Some(true),
@@ -183,6 +186,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a fedora error" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       isMendeley = Some(true),
@@ -202,6 +206,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report the dataset does not exist" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
       isMendeley = Some(true),
@@ -224,6 +229,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
+      file = new File("path/to/uuid-as-file-name"),
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
@@ -245,6 +251,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
+      file = new File("path/to/uuid-as-file-name"),
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
