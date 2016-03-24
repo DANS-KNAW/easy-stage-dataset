@@ -121,7 +121,7 @@ object EasyStageFileItem {
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
-      _            <- s.isMendeley.filter(identity).flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
+      _            <- s.isMendeley.filter(b => !b).flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
     } yield ()
   }
 

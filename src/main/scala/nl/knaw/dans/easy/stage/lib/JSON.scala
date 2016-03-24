@@ -36,7 +36,6 @@ object JSON {
     def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
     checkProvided("DOI", s.DOI)
     checkProvided("URN", s.URN)
-    checkProvided("Additional license MIME-type", mimeType)
 
     val datastreams =
       List(
