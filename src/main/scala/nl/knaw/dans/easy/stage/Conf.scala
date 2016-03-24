@@ -49,28 +49,28 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     new File(f)
   })
 
-  val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
+  lazy val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
     name = "submission-timestamp", short = 't',
     descr = "Timestamp in ISO8601 format")
-  val urn: ScallopOption[String] = opt[String](
+  lazy val urn: ScallopOption[String] = opt[String](
     name = "urn", short = 'u',
     descr = "The URN to assign to the new dataset in EASY")
-  val doi: ScallopOption[String] = opt[String](
+  lazy val doi: ScallopOption[String] = opt[String](
     name = "doi", short = 'd',
     descr = "The DOI to assign to the new dataset in EASY")
-  val otherAccessDOI = opt[Boolean](
+  lazy val otherAccessDOI = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
     default = Some(false))
-  val isMendeley = opt[Boolean](
+  lazy val isMendeley = opt[Boolean](
     name = "dataset-is-mendeley-dataset", short = 'm',
     descr = """Stage the dataset as a "mendeley dataset"""",
     default = Some(false))
-  val bag = trailArg[File](
+  lazy val bag = trailArg[File](
     name = "EASY-bag",
     descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
     required = true)(shouldExist)
-  val sdoSet = trailArg[File](
+  lazy val sdoSet = trailArg[File](
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)(mayNotExist)
