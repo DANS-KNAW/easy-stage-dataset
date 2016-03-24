@@ -63,11 +63,13 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
   }
 
-  "run" should "create expected file item SDOs" in {
+  "run" should "create expected file item SDOs in the mendeley use case" in {
     EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -110,11 +112,62 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     Path("target/testSDO").deleteRecursively()
   }
 
+  it should "create expected file item SDOs in the multi-deposit use case" in {
+    EasyStageFileItem.run(new FileItemSettings(
+      sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
+      datastreamLocation = Some(new URL("http://x.nl/l/d")),
+      size = Some(1),
+      isMendeley = Some(false),
+      datasetId = Some("easy-dataset:1"),
+      pathInDataset = Some(new File("original/newSub/file.mpeg")),
+      format = Some("video/mpeg"),
+      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
+        "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
+      )),
+      fedora = mockFedora(HashMap(
+        "pid~easy-dataset:1" -> Seq("easy-dataset:1")
+      ))
+    ))
+
+    // comparing with sample output
+
+    // TODO sdoDir "newSub" should have been "original_newSub" to avoid potential conflicts !!!
+    val actualSdoSet = Path("target/testSDO/easy-dataset_1")
+    val expectedSdoSet = Path("src/test/resources/expectedFileItemSDOsWithMultiDeposit")
+    getRelativeFiles(actualSdoSet) shouldBe getRelativeFiles(expectedSdoSet)
+    actualSdoSet.walk.toSeq.map(_.path).sortBy(s => s).zip(
+      expectedSdoSet.walk.toSeq.map(_.path).sortBy(s => s)
+    ).foreach {
+      case (actual, expected) if actual.endsWith("cfg.json") =>
+        readCfgJson(expected) shouldBe readCfgJson(actual)
+      case (actual, expected) if actual.endsWith("fo.xml") =>
+        readDatastreamFoxml(actual) shouldBe readDatastreamFoxml(expected)
+      case (actual, expected) => // metadata of a file or folder
+        readFlatXml(actual) shouldBe readFlatXml(expected)
+    }
+
+    // a less verbose check reworded
+
+    readDatastreamFoxml("target/testSDO/easy-dataset_1/newSub/fo.xml") shouldBe Set(
+      "dc_title" -> "original/newSub",
+      "prop_state" -> "Active",
+      "prop_label" -> "original/newSub",
+      "prop_ownerId" -> "{{ easy_stage_dataset_owner }}")
+
+    // clean up
+
+    Path("target/testSDO").deleteRecursively()
+  }
+
   it should "report a missing size" in {
     the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = None,
@@ -133,8 +186,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a fedora error" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -151,8 +206,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report the dataset does not exist" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
+      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
+      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -172,9 +229,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
+      file = new File("path/to/uuid-as-file-name"),
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
+      isMendeley = Some(true),
       format = Some("text/plain"),
       title = Some("A nice title"))
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
@@ -192,9 +251,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     sdoSetDir.mkdirs()
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
+      file = new File("path/to/uuid-as-file-name"),
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
+      isMendeley = Some(true),
       format = Some("text/plain"),
       title = None)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")

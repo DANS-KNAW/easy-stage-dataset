@@ -33,7 +33,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
            |
            |Usage:
            |
-           | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
+           | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
            | ${_________}    <EASY-bag> <staged-digital-object-set>
            |
            |Options:
@@ -61,6 +61,10 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val otherAccessDOI = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
+    default = Some(false))
+  val isMendeley = opt[Boolean](
+    name = "dataset-is-mendeley-dataset", short = 'm',
+    descr = """Stage the dataset as a "mendeley dataset"""",
     default = Some(false))
   val bag = trailArg[File](
     name = "EASY-bag",

@@ -30,6 +30,7 @@ case class Settings(ownerId: String,
                     URN: Option[String] = None,
                     DOI: Option[String] = None,
                     otherAccessDOI: Boolean = false,
+                    isMendeley: Boolean,
                     fedoraUser: String,
                     fedoraPassword: String,
                     fedoraUrl: URL) {
@@ -49,6 +50,7 @@ object Settings {
             URN: String,
             DOI: String,
             otherAccessDOI: Boolean,
+            isMendeley: Boolean,
             fedoraUser: String,
             fedoraPassword: String,
             fedoraUrl: URL) =
@@ -59,6 +61,7 @@ object Settings {
       URN = Some(URN),
       DOI = Some(DOI),
       otherAccessDOI = otherAccessDOI,
+      isMendeley = isMendeley,
       fedoraUser = fedoraUser,
       fedoraPassword = fedoraPassword,
       fedoraUrl = fedoraUrl)
@@ -72,6 +75,7 @@ object Settings {
       URN = conf.urn.get,
       DOI = conf.doi.get,
       otherAccessDOI = conf.otherAccessDOI(),
+      isMendeley = conf.isMendeley(),
       fedoraUser = props.getString("fcrepo.user"),
       fedoraPassword = props.getString("fcrepo.password"),
       fedoraUrl = new URL(props.getString("fcrepo.url")))

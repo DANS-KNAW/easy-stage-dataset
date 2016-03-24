@@ -8,7 +8,7 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \
+    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \
                           <EASY-bag> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
@@ -40,6 +40,7 @@ the command `easy-stage-file-item`. It executes step 3 to stage one or more file
 ARGUMENTS for easy-stage-dataset
 --------------------------------
 
+     -m, --dataset-is-mendeley-dataset   Stage the dataset as a "mendeley dataset"
      -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
      -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access
                                          DOI"
@@ -79,6 +80,9 @@ ARGUMENTS for easy-stage-fileItem
       -c, --creator-role  <arg>          specifies the role of the file item creator;
                                          either one of [ARCHIVIST,DEPOSITOR]
                                          (default = DEPOSITOR)
+      -l, --file-location  <arg>         The file to be staged (only required for
+                                         copying in case of non-mendeley use case)
+      -m, --is-mendeley                  Stage the dataset as a "mendeley dataset"
           --owner-id  <arg>              specifies the id of the owner/creator of the
                                          file item (defaults to the one configured in
                                          the application configuration file)

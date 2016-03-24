@@ -64,6 +64,13 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val size = opt[Long](
     name = "size",
     descr = "Size in bytes of the file data")
+  val file = opt[File](
+    name = "file-location", short = 'l',
+    descr = "The file to be staged (only required for copying in case of non-mendeley use case)")(shouldBeFile)
+  val isMendeley = opt[Boolean](
+    name = "is-mendeley", short = 'm',
+    descr = """Stage the dataset as a "mendeley dataset"""",
+    default = Some(false))
   val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
@@ -103,6 +110,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   dependsOnAll(datasetId,List(pathInDataset,size,dsLocation))
   conflicts(csvFile,List(datasetId,pathInDataset,size,dsLocation))
   requireOne(csvFile,datasetId)
+  mutuallyExclusive(isMendeley, file)
 
   validate(accessibleTo) (s => validateValue(s, accessCategories))
   validate(visibleTo) (s => validateValue(s, accessCategories))

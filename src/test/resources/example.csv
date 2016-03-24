@@ -1,4 +1,4 @@
-comment,DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID
+comment,DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION,IS-MENDELEY
 
 Sample input for an integration test assuming a dataset submitted by an ordinary user (read: not an archivist)
 Beware for a plain comma in comment. After all it is a comma separated file.

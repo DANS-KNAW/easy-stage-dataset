@@ -29,7 +29,7 @@ class CsvSpec extends FlatSpec with Matchers {
       "FORMAT,DATASET-ID,xxx,STAGED-DIGITAL-OBJECT-SET"
         .stripMargin.getBytes)
     the[Exception] thrownBy CSV(in, conf.longOptionNames).get should
-      have message "Missing columns: PATH-IN-DATASET, DATASTREAM-LOCATION, SIZE, ACCESSIBLE-TO, VISIBLE-TO, CREATOR-ROLE, OWNER-ID"
+      have message "Missing columns: PATH-IN-DATASET, DATASTREAM-LOCATION, SIZE, FILE-LOCATION, IS-MENDELEY, ACCESSIBLE-TO, VISIBLE-TO, CREATOR-ROLE, OWNER-ID"
   }
 
   it should "fail with uppercase in any of the required headers" in {
