@@ -20,7 +20,6 @@ import java.io.File
 import java.sql.{DriverManager, PreparedStatement}
 
 import nl.knaw.dans.easy.stage.lib.Props.props
-import org.slf4j.LoggerFactory
 
 import scala.annotation.tailrec
 import scala.util.Try

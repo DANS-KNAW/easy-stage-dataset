@@ -55,13 +55,13 @@ object EasyStageFileItem {
       val trailArgs = Seq(conf.sdoSetDir.apply().toString)
       CSV(conf.csvFile.apply(), conf.longOptionNames).map {
         case (csv, warning) =>
-          warning.map(msg => log.warn(msg))
+          warning.foreach(log.warn)
           val rows = csv.getRows
           if (rows.isEmpty) log.warn(s"Empty CSV file")
-          rows.map{options =>
+          rows.map(options => {
             log.info("Options: "+options.mkString(" "))
             FileItemSettings(new FileItemConf(options ++ trailArgs))
-          }
+          })
       }
     }
 
