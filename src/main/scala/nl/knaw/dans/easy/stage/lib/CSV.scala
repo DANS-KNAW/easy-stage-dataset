@@ -63,7 +63,7 @@ object CSV {
       val missingHeaders = upperCaseRequiredHeaders.filter(!upperCaseActualHeaders.contains(_))
 
       if (missingHeaders.nonEmpty)
-        Failure(new Exception(s"Missing columns: ${missingHeaders.sorted.mkString(", ")}"))
+        Failure(new Exception(s"Missing columns: ${missingHeaders.mkString(", ")}"))
       else Success((
         new CSV(csv, requiredHeaders),
         Some(s"Ignored columns: ${ignoredHeaders.toArray.deep}")
