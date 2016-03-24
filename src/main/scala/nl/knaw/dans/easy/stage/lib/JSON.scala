@@ -19,6 +19,7 @@ import java.net.URL
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
+import org.json4s.JsonAST.JObject
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -81,13 +82,10 @@ object JSON {
                     mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String))(implicit settings: FileItemSettings): String = {
-    def mendeleyJSON = {
+    def createJSON(dataJSON: JObject) = {
       ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
-          ("dsLocation" -> fileLocation.toString) ~
-            ("dsID" -> "EASY_FILE") ~
-            ("controlGroup" -> "R") ~
-            ("mimeType" -> mimeType),
+          dataJSON,
           ("contentFile" -> "EASY_FILE_METADATA") ~
             ("dsID" -> "EASY_FILE_METADATA") ~
             ("controlGroup" -> "X") ~
@@ -99,22 +97,22 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
     }
 
+    def mendeleyJSON = {
+      createJSON(
+        ("dsLocation" -> fileLocation.toString) ~
+          ("dsID" -> "EASY_FILE") ~
+          ("controlGroup" -> "R") ~
+          ("mimeType" -> mimeType)
+      )
+    }
+
     def multiDepositJSON = {
-      ("namespace" -> "easy-file") ~
-        ("datastreams" -> List(
-          ("contentFile" -> "EASY_FILE") ~
-            ("dsID" -> "EASY_FILE") ~
-            ("controlGroup" -> "M") ~
-            ("mimeType" -> mimeType),
-          ("contentFile" -> "EASY_FILE_METADATA") ~
-            ("dsID" -> "EASY_FILE_METADATA") ~
-            ("controlGroup" -> "X") ~
-            ("mimeType" -> "text/xml"))) ~
-        ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
+      createJSON(
+        ("contentFile" -> "EASY_FILE") ~
+          ("dsID" -> "EASY_FILE") ~
+          ("controlGroup" -> "M") ~
+          ("mimeType" -> mimeType)
+      )
     }
 
     val json = settings.isMendeley

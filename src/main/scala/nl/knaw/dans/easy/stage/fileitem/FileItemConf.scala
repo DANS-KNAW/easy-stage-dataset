@@ -110,6 +110,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   dependsOnAll(datasetId,List(pathInDataset,size,dsLocation))
   conflicts(csvFile,List(datasetId,pathInDataset,size,dsLocation))
   requireOne(csvFile,datasetId)
+  mutuallyExclusive(isMendeley, file)
 
   validate(accessibleTo) (s => validateValue(s, accessCategories))
   validate(visibleTo) (s => validateValue(s, accessCategories))
