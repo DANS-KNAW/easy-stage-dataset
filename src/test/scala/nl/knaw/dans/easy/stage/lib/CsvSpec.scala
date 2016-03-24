@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.{ByteArrayInputStream, FileInputStream}
+import java.io.ByteArrayInputStream
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemConf
 import org.scalatest.{FlatSpec, Matchers}
@@ -29,7 +29,7 @@ class CsvSpec extends FlatSpec with Matchers {
       "FORMAT,DATASET-ID,xxx,STAGED-DIGITAL-OBJECT-SET"
         .stripMargin.getBytes)
     the[Exception] thrownBy CSV(in, conf.longOptionNames).get should
-      have message "Missing columns: PATH-IN-DATASET, DATASTREAM-LOCATION, SIZE, FILE-LOCATION, IS-MENDELEY, ACCESSIBLE-TO, VISIBLE-TO, CREATOR-ROLE, OWNER-ID"
+      have message "Missing columns: ACCESSIBLE-TO, CREATOR-ROLE, DATASTREAM-LOCATION, FILE-LOCATION, IS-MENDELEY, OWNER-ID, PATH-IN-DATASET, SIZE, VISIBLE-TO"
   }
 
   it should "fail with uppercase in any of the required headers" in {
