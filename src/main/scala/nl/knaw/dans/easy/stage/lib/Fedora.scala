@@ -44,11 +44,13 @@ object Fedora extends Fedora {
   @tailrec
   def findObjects(query: String, acc: Seq[String] = Nil, token: Option[String] = None): Seq[String] = {
     val objectsQuery = FedoraClient.findObjects().maxResults(findObjectsBatchSize).pid().query(query)
-    val objectsResponse = token.map(t => objectsQuery.sessionToken(t).execute).getOrElse(objectsQuery.execute)
-
-    if (objectsResponse.hasNext)
-      findObjects(query, acc ++ objectsResponse.getPids, Some(objectsResponse.getToken))
-    else
-      acc ++ objectsResponse.getPids
+    val objectsResponse = token match {
+      case None =>
+        objectsQuery.execute
+      case Some(t) =>
+        objectsQuery.sessionToken(t).execute
+    }
+    if (objectsResponse.hasNext) findObjects(query, acc ++ objectsResponse.getPids,  Some(objectsResponse.getToken))
+    else acc ++ objectsResponse.getPids
   }
 }

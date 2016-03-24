@@ -50,56 +50,55 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
     new File(f)
   })
-
-  lazy val pathInDataset = opt[File](
+  val pathInDataset = opt[File](
     name = "path-in-dataset", short = 'p',
     descr = "the path that the file should get in the dataset, a staged digital object is created" +
       " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
-  lazy val format = opt[String](
+  val format = opt[String](
     name = "format", short = 'f',
     descr = "dcterms property format, the mime type of the file",
     default = Some(defaultFormat))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultFormat)))
-  lazy val dsLocation = opt[URL](
+  val dsLocation = opt[URL](
     name = "datastream-location",
     descr = "http URL to redirect to")(httpUrl)
-  lazy val size = opt[Long](
+  val size = opt[Long](
     name = "size",
     descr = "Size in bytes of the file data")
-  lazy val file = opt[File](
+  val file = opt[File](
     name = "file-location", short = 'l',
     descr = "The file to be staged (only required for copying in case of non-mendeley use case)")(shouldBeFile)
-  lazy val isMendeley = opt[Boolean](
+  val isMendeley = opt[Boolean](
     name = "is-mendeley", short = 'm',
     descr = """Stage the dataset as a "mendeley dataset"""",
     default = Some(false))
-  lazy val datasetId = opt[String](
+  val datasetId = opt[String](
     name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csv-file is required")
-  lazy val accessibleTo = opt[String] (
+  val accessibleTo = opt[String] (
     name = "accessible-to", short = 'a',
     descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(",")}]",
     default = Some(defaultAccessibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultAccessibleTo)))
-  lazy val visibleTo = opt[String] (
+  val visibleTo = opt[String] (
     name = "visible-to", short = 'v',
     descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(",")}",
     default = Some(defaultVisibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultVisibleTo)))
-  lazy val creatorRole = opt[String](
+  val creatorRole = opt[String](
     name = "creator-role", short = 'c',
     descr = s"specifies the role of the file item creator; either one of [${creatorRoles.mkString(",")}]",
     default = Some(defaultCreatorRole))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultCreatorRole)))
 
-  lazy val ownerId = opt[String](
+  val ownerId = opt[String](
     name = "owner-id", noshort = true,
     descr = "specifies the id of the owner/creator of the file item " +
       "(defaults to the one configured in the application configuration file)"
   )
-  lazy val csvFile = trailArg[File](
+  val csvFile = trailArg[File](
     name = "csv-file",
     descr = "a comma separated file with one column for each option " +
      "(additional columns are ignored) and one set of options per line",
     required = false)(shouldBeFile)
-  lazy val sdoSetDir = trailArg[File](
+  val sdoSetDir = trailArg[File](
     name = "staged-digital-object-sets",
     descr = "The resulting directory with Staged Digital Object directories per dataset" +
       " (will be created if it does not exist)",
@@ -116,7 +115,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   validate(visibleTo) (s => validateValue(s, accessCategories))
   validate(creatorRole) (s => validateValue(s, creatorRoles))
 
-  lazy val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
+  val longOptionNames = builder.opts.filter(!_.isInstanceOf[TrailingArgsOption]).map(_.name)
 
   override def toString = builder.args.mkString(", ")
 }

@@ -22,14 +22,14 @@ import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Constants
 import org.apache.commons.io.FileUtils
 
-import scala.util.{Success, Try}
-import scala.xml.{Node, Elem, XML}
+import scala.util.{Failure, Success, Try}
+import scala.xml.{MetaData, Node, Elem, XML}
 
 object AdditionalLicense {
   type MimeType = String
 
   def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] =
-   if((getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license").isEmpty) Success(None)
+   if((getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license").size == 0) Success(None)
    else create(sdo).map(m => Some(m))
 
   def create(sdo: File)(implicit s: Settings): Try[MimeType] =
@@ -42,14 +42,14 @@ object AdditionalLicense {
 
   def getAdditionalLicenseTemplate()(implicit s: Settings): Try[(String, MimeType)] = Try {
     val licenses = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license"
-    licenses match {
+    licenses.toSeq match {
       case Seq(license) =>
           if(hasXsiType(license, "http://purl.org/dc/terms/", "URI")) {
             val licenseTemplateFile = s.licenses(license.text)
             (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), getLicenseMimeType(licenseTemplateFile.getName))
           }
           else (license.text, "text/plain")
-      case lics => throw new RuntimeException(s"Found ${lics.size} dcterms:license elements. There should be exactly one")
+      case licenses => throw new RuntimeException(s"Found ${licenses.size} dcterms:license elements. There should be exactly one")
     }
   }
 
@@ -89,7 +89,7 @@ object AdditionalLicense {
 
   def getRightsHolder()(implicit s: Settings): Try[String] = Try {
     val rightsHolders = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "rightsHolder"
-    if(rightsHolders.isEmpty) throw new RuntimeException("No dcterms:rightsHolder element found. There should be at least one")
+    if(rightsHolders.size == 0) throw new RuntimeException("No dcterms:rightsHolder element found. There should be at least one")
     else rightsHolders.toList.map(_.text).mkString(", ")
   }
 

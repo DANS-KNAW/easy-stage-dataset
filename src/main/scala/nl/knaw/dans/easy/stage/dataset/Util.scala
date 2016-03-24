@@ -20,7 +20,7 @@ import java.io.File
 import nl.knaw.dans.easy.stage.Settings
 
 import scala.util.{Failure, Success, Try}
-import scala.xml.{Elem, XML}
+import scala.xml.{NodeSeq, Elem, XML}
 
 object Util {
 
@@ -28,8 +28,8 @@ object Util {
     extends RuntimeException(throwables.foldLeft("Multiple failures:")((msg, t) => s"$msg\n${t.getClass}: ${t.getMessage}, ${getFirstDansFrame(t)}"))
 
   private def getFirstDansFrame(t: Throwable): String = {
-    if(t.getStackTrace.length > 0) {
-      val st = t.getStackTrace
+    if(t.getStackTrace().length > 0) {
+      val st = t.getStackTrace()
       st.find(_.getClassName.contains("nl.knaw.dans")) match {
         case Some(el) => s"${el.getClassName}.${el.getMethodName} (${el.getFileName}, ${el.getLineNumber})"
         case None => "<No DANS code in stacktrace ?>"
