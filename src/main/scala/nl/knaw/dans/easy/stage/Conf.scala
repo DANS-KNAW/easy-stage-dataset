@@ -19,7 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopOption, ScallopConf, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ScallopConf, ScallopOption, ValueConverter, singleArgConverter}
 import org.slf4j.LoggerFactory
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
@@ -74,6 +74,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)(mayNotExist)
+  verify()
 }
 
 object Conf {
