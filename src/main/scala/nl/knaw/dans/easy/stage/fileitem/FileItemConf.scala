@@ -29,6 +29,10 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-file-item"
   version(s"$printedName v${Version()}")
+
+  editBuilder(_.setHelpWidth(100))
+  val NB_SPACE = "\u00A0" // &nbsp; won't work when calling for help on a console
+
   banner(s"""Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
             |
             |Usage:
@@ -56,7 +60,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
       " for the file and the ancestor folders that don't yet exist in the dataset")(mayNotExist)
   val format = opt[String](
     name = "format", short = 'f',
-    descr = "dcterms property format, the mime type of the file (default\u00A0=\u00A0application/octet-stream)",
+    descr = s"dcterms property format, the mime type of the file (default$NB_SPACE=${NB_SPACE}application/octet-stream)",
     default = Some(defaultFormat))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultFormat)))
   val dsLocation = opt[URL](
     name = "datastream-location",
@@ -77,15 +81,15 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
      "If omitted the trailing argument csv-file is required")
   val accessibleTo = opt[String] (
     name = "accessible-to", short = 'a',
-    descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(",")}] (default\u00A0=\u00A0NONE)",
+    descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(", ")}] (default = NONE)",
     default = Some(defaultAccessibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultAccessibleTo)))
   val visibleTo = opt[String] (
     name = "visible-to", short = 'v',
-    descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(",")}] (default\u00A0=\u00A0ANONYMOUS)",
+    descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(", ")}] (default = ANONYMOUS)",
     default = Some(defaultVisibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultVisibleTo)))
   val creatorRole = opt[String](
     name = "creator-role", short = 'c',
-    descr = s"specifies the role of the file item creator; either one of [${creatorRoles.mkString(",")}] (default\u00A0=\u00A0DEPOSITOR)",
+    descr = s"specifies the role of the file item creator; either one of [${creatorRoles.mkString(", ")}] (default = DEPOSITOR)",
     default = Some(defaultCreatorRole))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultCreatorRole)))
 
   val ownerId = opt[String](
@@ -125,7 +129,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 object FileItemConf {
   val dummy = new FileItemConf("-ii -dhttp:// -pp -s0 --format f outdir".split(" "))
 
-  /** provides a default value for and instance created from a CSV line */
+  /** provides a default value for an instance created from a CSV line */
   def replaceEmptyValueWith(default: String): (String) => String = {
     s => if (s.trim.isEmpty) default else s
   }

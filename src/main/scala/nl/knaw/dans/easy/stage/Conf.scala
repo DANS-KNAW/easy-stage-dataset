@@ -27,6 +27,8 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-dataset"
   version(s"$printedName v${Version()}")
+  editBuilder(sc => sc.setHelpWidth(100))
+
   private val _________ = printedName.map(_ => " ").mkString("")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
