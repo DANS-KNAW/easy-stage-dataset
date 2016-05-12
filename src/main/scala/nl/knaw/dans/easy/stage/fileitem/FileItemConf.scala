@@ -80,15 +80,15 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
      "If omitted the trailing argument csv-file is required")
   val accessibleTo = opt[String] (
     name = "accessible-to", short = 'a',
-    descr = s"specifies the accessibility of the file item; either one of [${accessCategories.mkString(", ")}]",
+    descr = s"specifies the accessibility of the file item; one of: ${accessCategories.mkString(", ")}",
     default = Some(defaultAccessibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultAccessibleTo)))
   val visibleTo = opt[String] (
     name = "visible-to", short = 'v',
-    descr = s"specifies the visibility of the file item; either one of [${accessCategories.mkString(", ")}]",
+    descr = s"specifies the visibility of the file item; one of: ${accessCategories.mkString(", ")}",
     default = Some(defaultVisibleTo))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultVisibleTo)))
   val creatorRole = opt[String](
     name = "creator-role", short = 'c',
-    descr = s"specifies the role of the file item creator; either one of [${creatorRoles.mkString(", ")}]",
+    descr = s"specifies the role of the file item creator; one of: ${creatorRoles.mkString(", ")}",
     default = Some(defaultCreatorRole))(singleArgConverter[String](conv = replaceEmptyValueWith(defaultCreatorRole)))
 
   val ownerId = opt[String](

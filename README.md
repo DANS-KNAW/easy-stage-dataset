@@ -67,17 +67,17 @@ ARGUMENTS for easy-stage-fileItem
      -f, --format  <arg>                dcterms property format, the mime type of the file
                                         (default = application/octet-stream)
 
-     -a, --accessible-to  <arg>         specifies the accessibility of the file item; either one of [ANONYMOUS,
-                                        KNOWN, RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE] (default = NONE)
-     -c, --creator-role  <arg>          specifies the role of the file item creator; either one of [ARCHIVIST,
-                                        DEPOSITOR] (default = DEPOSITOR)
+     -a, --accessible-to  <arg>         specifies the accessibility of the file item; one of: ANONYMOUS, KNOWN,
+                                        RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = NONE)
+     -c, --creator-role  <arg>          specifies the role of the file item creator; one of: ARCHIVIST, DEPOSITOR
+                                        (default = DEPOSITOR)
      -l, --file-location  <arg>         The file to be staged (only required for copying in case of non-mendeley
                                         use case)
      -m, --is-mendeley                  Stage the dataset as a "mendeley dataset"
          --owner-id  <arg>              specifies the id of the owner/creator of the file item (defaults to the one
                                         configured in the application configuration file)
-     -v, --visible-to  <arg>            specifies the visibility of the file item; either one of [ANONYMOUS, KNOWN,
-                                        RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE] (default = ANONYMOUS)
+     -v, --visible-to  <arg>            specifies the visibility of the file item; one of: ANONYMOUS, KNOWN,
+                                        RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
          --help                         Show help message
          --version                      Show version of this program
 
