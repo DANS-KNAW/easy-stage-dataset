@@ -67,7 +67,7 @@ ARGUMENTS for easy-stage-fileItem
                                         that don't yet exist in the dataset
      -s, --size  <arg>                  Size in bytes of the file data
      -f, --format  <arg>                dcterms property format, the mime type of the file
-                                        (default = application/octet-stream)
+                                        (default = application/octet-stream)
 
      -a, --accessible-to  <arg>         specifies the accessibility of the file item; either one of
                                         [ANONYMOUS, KNOWN, RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE]
