@@ -29,7 +29,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-file-item"
   version(s"$printedName v${Version()}")
-  editBuilder(_.setHelpWidth(100))
+  editBuilder(_.setHelpWidth(110))
   appendDefaultToDescription = true
 
   banner(s"""Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.

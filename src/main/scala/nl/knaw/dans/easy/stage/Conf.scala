@@ -27,7 +27,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-dataset"
   version(s"$printedName v${Version()}")
-  editBuilder(sc => sc.setHelpWidth(100))
+  editBuilder(sc => sc.setHelpWidth(110))
   appendDefaultToDescription = true
 
   private val _________ = printedName.map(_ => " ").mkString("")
