@@ -21,7 +21,7 @@
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-scala-prototype</artifactId>
-        <version>1.24</version>
+        <version>1.26</version>
     </parent>
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset</artifactId>
@@ -108,8 +108,21 @@
             <url>https://easy.dans.knaw.nl/maven/</url>
         </repository>
     </repositories>
+    <pluginRepositories>
+        <pluginRepository>
+            <id>DANS</id>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <url>https://easy.dans.knaw.nl/maven/</url>
+        </pluginRepository>
+    </pluginRepositories>
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.jfrog.buildinfo</groupId>
+                <artifactId>artifactory-maven-plugin</artifactId>
+            </plugin>
             <plugin>
                 <groupId>com.mycila</groupId>
                 <artifactId>license-maven-plugin</artifactId>
