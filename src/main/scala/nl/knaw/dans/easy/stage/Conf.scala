@@ -19,7 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopOption, ScallopConf, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ScallopConf, ScallopOption, ValueConverter, singleArgConverter}
 import org.slf4j.LoggerFactory
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
@@ -27,6 +27,9 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   printedName = "easy-stage-dataset"
   version(s"$printedName v${Version()}")
+  editBuilder(sc => sc.setHelpWidth(110))
+  appendDefaultToDescription = true
+
   private val _________ = printedName.map(_ => " ").mkString("")
   banner(s"""
            |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
@@ -74,6 +77,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)(mayNotExist)
+  verify()
 }
 
 object Conf {
