@@ -36,8 +36,8 @@ case class FileItemSettings (sdoSetDir: Option[File],
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: String = defaultVisibleTo,
-                             accessibleTo: String = defaultAccessibleTo,
+                             visibleTo: String,
+                             accessibleTo: String,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
@@ -58,7 +58,7 @@ object FileItemSettings {
   val accessCategories =  Array("ANONYMOUS", "KNOWN", "RESTRICTED_REQUEST", "RESTRICTED_GROUP", "NONE")
   val creatorRoles =  Array("ARCHIVIST", "DEPOSITOR")
 
-  /** new file or folder for a new dataset */
+  /** new file for a new dataset */
   def apply(sdoSetDir: File,
             file: File,
             ownerId: String,
@@ -66,7 +66,9 @@ object FileItemSettings {
             format: Option[String],
             title: Option[String],
             size: Option[Long],
-            isMendeley: Option[Boolean]
+            isMendeley: Option[Boolean],
+            visibleTo: String,
+            accessibleTo: String
            ) =
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
@@ -80,7 +82,31 @@ object FileItemSettings {
       pathInDataset = Some(pathInDataset),
       format = format,
       title = title,
-      subordinate = "objectSDO" -> "dataset"
+      subordinate = "objectSDO" -> "dataset",
+      accessibleTo = accessibleTo,
+      visibleTo = visibleTo
+    )
+
+  /** new folder for a new dataset */
+  def apply(sdoSetDir: File,
+            ownerId: String,
+            pathInDataset: File
+           ) =
+    // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
+    new FileItemSettings(
+      sdoSetDir = Some(sdoSetDir),
+      file = None,
+      datasetId = None,
+      datastreamLocation = None,
+      size = None,
+      isMendeley = None,
+      ownerId = ownerId,
+      pathInDataset = Some(pathInDataset),
+      format = None,
+      title = None,
+      subordinate = "objectSDO" -> "dataset",
+      accessibleTo = defaultAccessibleTo,
+      visibleTo = defaultVisibleTo
     )
 
   /** new file or folder for an existing dataset */

@@ -79,7 +79,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       )),
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-      ))
+      )),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo
     ))
 
     // comparing with sample output
@@ -128,7 +130,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       )),
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-      ))
+      )),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo
     ))
 
     // comparing with sample output
@@ -177,7 +181,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       )),
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-      ))
+      )),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo
     )).get should have message "None.get"
     // the message is vague, a proper FileItemConf/EasyStageDataset
     // should take care of something clearer for the end user
@@ -199,7 +205,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       )),
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-      ))
+      )),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo
     )).get should have message "mocked error"
   }
 
@@ -219,7 +227,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       )),
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq() // TODO findObjects should return a Try
-      ))
+      )),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo
     )).get should have message "easy-dataset:1 does not exist in repository"
   }
 
@@ -235,7 +245,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
-      title = Some("A nice title"))
+      title = Some("A nice title"),
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
     val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
@@ -257,7 +269,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
-      title = None)
+      title = None,
+      accessibleTo = FileItemSettings.defaultAccessibleTo,
+      visibleTo = FileItemSettings.defaultVisibleTo)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
     val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
