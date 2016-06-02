@@ -18,13 +18,15 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.nio.file.Path
 
+import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.Util._
 import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
-import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessCategory, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib.{Fedora, JSON}
+import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
 
@@ -49,13 +51,13 @@ object EasyStageDataset {
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
-      _ <- createDatasetSdo()
+      emdContent <- createDatasetSdo()
       _ = log.info("Creating file and folder SDOs")
-      _ <- createFileAndFolderSdos(dataDir, DATASET_SDO)
+      _ <- createFileAndFolderSdos(dataDir, DATASET_SDO)(s, emdContent.getEmdRights.getAccessCategory)
     } yield ()
   }
 
-  private def createDatasetSdo()(implicit s: Settings): Try[Unit] = {
+  private def createDatasetSdo()(implicit s: Settings): Try[EasyMetadata] = {
     log.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
@@ -69,10 +71,10 @@ object EasyStageDataset {
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())
       _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-    } yield ()
+    } yield emdContent
   }
 
-  private def createFileAndFolderSdos(dir: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+  private def createFileAndFolderSdos(dir: File, parentSDO: String)(implicit s: Settings, rights: AccessCategory): Try[Unit] = {
     log.debug(s"Creating file and folder SDOs for directory: $dir")
     def visit(child: File): Try[Unit] =
       if (child.isFile)
@@ -84,7 +86,7 @@ object EasyStageDataset {
     Try { dir.listFiles().toList }.flatMap(_.map(visit).allSuccess)
   }
 
-  private def createFileSdo(file: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+  private def createFileSdo(file: File, parentSDO: String)(implicit s: Settings, rights: AccessCategory): Try[Unit] = {
     log.debug(s"Creating file SDO for $file")
     val relativePath = getDatasetRelativePath(file).toString
     for {
@@ -101,8 +103,8 @@ object EasyStageDataset {
         isMendeley = Some(s.isMendeley),
         format = Some(mime),
         title = title,
-        accessibleTo = FileItemSettings.defaultAccessibleTo,
-        visibleTo = FileItemSettings.defaultVisibleTo
+        accessibleTo = FileAccessCategory.accessibleTo(rights).toString,
+        visibleTo = FileAccessCategory.visibleTo(rights).toString
       ))
     } yield ()
   }
