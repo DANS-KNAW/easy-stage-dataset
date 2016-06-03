@@ -19,6 +19,7 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
+import nl.knaw.dans.easy.stage.fileitem.UserCategory.UserCategory
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
@@ -36,26 +37,19 @@ case class FileItemSettings (sdoSetDir: Option[File],
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: String,
-                             accessibleTo: String,
+                             visibleTo: UserCategory,
+                             accessibleTo: UserCategory,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
                              subordinate: (String, String)) {
   if (!FileItemSettings.creatorRoles.contains(creatorRole))
     throw new Exception(s"illegal value for creatorRole, got $creatorRole")
-  if (!FileItemSettings.accessCategories.contains(visibleTo))
-    throw new Exception(s"illegal value for visibleTo, got $visibleTo")
-  if (!FileItemSettings.accessCategories.contains(accessibleTo))
-    throw new Exception(s"illegal value for accessibleTo, got $accessibleTo")
 }
 
 object FileItemSettings {
   val defaultFormat = "application/octet-stream"
   val defaultCreatorRole = "DEPOSITOR"
-  val defaultVisibleTo = "ANONYMOUS"
-  val defaultAccessibleTo = "NONE"
-  val accessCategories =  Array("ANONYMOUS", "KNOWN", "RESTRICTED_REQUEST", "RESTRICTED_GROUP", "NONE")
   val creatorRoles =  Array("ARCHIVIST", "DEPOSITOR")
 
   /** new file for a new dataset */
@@ -67,8 +61,8 @@ object FileItemSettings {
             title: Option[String],
             size: Option[Long],
             isMendeley: Option[Boolean],
-            visibleTo: String,
-            accessibleTo: String
+            visibleTo: UserCategory,
+            accessibleTo: UserCategory
            ) =
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
@@ -105,8 +99,8 @@ object FileItemSettings {
       format = None,
       title = None,
       subordinate = "objectSDO" -> "dataset",
-      accessibleTo = defaultAccessibleTo,
-      visibleTo = defaultVisibleTo
+      accessibleTo = UserCategory.ANONYMOUS,
+      visibleTo = UserCategory.NONE
     )
 
   /** new file or folder for an existing dataset */

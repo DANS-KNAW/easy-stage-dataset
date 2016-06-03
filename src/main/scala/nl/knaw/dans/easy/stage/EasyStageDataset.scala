@@ -21,7 +21,7 @@ import java.nio.file.Path
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.Util._
 import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
-import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessCategory, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings, UserCategory}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.Util._
@@ -103,8 +103,8 @@ object EasyStageDataset {
         isMendeley = Some(s.isMendeley),
         format = Some(mime),
         title = title,
-        accessibleTo = FileAccessCategory.accessibleTo(rights).toString,
-        visibleTo = FileAccessCategory.visibleTo(rights).toString
+        accessibleTo = UserCategory.accessibleTo(rights),
+        visibleTo = UserCategory.visibleTo(rights)
       ))
     } yield ()
   }
