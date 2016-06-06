@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.stage.lib
 import java.io.File
 
 import nl.knaw.dans.easy.stage.dataset.EMD
-import nl.knaw.dans.easy.stage.fileitem.UserCategory
 import org.apache.commons.io.FileUtils
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -52,6 +51,5 @@ class EmdSpec extends FlatSpec with Matchers {
     FileUtils.write(tmpDDM,ddm.toString())
     EMD.getEasyMetadata(tmpDDM) shouldBe a[Failure[_]]
     tmpDDM.delete()
-    println(UserCategory)
   }
 }
