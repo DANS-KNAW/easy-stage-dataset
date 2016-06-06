@@ -57,7 +57,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   def userCategory(default: UserCategory.Value) = singleArgConverter({s =>
     if (s.trim.isEmpty) default else UserCategory.valueOf(s).get
   })
-  def string(default: String) = singleArgConverter({s =>
+  def emptyIsDefault(default: String) = singleArgConverter({ s =>
     if (s.trim.isEmpty) default else s
   })
 
@@ -68,7 +68,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val format = opt[String](
     name = "format", short = 'f',
     descr = s"dcterms property format, the mime type of the file",
-    default = Some(defaultFormat))(string(defaultFormat))
+    default = Some(defaultFormat))(emptyIsDefault(defaultFormat))
   val dsLocation = opt[URL](
     name = "datastream-location",
     descr = "http URL to redirect to")(httpUrl)
@@ -97,7 +97,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val creatorRole = opt[String](
     name = "creator-role", short = 'c',
     descr = s"specifies the role of the file item creator; one of: ${creatorRoles.mkString(", ")}",
-    default = Some(defaultCreatorRole))(string(defaultCreatorRole))
+    default = Some(defaultCreatorRole))(emptyIsDefault(defaultCreatorRole))
 
   val ownerId = opt[String](
     name = "owner-id", noshort = true,
