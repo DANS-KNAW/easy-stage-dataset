@@ -24,8 +24,8 @@ import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
 import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings, UserCategory}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
+import nl.knaw.dans.easy.stage.lib.JSON
 import nl.knaw.dans.easy.stage.lib.Util._
-import nl.knaw.dans.easy.stage.lib.{Fedora, JSON}
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.slf4j.LoggerFactory
@@ -37,8 +37,6 @@ object EasyStageDataset {
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
-
     implicit val s = Settings(new Conf(args),props)
     run match {
       case Success(_) => log.info("Staging SUCCESS")
