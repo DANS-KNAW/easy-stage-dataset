@@ -99,8 +99,7 @@ object EasyStageDataset {
         sdoDir <- mkdirSafe(getSDODir(file))
         mime <- readMimeType(getBagRelativePath(file).toString)
         title <- readTitle(getBagRelativePath(file).toString)
-        _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO
-        )(FileItemSettings(
+        fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = file,
           ownerId = s.ownerId,
@@ -111,7 +110,8 @@ object EasyStageDataset {
           title = title,
           accessibleTo = UserCategory.accessibleTo(rights),
           visibleTo = UserCategory.visibleTo(rights)
-        ))
+        )
+        _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
     }
 

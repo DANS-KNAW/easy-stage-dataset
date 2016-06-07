@@ -24,12 +24,12 @@ import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
 case class FileItemSettings (sdoSetDir: Option[File],
-                             file: Option[File],
+                             file: Option[File] = None,
                              datasetId: Option[String],
-                             datastreamLocation: Option[URL],
+                             datastreamLocation: Option[URL] = None,
                              unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
-                             size: Option[Long],
-                             isMendeley: Option[Boolean],
+                             size: Option[Long] = None,
+                             isMendeley: Option[Boolean] = None,
                              ownerId: String = props.getString("owner"),
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
@@ -37,14 +37,13 @@ case class FileItemSettings (sdoSetDir: Option[File],
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: UserCategory,
-                             accessibleTo: UserCategory,
+                             visibleTo: UserCategory = UserCategory.NONE,
+                             accessibleTo: UserCategory = UserCategory.ANONYMOUS,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
-                             subordinate: (String, String)) {
-  if (!FileItemSettings.creatorRoles.contains(creatorRole))
-    throw new Exception(s"illegal value for creatorRole, got $creatorRole")
+                             subordinate: (String, String) = "objectSDO" -> "dataset") {
+  require(FileItemSettings.creatorRoles.contains(creatorRole), s"illegal value for creatorRole, got $creatorRole")
 }
 
 object FileItemSettings {
@@ -69,14 +68,12 @@ object FileItemSettings {
       sdoSetDir = Some(sdoSetDir),
       file = Some(file),
       datasetId = None,
-      datastreamLocation = None,
       size = size,
       isMendeley = isMendeley,
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
       title = title,
-      subordinate = "objectSDO" -> "dataset",
       accessibleTo = accessibleTo,
       visibleTo = visibleTo
     )
@@ -89,18 +86,9 @@ object FileItemSettings {
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
-      file = None,
       datasetId = None,
-      datastreamLocation = None,
-      size = None,
-      isMendeley = None,
       ownerId = ownerId,
-      pathInDataset = Some(pathInDataset),
-      format = None,
-      title = None,
-      subordinate = "objectSDO" -> "dataset",
-      accessibleTo = UserCategory.ANONYMOUS,
-      visibleTo = UserCategory.NONE
+      pathInDataset = Some(pathInDataset)
     )
 
   /** new file or folder for an existing dataset */

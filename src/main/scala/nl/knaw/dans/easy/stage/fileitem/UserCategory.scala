@@ -18,7 +18,9 @@ package nl.knaw.dans.easy.stage.fileitem
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
 
+/** Enumeration of the file properties VisibleTo and AccessibleTo, read "... to a user category" */
 object UserCategory extends Enumeration {
+
   type UserCategory = Value
   val
   ANONYMOUS, // a user that is not logged in
