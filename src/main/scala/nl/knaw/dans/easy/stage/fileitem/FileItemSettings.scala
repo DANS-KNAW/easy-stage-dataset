@@ -19,16 +19,17 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
+import nl.knaw.dans.easy.stage.fileitem.UserCategory.UserCategory
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
 case class FileItemSettings (sdoSetDir: Option[File],
-                             file: Option[File],
+                             file: Option[File] = None,
                              datasetId: Option[String],
-                             datastreamLocation: Option[URL],
+                             datastreamLocation: Option[URL] = None,
                              unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
-                             size: Option[Long],
-                             isMendeley: Option[Boolean],
+                             size: Option[Long] = None,
+                             isMendeley: Option[Boolean] = None,
                              ownerId: String = props.getString("owner"),
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
@@ -36,29 +37,21 @@ case class FileItemSettings (sdoSetDir: Option[File],
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: String = defaultVisibleTo,
-                             accessibleTo: String = defaultAccessibleTo,
+                             visibleTo: UserCategory = UserCategory.NONE,
+                             accessibleTo: UserCategory = UserCategory.ANONYMOUS,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
-                             subordinate: (String, String)) {
-  if (!FileItemSettings.creatorRoles.contains(creatorRole))
-    throw new Exception(s"illegal value for creatorRole, got $creatorRole")
-  if (!FileItemSettings.accessCategories.contains(visibleTo))
-    throw new Exception(s"illegal value for visibleTo, got $visibleTo")
-  if (!FileItemSettings.accessCategories.contains(accessibleTo))
-    throw new Exception(s"illegal value for accessibleTo, got $accessibleTo")
+                             subordinate: (String, String) = "objectSDO" -> "dataset") {
+  require(FileItemSettings.creatorRoles.contains(creatorRole), s"illegal value for creatorRole, got $creatorRole")
 }
 
 object FileItemSettings {
   val defaultFormat = "application/octet-stream"
   val defaultCreatorRole = "DEPOSITOR"
-  val defaultVisibleTo = "ANONYMOUS"
-  val defaultAccessibleTo = "NONE"
-  val accessCategories =  Array("ANONYMOUS", "KNOWN", "RESTRICTED_REQUEST", "RESTRICTED_GROUP", "NONE")
   val creatorRoles =  Array("ARCHIVIST", "DEPOSITOR")
 
-  /** new file or folder for a new dataset */
+  /** new file for a new dataset */
   def apply(sdoSetDir: File,
             file: File,
             ownerId: String,
@@ -66,21 +59,36 @@ object FileItemSettings {
             format: Option[String],
             title: Option[String],
             size: Option[Long],
-            isMendeley: Option[Boolean]
+            isMendeley: Option[Boolean],
+            visibleTo: UserCategory,
+            accessibleTo: UserCategory
            ) =
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
       file = Some(file),
       datasetId = None,
-      datastreamLocation = None,
       size = size,
       isMendeley = isMendeley,
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
       title = title,
-      subordinate = "objectSDO" -> "dataset"
+      accessibleTo = accessibleTo,
+      visibleTo = visibleTo
+    )
+
+  /** new folder for a new dataset */
+  def apply(sdoSetDir: File,
+            ownerId: String,
+            pathInDataset: File
+           ) =
+    // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
+    new FileItemSettings(
+      sdoSetDir = Some(sdoSetDir),
+      datasetId = None,
+      ownerId = ownerId,
+      pathInDataset = Some(pathInDataset)
     )
 
   /** new file or folder for an existing dataset */

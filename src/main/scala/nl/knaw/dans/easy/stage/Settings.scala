@@ -31,12 +31,8 @@ case class Settings(ownerId: String,
                     DOI: Option[String] = None,
                     otherAccessDOI: Boolean = false,
                     isMendeley: Boolean,
-                    fedoraUser: String,
-                    fedoraPassword: String,
-                    fedoraUrl: URL) {
-  Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
+                    disciplines: Map[String, String]) {
 
-  val disciplines: Map[String, String] = Fedora.disciplines
   val licenses: Map[String, File] = Licenses.getLicenses
 }
 
@@ -53,7 +49,8 @@ object Settings {
             isMendeley: Boolean,
             fedoraUser: String,
             fedoraPassword: String,
-            fedoraUrl: URL) =
+            fedoraUrl: URL) = {
+    Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(ownerId = ownerId,
       submissionTimestamp = DateTime.parse(submissionTimestamp),
       bagitDir = bagitDir,
@@ -62,11 +59,14 @@ object Settings {
       DOI = Some(DOI),
       otherAccessDOI = otherAccessDOI,
       isMendeley = isMendeley,
-      fedoraUser = fedoraUser,
-      fedoraPassword = fedoraPassword,
-      fedoraUrl = fedoraUrl)
+      disciplines = Fedora.disciplines)
+  }
 
-  def apply(conf: Conf, props: PropertiesConfiguration) =
+  def apply(conf: Conf, props: PropertiesConfiguration) = {
+    Fedora.setFedoraConnectionSettings(
+      new URL(props.getString("fcrepo.url")).toString,// detour for early validation
+      props.getString("fcrepo.user"),
+      props.getString("fcrepo.password"))
     new Settings(
       ownerId = props.getString("owner"),
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
@@ -76,7 +76,6 @@ object Settings {
       DOI = conf.doi.get,
       otherAccessDOI = conf.otherAccessDOI(),
       isMendeley = conf.isMendeley(),
-      fedoraUser = props.getString("fcrepo.user"),
-      fedoraPassword = props.getString("fcrepo.password"),
-      fedoraUrl = new URL(props.getString("fcrepo.url")))
+      disciplines = Fedora.disciplines)
+  }
 }
