@@ -35,9 +35,9 @@ object UserCategory extends Enumeration {
     OPEN_ACCESS_FOR_REGISTERED_USERS -> KNOWN,
     GROUP_ACCESS -> RESTRICTED_GROUP,
     REQUEST_PERMISSION -> RESTRICTED_REQUEST,
+    OPEN_ACCESS -> ANONYMOUS,
     // deprecated keys
     NO_ACCESS -> NONE, // used by Excel2EasyMetadataXMLTask.java for invalid values in some spread-sheet cell
-    OPEN_ACCESS -> KNOWN, // refactored into OPEN_ACCESS_FOR_REGISTERED_USERS
     ACCESS_ELSEWHERE -> NONE,
     FREELY_AVAILABLE -> ANONYMOUS // used for thumbnails in EASY-v1
   )

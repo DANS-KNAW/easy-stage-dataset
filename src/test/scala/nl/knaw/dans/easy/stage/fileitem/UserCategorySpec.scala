@@ -19,13 +19,45 @@ import nl.knaw.dans.common.lang.dataset.AccessCategory
 import org.scalatest.{FlatSpec, Matchers}
 
 class UserCategorySpec extends FlatSpec with Matchers {
+  /*
+  according to ddm.xsd there are 5 options for the dataset AccessRights
+        <xs:enumeration value="OPEN_ACCESS">
+        <xs:enumeration value="OPEN_ACCESS_FOR_REGISTERED_USERS">
+        <xs:enumeration value="GROUP_ACCESS">
+        <xs:enumeration value="REQUEST_PERMISSION">
+        <xs:enumeration value="NO_ACCESS">
+    */
 
-  "visibleTo" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.ANONYMOUS_ACCESS) shouldBe UserCategory.ANONYMOUS
+  "visibleTo OPEN_ACCESS" should "properly map" in {
+    UserCategory.visibleTo(AccessCategory.OPEN_ACCESS) shouldBe UserCategory.ANONYMOUS
   }
 
-  "accesibleTo" should "properly map" in {
+  "visibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
+    UserCategory.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe UserCategory.KNOWN
+  }
+  "visibleTo GROUP_ACCESS" should "properly map" in {
+    UserCategory.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe UserCategory.RESTRICTED_GROUP
+  }
+  "visibleTo REQUEST_PERMISSION)" should "properly map" in {
+    UserCategory.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe UserCategory.RESTRICTED_REQUEST
+  }
+  "visibleTo NO_ACCESS)" should "properly map" in {
+    UserCategory.visibleTo(AccessCategory.NO_ACCESS) shouldBe UserCategory.NONE
+  "accessibleTo OPEN_ACCESS" should "properly map" in {
+    UserCategory.accessibleTo(AccessCategory.OPEN_ACCESS) shouldBe UserCategory.ANONYMOUS
+  }
+
+  "accessibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
+    UserCategory.accessibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe UserCategory.KNOWN
+  }
+  "accessibleTo GROUP_ACCESS" should "properly map" in {
     UserCategory.accessibleTo(AccessCategory.GROUP_ACCESS) shouldBe UserCategory.RESTRICTED_GROUP
+  }
+  "accessibleTo REQUEST_PERMISSION)" should "properly map" in {
+    UserCategory.accessibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe UserCategory.RESTRICTED_REQUEST
+  }
+  "accessibleTo NO_ACCESS)" should "properly map" in {
+    UserCategory.accessibleTo(AccessCategory.NO_ACCESS) shouldBe UserCategory.NONE
   }
 
   "valueOf" should "succeed with a proper-cased string" in {
