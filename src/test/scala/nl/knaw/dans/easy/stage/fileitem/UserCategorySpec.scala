@@ -43,6 +43,8 @@ class UserCategorySpec extends FlatSpec with Matchers {
   }
   "visibleTo NO_ACCESS)" should "properly map" in {
     UserCategory.visibleTo(AccessCategory.NO_ACCESS) shouldBe UserCategory.NONE
+  }
+
   "accessibleTo OPEN_ACCESS" should "properly map" in {
     UserCategory.accessibleTo(AccessCategory.OPEN_ACCESS) shouldBe UserCategory.ANONYMOUS
   }
