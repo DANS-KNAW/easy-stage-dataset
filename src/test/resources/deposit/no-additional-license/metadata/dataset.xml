@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ddm:DDM
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+>
+    <ddm:profile>
+        <dc:title>Dataset with files but no additional license</dc:title>
+        <dc:description>A dataset with some files but no additional license</dc:description>
+        <dc:creator>A Creator</dc:creator>
+        <ddm:created>2015</ddm:created>
+        <ddm:audience>D10000</ddm:audience>
+        <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
+    </ddm:profile>
+</ddm:DDM>

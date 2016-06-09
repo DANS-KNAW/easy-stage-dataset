@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files xmlns:dcterms="http://purl.org/dc/terms/">
+    <file filepath="data/path/to/file.txt">
+        <dcterms:format>text/plain</dcterms:format>
+    </file>
+    <file filepath="data/quicksort.hs">
+        <dcterms:format>text/plain</dcterms:format>
+    </file>
+</files>

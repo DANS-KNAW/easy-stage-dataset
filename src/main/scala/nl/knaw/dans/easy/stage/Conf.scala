@@ -69,9 +69,9 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "dataset-is-mendeley-dataset", short = 'm',
     descr = """Stage the dataset as a "mendeley dataset"""",
     default = Some(false))
-  val bag = trailArg[File](
-    name = "EASY-bag",
-    descr = "Bag with extra metadata for EASY to be staged for ingest into Fedora",
+  val deposit = trailArg[File](
+    name = "EASY-deposit",
+    descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
     required = true)(shouldExist)
   val sdoSet = trailArg[File](
     name = "staged-digital-object-set",

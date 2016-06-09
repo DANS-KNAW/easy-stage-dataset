@@ -49,7 +49,8 @@ ARGUMENTS for easy-stage-dataset
          --version                       Show version of this program
 
     trailing arguments:
-     EASY-bag (required)                    Bag with extra metadata for EASY to be staged for ingest into Fedora
+     EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
+                                            metadata for EASY to be staged for ingest into Fedora
      staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
                                             does not exist)
 

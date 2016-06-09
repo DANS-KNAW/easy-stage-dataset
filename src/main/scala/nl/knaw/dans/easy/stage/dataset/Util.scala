@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.{EasyStageDataset, Settings}
 
 import scala.util.{Failure, Success, Try}
 import scala.xml.{Elem, XML}
@@ -74,7 +74,8 @@ object Util {
   }
 
   private def loadXML(fileName: String)(implicit s: Settings): Elem = {
-    val metadataFile = new File(s.bagitDir, fileName)
+    //TODO: Refactor EasyStageDataset.getBagitDir.get. Richard said: don't use 'get'
+    val metadataFile = new File(EasyStageDataset.getBagitDir.get, fileName)
     if (!metadataFile.exists) {
       throw new scala.RuntimeException(s"Unable to find `$fileName` in bag.")
     }
