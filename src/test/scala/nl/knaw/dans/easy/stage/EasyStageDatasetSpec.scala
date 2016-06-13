@@ -85,8 +85,10 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
 
     createProps()
 
-    val testBags= new File ("src/test/resources/dataset-bags")
+    val testBags = new File ("src/test/resources/dataset-bags")
     val puddingsDir = new File ("target/sdoPuddings")
+    val emptyDataDir = new File(testBags,"minimal/data")
+    emptyDataDir.mkdir()
 
     // clean up old results
     FileUtils.deleteDirectory(puddingsDir)
@@ -111,6 +113,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     new File(puddingsDir,"additional-license-by-text").listFiles().length shouldBe 5
 
     // cleanup, leave created SDO sets as puddings to eat with easy-ingest
+    emptyDataDir.delete()
     tmpProps.delete()
   }
 
