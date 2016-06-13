@@ -120,8 +120,10 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
   def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
+    // the user and disciplines should exist in deasy
+    // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
     Settings(
-      ownerId = "dpositor",
+      ownerId = "digger001",
       bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,
       isMendeley = false,
