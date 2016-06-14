@@ -18,8 +18,8 @@ package nl.knaw.dans.easy.stage.dataset
 import java.io.File
 import java.net.URI
 
-import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller

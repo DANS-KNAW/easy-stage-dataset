@@ -45,6 +45,7 @@ object EasyStageDataset {
   }
 
   def run(implicit s: Settings): Try[Unit] = {
+
     def createDatasetSdo(): Try[EasyMetadata] = {
       log.info("Creating dataset SDO")
       for {
