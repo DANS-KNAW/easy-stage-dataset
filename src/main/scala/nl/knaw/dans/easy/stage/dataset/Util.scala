@@ -74,7 +74,6 @@ object Util {
   }
 
   private def loadXML(fileName: String)(implicit s: Settings): Elem = {
-    //TODO: Refactor EasyStageDataset.getBagitDir.get. Richard said: don't use 'get'
     val metadataFile = new File(s.bagitDir, fileName)
     if (!metadataFile.exists) {
       throw new scala.RuntimeException(s"Unable to find `$fileName` in bag.")

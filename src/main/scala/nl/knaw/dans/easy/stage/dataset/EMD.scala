@@ -30,7 +30,6 @@ import scala.util.{Failure, Success, Try}
 object EMD {
 
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
-    //TODO: Refactor EasyStageDataset.getBagitDir.get. Richard said: don't use 'get'
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists()) {
       return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))

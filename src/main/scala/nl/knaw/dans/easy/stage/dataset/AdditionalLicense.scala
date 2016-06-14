@@ -71,7 +71,6 @@ object AdditionalLicense {
 
 
   def getDdmXml()(implicit s: Settings): Try[Elem] = Try {
-    //TODO: Refactor EasyStageDataset.getBagitDir.get. Richard said: don't use 'get'
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists) {
       throw new RuntimeException("Unable to find `metadata/dataset.xml` in bag.")
