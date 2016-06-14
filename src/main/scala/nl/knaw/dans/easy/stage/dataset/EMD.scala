@@ -38,6 +38,7 @@ object EMD {
       emd <- getEasyMetadata(ddm)
       _   = s.URN.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
       _   = s.DOI.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDOI)))
+      _   = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -72,6 +73,13 @@ object EMD {
     val basicId = new BasicIdentifier(doi)
     basicId.setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
     basicId.setIdentificationSystem(new URI("http://dx.doi.org"))
+    basicId
+  }
+
+  def createDmoIdWithPlaceholder(): BasicIdentifier = {
+    val placeholder = "$sdo-id"
+    val basicId = new BasicIdentifier(placeholder)
+    basicId.setScheme(EmdConstants.SCHEME_DMO_ID)
     basicId
   }
 }
