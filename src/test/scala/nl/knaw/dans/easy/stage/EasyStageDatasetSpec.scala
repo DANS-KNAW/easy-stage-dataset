@@ -81,43 +81,58 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     tmpProps.delete()
   }
 
-  "run" should "create SDO sets for all available test bags" in {
+  "run" should "create SDO sets from test bags (puddings to be eaten by easy-ingest)" in {
 
     createProps()
-    val sdoSetDir = new File("target/test/sdoSet")
-    for (bag <- getTestBags.toArray) {
-      val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
-      implicit val s = createSettings(bagitDir, sdoSetDir)
 
-      EasyStageDataset.run(s) shouldBe a[Success[_]]
-      sdoSetDir.exists() shouldBe true
+    val testBags = new File ("src/test/resources/dataset-bags")
+    val puddingsDir = new File ("target/sdoPuddings")
+    val emptyDataDir = new File(testBags,"minimal/data")
+    emptyDataDir.mkdir()
 
-      deleteDirectory(sdoSetDir)
+    // clean up old results
+    FileUtils.deleteDirectory(puddingsDir)
+
+    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
+    for (bagName <- Array("additional-license-by-text", "no-additional-license", "minimal")) {
+      val sdoSetDir = new File(puddingsDir,bagName)
+      implicit val settings = createSettings(new File(testBags, bagName), sdoSetDir)
+
+      EasyStageDataset.run(settings) shouldBe a[Success[_]]
+      new File(sdoSetDir, "dataset/EMD").exists() shouldBe true
+      new File(sdoSetDir, "dataset/AMD").exists() shouldBe true
+      new File(sdoSetDir, "dataset/cfg.json").exists() shouldBe true
+      new File(sdoSetDir, "dataset/fo.xml").exists() shouldBe true
+      new File(sdoSetDir, "dataset/PRSQL").exists() shouldBe true
     }
+    // just a dataset SDO
+    new File(puddingsDir,"minimal").listFiles().length shouldBe 1
+
+    // both have 2 files and 2 nested folders resulting in a total of 5 SDO's
+    new File(puddingsDir,"no-additional-license").listFiles().length shouldBe 5
+    new File(puddingsDir,"additional-license-by-text").listFiles().length shouldBe 5
+
+    // cleanup, leave created SDO sets as puddings to eat with easy-ingest
+    emptyDataDir.delete()
     tmpProps.delete()
   }
 
   def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
+    // the user and disciplines should exist in deasy
+    // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
     Settings(
-      ownerId = "dpositor",
+      ownerId = "digger001",
       bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,
       isMendeley = false,
       URN = Some("someUrn"),
       DOI = Some("doei"),
-      disciplines = Map[String, String]("D10000" -> "easy-discipline:1")
+      disciplines = Map[String, String](
+        "D10000" -> "easy-discipline:57",
+        "E10000" -> "easy-discipline:219",
+        "E18000" -> "easy-discipline:226")
     )
-  }
-
-  def getTestBags: util.Collection[File] = {
-    val ff = new FileFileFilter {
-      override def accept(pathname: File): Boolean = false
-    }
-    val df = new DirectoryFileFilter {
-      override def accept(pathname: File): Boolean = true
-    }
-    FileUtils.listFilesAndDirs(new File("src/test/resources/dataset-bags/no-additional-license"), ff, df)
   }
 }
