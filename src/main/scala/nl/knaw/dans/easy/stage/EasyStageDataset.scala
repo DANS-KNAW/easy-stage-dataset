@@ -49,9 +49,9 @@ object EasyStageDataset {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(getUserId, s.submissionTimestamp, s.DOI.isEmpty).toString()
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty).toString()
         emdContent <- EMD.create(sdoDir)
-        foxmlContent = getDatasetFOXML(getUserId, emdContent)
+        foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
         audiences <- readAudiences()
         jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
@@ -63,7 +63,7 @@ object EasyStageDataset {
     }
 
     def getDataDir = Try {
-      getBagitDir.toList.head.listFiles.find(f => f.isDirectory && f.getName == "data")
+      s.bagitDir.listFiles.find(_.getName == "data")
         .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
     }
 
@@ -75,12 +75,6 @@ object EasyStageDataset {
       _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
     } yield ()
-  }
-
-  def getUserId(implicit s: Settings) : String = new PropertiesConfiguration(new File(s.depositDir, "deposit.properties")).getString("depositor.userId")
-
-  def getBagitDir(implicit s: Settings): Option[File] = {
-    s.depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
@@ -99,7 +93,6 @@ object EasyStageDataset {
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
-      val r = getUserId
       val relativePath = getDatasetRelativePath(file).toString
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
@@ -108,7 +101,7 @@ object EasyStageDataset {
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = file,
-          ownerId = getUserId,
+          ownerId = s.ownerId,
           pathInDataset = new File(relativePath),
           size = Some(file.length),
           isMendeley = Some(s.isMendeley),
@@ -126,7 +119,7 @@ object EasyStageDataset {
       val relativePath= getDatasetRelativePath(folder).toString
       for {
         sdoDir <- mkdirSafe(getSDODir(folder))
-        fis     = FileItemSettings(s.sdoSetDir, getUserId, getDatasetRelativePath(folder).toFile)
+        fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile)
         _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
       } yield ()
     }
@@ -140,10 +133,10 @@ object EasyStageDataset {
     }
 
     def getDatasetRelativePath(item: File): Path =
-      new File(getBagitDir.get, "data").toPath.relativize(item.toPath)
+      new File(s.bagitDir, "data").toPath.relativize(item.toPath)
 
     def getBagRelativePath(item: File): Path =
-    getBagitDir.get.toPath.relativize(item.toPath)
+    s.bagitDir.toPath.relativize(item.toPath)
 
     createFileAndFolderSdos(dir, parentSDO)
   }

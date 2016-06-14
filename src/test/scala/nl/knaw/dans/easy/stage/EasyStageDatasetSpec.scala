@@ -62,11 +62,11 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
   it should "create file rights computed from dataset access rights" in {
 
     createProps()
-    val depositDir = new File("src/test/resources/deposit")
-    val dataDir = new File(depositDir, "no-additional-license/data")
+    val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
+    val dataDir = new File(bagitDir, "data")
     val sdoSetDir = new File("target/test/sdoSet")
     val fileMetadataFile = new File(sdoSetDir, "quicksort_hs/EASY_FILE_METADATA")
-    implicit val s = createSettings(depositDir, sdoSetDir)
+    implicit val s = createSettings(bagitDir, sdoSetDir)
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
     FileUtils.readFileToString(fileMetadataFile) should include ("<visibleTo>KNOWN</visibleTo>")
@@ -86,8 +86,8 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     createProps()
     val sdoSetDir = new File("target/test/sdoSet")
     for (bag <- getTestBags.toArray) {
-      val depositDir = new File("src/test/resources/deposit")
-      implicit val s = createSettings(depositDir, sdoSetDir)
+      val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
+      implicit val s = createSettings(bagitDir, sdoSetDir)
 
       EasyStageDataset.run(s) shouldBe a[Success[_]]
       sdoSetDir.exists() shouldBe true
@@ -99,9 +99,10 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
 
   def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
-  def createSettings(depositDir: File, sdoSetDir: File): Settings = {
-    Settings(
-      depositDir = depositDir,
+  def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
+    new Settings(
+      ownerId = "dpositor",
+      bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,
       isMendeley = false,
       URN = Some("someUrn"),
@@ -117,6 +118,6 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     val df = new DirectoryFileFilter {
       override def accept(pathname: File): Boolean = true
     }
-    FileUtils.listFilesAndDirs(new File("src/test/resources/deposit"), ff, df)
+    FileUtils.listFilesAndDirs(new File("src/test/resources/dataset-bags/no-additional-license"), ff, df)
   }
 }

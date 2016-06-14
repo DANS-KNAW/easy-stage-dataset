@@ -19,7 +19,7 @@ import java.io.File
 import java.net.URI
 
 import nl.knaw.dans.easy.stage.lib.Util._
-import nl.knaw.dans.easy.stage.{EasyStageDataset, Settings}
+import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
@@ -31,7 +31,7 @@ object EMD {
 
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
     //TODO: Refactor EasyStageDataset.getBagitDir.get. Richard said: don't use 'get'
-    val ddm = new File(EasyStageDataset.getBagitDir.get, "metadata/dataset.xml")
+    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists()) {
       return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
     }

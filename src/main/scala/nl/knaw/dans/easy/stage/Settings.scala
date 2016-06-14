@@ -23,9 +23,9 @@ import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
 
-case class Settings(
+case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = new DateTime(),
-                    depositDir: File,
+                    bagitDir: File,
                     sdoSetDir: File,
                     URN: Option[String] = None,
                     DOI: Option[String] = None,
@@ -52,8 +52,9 @@ object Settings {
             fedoraUrl: URL) = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(
+      ownerId = getUserId(depositDir),
       submissionTimestamp = DateTime.parse(submissionTimestamp),
-      depositDir = depositDir,
+      bagitDir = getBagDir(depositDir).get,
       sdoSetDir = sdoSetDir,
       URN = Some(URN),
       DOI = Some(DOI),
@@ -68,8 +69,9 @@ object Settings {
       props.getString("fcrepo.user"),
       props.getString("fcrepo.password"))
     new Settings(
+      ownerId = getUserId(conf.deposit()),
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
-      depositDir = conf.deposit(),
+      bagitDir = getBagDir(conf.deposit()).get,
       sdoSetDir = conf.sdoSet(),
       URN = conf.urn.get,
       DOI = conf.doi.get,
@@ -77,4 +79,8 @@ object Settings {
       isMendeley = conf.isMendeley(),
       disciplines = Fedora.disciplines)
   }
+
+  private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
+  private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
+
 }
