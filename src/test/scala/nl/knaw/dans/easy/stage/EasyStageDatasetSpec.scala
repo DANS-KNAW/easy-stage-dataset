@@ -94,7 +94,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     FileUtils.deleteDirectory(puddingsDir)
 
     // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
-    for (bagName <- Array("additional-license-by-text", "no-additional-license", "minimal")) {
+    for (bagName <- Array("additional-license-by-text", "no-additional-license", "minimal", "sha-1")) {
       val sdoSetDir = new File(puddingsDir,bagName)
       implicit val settings = createSettings(new File(testBags, bagName), sdoSetDir)
 
@@ -108,9 +108,12 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     // just a dataset SDO
     new File(puddingsDir,"minimal").listFiles().length shouldBe 1
 
-    // both have 2 files and 2 nested folders resulting in a total of 5 SDO's
+    // both have 2 files and 2 nested folders resulting in a total of five SDO's
     new File(puddingsDir,"no-additional-license").listFiles().length shouldBe 5
     new File(puddingsDir,"additional-license-by-text").listFiles().length shouldBe 5
+
+    // one folder with three files also result in five SDO's
+    new File(puddingsDir,"sha-1").listFiles().length shouldBe 5
 
     // cleanup, leave created SDO sets as puddings to eat with easy-ingest
     emptyDataDir.delete()
@@ -131,6 +134,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
       DOI = Some("doei"),
       disciplines = Map[String, String](
         "D10000" -> "easy-discipline:57",
+        "D30000" -> "easy-discipline:1",
         "E10000" -> "easy-discipline:219",
         "E18000" -> "easy-discipline:226")
     )

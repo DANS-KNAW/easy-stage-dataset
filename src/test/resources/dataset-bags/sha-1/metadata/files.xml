@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files xmlns:dcterms="http://purl.org/dc/terms/">
+  <file filepath="data/reisverslag/deel01.txt">
+    <dcterms:format>text/plain</dcterms:format>
+  </file>
+  <file filepath="data/reisverslag/deel02.txt">
+    <dcterms:format>text/plain</dcterms:format>
+  </file>
+  <file filepath="data/reisverslag/deel03.txt">
+    <dcterms:format>text/plain</dcterms:format>
+  </file>
+</files>
