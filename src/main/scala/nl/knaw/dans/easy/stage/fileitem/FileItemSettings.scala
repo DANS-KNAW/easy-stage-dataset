@@ -19,7 +19,7 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
-import nl.knaw.dans.easy.stage.fileitem.UserCategory.UserCategory
+import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
@@ -37,8 +37,8 @@ case class FileItemSettings (sdoSetDir: Option[File],
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: UserCategory = UserCategory.NONE,
-                             accessibleTo: UserCategory = UserCategory.ANONYMOUS,
+                             visibleTo: UserCategory = FileAccessRights.NONE,
+                             accessibleTo: UserCategory = FileAccessRights.ANONYMOUS,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 

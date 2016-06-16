@@ -29,45 +29,45 @@ class UserCategorySpec extends FlatSpec with Matchers {
     */
 
   "visibleTo OPEN_ACCESS" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.OPEN_ACCESS) shouldBe UserCategory.ANONYMOUS
+    FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
   "visibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe UserCategory.KNOWN
+    FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.KNOWN
   }
   "visibleTo GROUP_ACCESS" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe UserCategory.RESTRICTED_GROUP
+    FileAccessRights.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.RESTRICTED_GROUP
   }
   "visibleTo REQUEST_PERMISSION)" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe UserCategory.RESTRICTED_REQUEST
+    FileAccessRights.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.RESTRICTED_REQUEST
   }
   "visibleTo NO_ACCESS)" should "properly map" in {
-    UserCategory.visibleTo(AccessCategory.NO_ACCESS) shouldBe UserCategory.NONE
+    FileAccessRights.visibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.NONE
   }
 
   "accessibleTo OPEN_ACCESS" should "properly map" in {
-    UserCategory.accessibleTo(AccessCategory.OPEN_ACCESS) shouldBe UserCategory.ANONYMOUS
+    FileAccessRights.accessibleTo(AccessCategory.OPEN_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
   "accessibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
-    UserCategory.accessibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe UserCategory.KNOWN
+    FileAccessRights.accessibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.KNOWN
   }
   "accessibleTo GROUP_ACCESS" should "properly map" in {
-    UserCategory.accessibleTo(AccessCategory.GROUP_ACCESS) shouldBe UserCategory.RESTRICTED_GROUP
+    FileAccessRights.accessibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.RESTRICTED_GROUP
   }
   "accessibleTo REQUEST_PERMISSION)" should "properly map" in {
-    UserCategory.accessibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe UserCategory.RESTRICTED_REQUEST
+    FileAccessRights.accessibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.RESTRICTED_REQUEST
   }
   "accessibleTo NO_ACCESS)" should "properly map" in {
-    UserCategory.accessibleTo(AccessCategory.NO_ACCESS) shouldBe UserCategory.NONE
+    FileAccessRights.accessibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.NONE
   }
 
   "valueOf" should "succeed with a proper-cased string" in {
     val s = "RESTRICTED_GROUP"
-    UserCategory.valueOf(s).get.toString shouldBe s
+    FileAccessRights.valueOf(s).get.toString shouldBe s
   }
 
   it should "fail with a wrong cased string" in {
-    UserCategory.valueOf("restricted_group") shouldBe None
+    FileAccessRights.valueOf("restricted_group") shouldBe None
   }
 }
