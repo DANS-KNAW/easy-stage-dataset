@@ -245,6 +245,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
+      sha1 = None,
       title = Some("A nice title"),
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS)
@@ -269,6 +270,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
+      sha1 = None,
       title = None,
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS)

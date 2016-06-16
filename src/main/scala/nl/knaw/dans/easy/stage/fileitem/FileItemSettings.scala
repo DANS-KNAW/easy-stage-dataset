@@ -34,6 +34,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
                              format: Option[String] = None,
+                             sha1: Option[String] = None,
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
@@ -57,6 +58,7 @@ object FileItemSettings {
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
+            sha1: Option[String],
             title: Option[String],
             size: Option[Long],
             isMendeley: Option[Boolean],
@@ -73,6 +75,7 @@ object FileItemSettings {
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
+      sha1 = sha1,
       title = title,
       accessibleTo = accessibleTo,
       visibleTo = visibleTo
