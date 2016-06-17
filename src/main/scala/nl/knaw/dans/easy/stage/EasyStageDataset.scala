@@ -81,14 +81,13 @@ object EasyStageDataset {
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
-
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File))
         .split("\\v+") // split into lines
         .map(_.split("\\h+")) // split into tokens
         .filter(!_.isEmpty) // skip empty lines
-        .map(a => if (a.length == 2) a(1) -> a(0) else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
+        .map(a => if (a.length == 2 && !a(0).matches("[a-zA-Z0-9]")) a(1) -> a(0) else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
         .toMap
     }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
 

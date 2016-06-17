@@ -57,6 +57,22 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     deleteDirectory(bagitDir)
   }
 
+  it should "stumble over a manifest.sha1 with to many fields on a line" in {
+
+    val bagitDir = new File("target/test/bag")
+    val dataDir = new File(bagitDir, "data")
+    val sdoSetDir = new File("target/test/someSDO")
+    implicit val s = createSettings(bagitDir, sdoSetDir)
+    dataDir.mkdirs()
+    FileUtils.write(new File(bagitDir,"manifest-sha1.txt"),"a b c")
+
+    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS).failed.get should
+      have message "Invalid line in manifest-sha1.txt: a b c"
+    sdoSetDir.exists() shouldBe false
+
+    deleteDirectory(bagitDir)
+  }
+
   it should "create file rights computed from dataset access rights" in {
 
     createProps()
