@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.lang.Exception
 import java.nio.file.Path
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
@@ -46,7 +45,7 @@ object EasyStageDataset {
     }
   }
 
-  def run(implicit s: Settings): Try[Unit] = {
+  def run(implicit s: Settings): Try[EasyMetadata] = {
 
     def createDatasetSdo(): Try[EasyMetadata] = {
       log.info("Creating dataset SDO")
@@ -77,7 +76,7 @@ object EasyStageDataset {
       emdContent <- createDatasetSdo()
       _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
-    } yield ()
+    } yield emdContent
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
@@ -86,7 +85,7 @@ object EasyStageDataset {
       readFileToString(new File(s.bagitDir, sha1File))
         .split("\\v+") // split into lines
         .map(_.split("\\h+")) // split into tokens
-        .filter(!_.isEmpty) // skip empty lines
+        .filter(_.nonEmpty) // skip empty lines
         .map(a => if (a.length == 2 && !a(0).matches("[a-zA-Z0-9]")) a(1) -> a(0) else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
         .toMap
     }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }

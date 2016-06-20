@@ -40,10 +40,10 @@ object FOXML {
                  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
         <dc:title>{label}</dc:title><dc:type>{mimeType}</dc:type>
       </oai_dc:dc>
-    sha1 match {
-      case Some(s) => getFOXML(label, ownerId, dc, <foxml:contentDigest TYPE="SHA-1" DIGEST={s}/>).mkString
-      case None => getFOXML(label, ownerId, dc, <foxml:contentDigest TYPE="SHA-1"/>).mkString
-    }
+    val contentDigest = sha1
+      .map(s => <foxml:contentDigest TYPE="SHA-1" DIGEST={s}/>)
+      .getOrElse(<foxml:contentDigest TYPE="SHA-1"/>)
+    getFOXML(label, ownerId, dc, contentDigest).mkString
   }
 
   def getDirFOXML(label: String, ownerId: String): String = {
