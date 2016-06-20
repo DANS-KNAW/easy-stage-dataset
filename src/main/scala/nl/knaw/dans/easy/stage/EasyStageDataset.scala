@@ -45,9 +45,9 @@ object EasyStageDataset {
     }
   }
 
-  def run(implicit s: Settings): Try[EasyMetadata] = {
+  def run(implicit s: Settings): Try[(EasyMetadata, String)] = {
 
-    def createDatasetSdo(): Try[EasyMetadata] = {
+    def createDatasetSdo(): Try[(EasyMetadata, String)] = {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
@@ -61,7 +61,7 @@ object EasyStageDataset {
         _ <- writeFoxml(sdoDir, foxmlContent)
         _ <- writePrsql(sdoDir, PRSQL.create())
         _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-      } yield emdContent
+      } yield (emdContent,amdContent)
     }
 
     def getDataDir = Try {
@@ -73,10 +73,10 @@ object EasyStageDataset {
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
-      emdContent <- createDatasetSdo()
+      (emdContent,amdContent) <- createDatasetSdo()
       _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
-    } yield emdContent
+    } yield (emdContent,amdContent)
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
