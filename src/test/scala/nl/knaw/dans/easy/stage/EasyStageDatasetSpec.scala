@@ -57,7 +57,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     deleteDirectory(bagitDir)
   }
 
-  it should "stumble over a manifest.sha1 with to many fields on a line" in {
+  it should "stumble over a manifest-sha1.txt with too many fields on a line" in {
 
     val bagitDir = new File("target/test/bag")
     val dataDir = new File(bagitDir, "data")

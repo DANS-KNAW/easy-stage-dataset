@@ -61,7 +61,7 @@ object EasyStageDataset {
         _ <- writeFoxml(sdoDir, foxmlContent)
         _ <- writePrsql(sdoDir, PRSQL.create())
         _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-      } yield (emdContent,amdContent)
+      } yield (emdContent, amdContent)
     }
 
     def getDataDir = Try {
@@ -73,10 +73,10 @@ object EasyStageDataset {
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
-      (emdContent,amdContent) <- createDatasetSdo()
+      (emdContent, amdContent) <- createDatasetSdo()
       _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
-    } yield (emdContent,amdContent)
+    } yield (emdContent, amdContent)
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
@@ -86,7 +86,8 @@ object EasyStageDataset {
         .split("\\v+") // split into lines
         .map(_.split("\\h+")) // split into tokens
         .filter(_.nonEmpty) // skip empty lines
-        .map(a => if (a.length == 2 && !a(0).matches("[a-zA-Z0-9]")) a(1) -> a(0) else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
+        .map(a => if (a.length == 2 && !a(0).matches("[a-fA-F0-9]")) a(1) -> a(0)
+                  else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
         .toMap
     }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
 
