@@ -19,7 +19,7 @@ import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
 
 /** Enumeration of the file properties VisibleTo and AccessibleTo, read "... to a user category" */
-object UserCategory extends Enumeration {
+object FileAccessRights extends Enumeration {
 
   type UserCategory = Value
   val
@@ -30,7 +30,7 @@ object UserCategory extends Enumeration {
   NONE // none of the above
   = Value
 
-  private val rightsMap = Map[AccessCategory, UserCategory.Value](
+  private val rightsMap = Map[AccessCategory, FileAccessRights.Value](
     ANONYMOUS_ACCESS -> ANONYMOUS,
     OPEN_ACCESS_FOR_REGISTERED_USERS -> KNOWN,
     GROUP_ACCESS -> RESTRICTED_GROUP,
@@ -50,15 +50,15 @@ object UserCategory extends Enumeration {
     * @param s toString value of the desired category
     * @return
     */
-  def valueOf(s: String): Option[UserCategory.Value] =
-    UserCategory.values.find(v => v.toString == s)
+  def valueOf(s: String): Option[FileAccessRights.Value] =
+    FileAccessRights.values.find(v => v.toString == s)
 
   /** gets the default category of users that have download permission for files in a new dataset
     *
     * @param datasetAccesCategory from the EMD of the dataset
     * @return
     */
-  def accessibleTo(datasetAccesCategory: AccessCategory): UserCategory.Value =
+  def accessibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
     rightsMap.get(datasetAccesCategory).get
 
   /** gets the default category of users that have visibility permission for files in a new dataset
@@ -66,6 +66,6 @@ object UserCategory extends Enumeration {
     * @param datasetAccesCategory from the EMD of the dataset
     * @return
     */
-  def visibleTo(datasetAccesCategory: AccessCategory): UserCategory.Value =
+  def visibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
     rightsMap.get(datasetAccesCategory).get
 }
