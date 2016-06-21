@@ -19,8 +19,9 @@ import java.io.{File, FileNotFoundException}
 import java.nio.file.Path
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
+import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
-import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
+import nl.knaw.dans.easy.stage.dataset._
 import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessRights, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
@@ -45,23 +46,23 @@ object EasyStageDataset {
     }
   }
 
-  def run(implicit s: Settings): Try[(EasyMetadata, String)] = {
+  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
 
-    def createDatasetSdo(): Try[(EasyMetadata, String)] = {
+    def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty).toString()
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
         audiences <- readAudiences()
         jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
-        _ <- writeAMD(sdoDir, amdContent)
+        _ <- writeAMD(sdoDir, amdContent.toString())
         _ <- writeFoxml(sdoDir, foxmlContent)
         _ <- writePrsql(sdoDir, PRSQL.create())
         _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-      } yield (emdContent, amdContent)
+      } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
     }
 
     def getDataDir = Try {
@@ -83,12 +84,12 @@ object EasyStageDataset {
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File))
-        .split("\\v+") // split into lines
-        .map(_.split("\\h+")) // split into tokens
-        .filter(_.nonEmpty) // skip empty lines
-        .map(a => if (a.length == 2 && !a(0).matches("[a-fA-F0-9]")) a(1) -> a(0)
-                  else throw new Exception(s"Invalid line in $sha1File: ${a.mkString(" ")}"))
-        .toMap
+        .lines.filter(_.nonEmpty)
+        .map(_.split("\\h+")) // split into tokens on sequences of horizontal white space characters
+        .map {
+          case Array(sha1, filePath) if !sha1.matches("[a-zA-Z0-9]") => filePath -> sha1
+          case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${array.mkString(" ")}")
+        }.toMap
     }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
 
     def createFileAndFolderSdos(dir: File, parentSDO: String): Try[Unit] = {
