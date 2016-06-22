@@ -4,7 +4,8 @@
     "contentFile":"EASY_FILE",
     "dsID":"EASY_FILE",
     "controlGroup":"M",
-    "mimeType":"video/mpeg"
+    "mimeType":"video/mpeg",
+    "checksumType":"SHA-1"
   },{
     "contentFile":"EASY_FILE_METADATA",
     "dsID":"EASY_FILE_METADATA",

@@ -118,7 +118,7 @@ object EasyStageFileItem {
       cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
-      foxmlContent  = getFileFOXML(title, s.ownerId, mime, s.sha1)
+      foxmlContent  = getFileFOXML(title, s.ownerId, mime)
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
