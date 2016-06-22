@@ -32,7 +32,7 @@ object FOXML {
     getFOXML(emd.getPreferredTitle, ownerId, dc).toString()
   }
 
-  def getFileFOXML(label: String, ownerId: String, mimeType: String, sha1: Option[String] = None): String = {
+  def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
     val dc =
       <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
                  xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -40,10 +40,7 @@ object FOXML {
                  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
         <dc:title>{label}</dc:title><dc:type>{mimeType}</dc:type>
       </oai_dc:dc>
-    val contentDigest = sha1
-      .map(s => <foxml:contentDigest TYPE="SHA-1" DIGEST={s}/>)
-      .getOrElse(<foxml:contentDigest TYPE="SHA-1"/>)
-    getFOXML(label, ownerId, dc, contentDigest).mkString
+    getFOXML(label, ownerId, dc).mkString
   }
 
   def getDirFOXML(label: String, ownerId: String): String = {

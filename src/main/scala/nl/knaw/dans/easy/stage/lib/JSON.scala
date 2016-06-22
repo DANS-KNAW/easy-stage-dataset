@@ -19,7 +19,7 @@ import java.net.URL
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
-import org.json4s.JsonAST.JObject
+import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -82,7 +82,7 @@ object JSON {
                     mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String))(implicit settings: FileItemSettings): String = {
-    def createJSON(dataJSON: JObject) = {
+    def createJSON(dataJSON: JValue) = {
       ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
           dataJSON,
@@ -111,7 +111,9 @@ object JSON {
         ("contentFile" -> "EASY_FILE") ~
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "M") ~
-          ("mimeType" -> mimeType)
+          ("mimeType" -> mimeType) ~
+          ("checksumType" -> "SHA-1") ++
+          settings.sha1.map(sha => "checksum" -> sha)
       )
     }
 

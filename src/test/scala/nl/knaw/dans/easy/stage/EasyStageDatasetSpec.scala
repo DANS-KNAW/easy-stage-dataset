@@ -131,14 +131,6 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     // a bag with one folder with three files also result in five SDO's
     new File(puddingsDir,"one-invalid-sha1").listFiles().length shouldBe 5
 
-    // with only MD5 in the bag fedora's SHA-1 is just switched on
-    readFileToString(new File(puddingsDir, "no-additional-license/quicksort_hs/fo.xml")) should
-      include (<foxml:contentDigest TYPE="SHA-1"/>.mkString)
-
-    // SHA-1's in a bag are provided to fedora (who disagrees with this particular value)
-    readFileToString(new File(puddingsDir, "one-invalid-sha1/reisverslag_deel03_txt/fo.xml")) should
-      include (<foxml:contentDigest TYPE="SHA-1" DIGEST="a172c01f396818d90cce049a201b4aec4f65cc68"/>.mkString)
-
     // cleanup, leave created SDO sets as puddings to proof by eating them
     emptyDataDir.delete()
     tmpProps.delete()
