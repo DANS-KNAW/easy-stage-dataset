@@ -39,9 +39,9 @@ case class Settings(ownerId: String,
 object Settings {
 
   /** backward compatible call for EasyIngestFlow */
-  def apply(ownerId: String,
+  def apply(
             submissionTimestamp: String,
-            bagitDir: File,
+            depositDir: File,
             sdoSetDir: File,
             URN: String,
             DOI: String,
@@ -51,9 +51,10 @@ object Settings {
             fedoraPassword: String,
             fedoraUrl: URL) = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
-    new Settings(ownerId = ownerId,
+    new Settings(
+      ownerId = getUserId(depositDir),
       submissionTimestamp = DateTime.parse(submissionTimestamp),
-      bagitDir = bagitDir,
+      bagitDir = getBagDir(depositDir).get,
       sdoSetDir = sdoSetDir,
       URN = Some(URN),
       DOI = Some(DOI),
@@ -68,9 +69,9 @@ object Settings {
       props.getString("fcrepo.user"),
       props.getString("fcrepo.password"))
     new Settings(
-      ownerId = props.getString("owner"),
+      ownerId = getUserId(conf.deposit()),
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
-      bagitDir = conf.bag(),
+      bagitDir = getBagDir(conf.deposit()).get,
       sdoSetDir = conf.sdoSet(),
       URN = conf.urn.get,
       DOI = conf.doi.get,
@@ -78,4 +79,8 @@ object Settings {
       isMendeley = conf.isMendeley(),
       disciplines = Fedora.disciplines)
   }
+
+  private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
+  private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
+
 }

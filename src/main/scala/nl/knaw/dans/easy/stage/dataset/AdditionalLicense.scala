@@ -17,8 +17,8 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Constants
+import nl.knaw.dans.easy.stage.Settings
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 

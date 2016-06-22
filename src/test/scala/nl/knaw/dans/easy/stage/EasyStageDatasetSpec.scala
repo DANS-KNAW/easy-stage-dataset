@@ -149,7 +149,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
-    Settings(
+    new Settings(
       ownerId = "digger001",
       bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,
