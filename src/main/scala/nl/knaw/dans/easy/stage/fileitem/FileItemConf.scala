@@ -20,7 +20,7 @@ import java.net.URL
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemConf._
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
-import nl.knaw.dans.easy.stage.fileitem.UserCategory.UserCategory
+import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.lib.Version
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory
@@ -54,8 +54,8 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     if (!new File(f).isFile) throw new IllegalArgumentException(s"$f is not an existing file")
     new File(f)
   })
-  def userCategory(default: UserCategory.Value) = singleArgConverter({s =>
-    if (s.trim.isEmpty) default else UserCategory.valueOf(s).get
+  def userCategory(default: FileAccessRights.Value) = singleArgConverter({ s =>
+    if (s.trim.isEmpty) default else FileAccessRights.valueOf(s).get
   })
   def emptyIsDefault(default: String) = singleArgConverter({ s =>
     if (s.trim.isEmpty) default else s
@@ -88,12 +88,12 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
      "If omitted the trailing argument csv-file is required")
   val accessibleTo = opt[UserCategory] (
     name = "accessible-to", short = 'a',
-    descr = s"specifies the accessibility of the file item; one of: ${UserCategory.values.mkString(", ")}",
-    default = Some(UserCategory.NONE))(userCategory(UserCategory.NONE))
+    descr = s"specifies the accessibility of the file item; one of: ${FileAccessRights.values.mkString(", ")}",
+    default = Some(FileAccessRights.NONE))(userCategory(FileAccessRights.NONE))
   val visibleTo = opt[UserCategory] (
     name = "visible-to", short = 'v',
-    descr = s"specifies the visibility of the file item; one of: ${UserCategory.values.mkString(", ")}",
-    default = Some(UserCategory.ANONYMOUS))(userCategory(UserCategory.ANONYMOUS))
+    descr = s"specifies the visibility of the file item; one of: ${FileAccessRights.values.mkString(", ")}",
+    default = Some(FileAccessRights.ANONYMOUS))(userCategory(FileAccessRights.ANONYMOUS))
   val creatorRole = opt[String](
     name = "creator-role", short = 'c',
     descr = s"specifies the role of the file item creator; one of: ${creatorRoles.mkString(", ")}",

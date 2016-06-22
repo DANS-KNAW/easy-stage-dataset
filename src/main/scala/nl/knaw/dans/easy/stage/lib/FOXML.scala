@@ -32,7 +32,7 @@ object FOXML {
     getFOXML(emd.getPreferredTitle, ownerId, dc).toString()
   }
 
-  def getFileFOXML(label: String, ownerId: String, mimeType: String): String = {
+  def getFileFOXML(label: String, ownerId: String, mimeType: String, sha1: Option[String] = None): String = {
     val dc =
       <oai_dc:dc xmlns:oai_dc="http://www.openarchives.org/OAI/2.0/oai_dc/"
                  xmlns:dc="http://purl.org/dc/elements/1.1/"
@@ -40,7 +40,10 @@ object FOXML {
                  xsi:schemaLocation="http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd">
         <dc:title>{label}</dc:title><dc:type>{mimeType}</dc:type>
       </oai_dc:dc>
-    getFOXML(label, ownerId, dc).mkString
+    val contentDigest = sha1
+      .map(s => <foxml:contentDigest TYPE="SHA-1" DIGEST={s}/>)
+      .getOrElse(<foxml:contentDigest TYPE="SHA-1"/>)
+    getFOXML(label, ownerId, dc, contentDigest).mkString
   }
 
   def getDirFOXML(label: String, ownerId: String): String = {
@@ -54,7 +57,7 @@ object FOXML {
     getFOXML(label, ownerId, dc).mkString
   }
 
-  private def getFOXML(label: String, ownerId: String, dcElems: NodeSeq): Elem = {
+  private def getFOXML(label: String, ownerId: String, dcElems: NodeSeq, contentDigest: NodeSeq = NodeSeq.Empty): Elem = {
     //    <?xml version="1.0" encoding="UTF-8"?>
     <foxml:digitalObject VERSION="1.1"
                          xmlns:foxml="info:fedora/fedora-system:def/foxml#"
@@ -68,6 +71,7 @@ object FOXML {
       <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
         <foxml:datastreamVersion ID="DC1.0" LABEL="Dublin Core Record"
                                  MIMETYPE="text/xml" FORMAT_URI="http://www.openarchives.org/OAI/2.0/oai_dc/">
+          {contentDigest}
           <foxml:xmlContent>
             {dcElems}
           </foxml:xmlContent>

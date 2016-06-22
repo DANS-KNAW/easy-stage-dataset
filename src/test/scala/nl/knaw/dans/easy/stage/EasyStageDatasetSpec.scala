@@ -16,14 +16,12 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.util
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FileUtils.deleteDirectory
-import org.apache.commons.io.filefilter.{DirectoryFileFilter, FileFileFilter}
+import org.apache.commons.io.FileUtils.{deleteDirectory, readFileToString}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.{Failure, Success}
@@ -59,6 +57,22 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     deleteDirectory(bagitDir)
   }
 
+  it should "stumble over a manifest-sha1.txt with too many fields on a line" in {
+
+    val bagitDir = new File("target/test/bag")
+    val dataDir = new File(bagitDir, "data")
+    val sdoSetDir = new File("target/test/someSDO")
+    implicit val s = createSettings(bagitDir, sdoSetDir)
+    dataDir.mkdirs()
+    FileUtils.write(new File(bagitDir,"manifest-sha1.txt"),"a b c")
+
+    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS).failed.get should
+      have message "Invalid line in manifest-sha1.txt: a b c"
+    sdoSetDir.exists() shouldBe false
+
+    deleteDirectory(bagitDir)
+  }
+
   it should "create file rights computed from dataset access rights" in {
 
     createProps()
@@ -69,34 +83,36 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     implicit val s = createSettings(bagitDir, sdoSetDir)
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    FileUtils.readFileToString(fileMetadataFile) should include ("<visibleTo>KNOWN</visibleTo>")
-    FileUtils.readFileToString(fileMetadataFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
+    readFileToString(fileMetadataFile) should include ("<visibleTo>KNOWN</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
     deleteDirectory(sdoSetDir)
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    FileUtils.readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    FileUtils.readFileToString(fileMetadataFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
+    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
     deleteDirectory(sdoSetDir)
 
     tmpProps.delete()
   }
 
-  "run" should "create SDO sets from test bags (puddings to be eaten by easy-ingest)" in {
+  "run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
 
     createProps()
 
-    val testBags = new File ("src/test/resources/dataset-bags")
+    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
+    def useTestBag(f: File) = f.getName != "additional-license-by-url"
+
+    val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
+    val emptyDataDir = new File("src/test/resources/dataset-bags/minimal/data")
     val puddingsDir = new File ("target/sdoPuddings")
-    val emptyDataDir = new File(testBags,"minimal/data")
     emptyDataDir.mkdir()
 
     // clean up old results
     FileUtils.deleteDirectory(puddingsDir)
 
-    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
-    for (bagName <- Array("additional-license-by-text", "no-additional-license", "minimal")) {
-      val sdoSetDir = new File(puddingsDir,bagName)
-      implicit val settings = createSettings(new File(testBags, bagName), sdoSetDir)
+    for (bag <- testBags) {
+      val sdoSetDir = new File(puddingsDir,bag.getName)
+      implicit val settings = createSettings(bag, sdoSetDir)
 
       EasyStageDataset.run(settings) shouldBe a[Success[_]]
       new File(sdoSetDir, "dataset/EMD").exists() shouldBe true
@@ -105,14 +121,25 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
       new File(sdoSetDir, "dataset/fo.xml").exists() shouldBe true
       new File(sdoSetDir, "dataset/PRSQL").exists() shouldBe true
     }
-    // just a dataset SDO
+    // a bag with an empty data folder results in a single SDO
     new File(puddingsDir,"minimal").listFiles().length shouldBe 1
 
-    // both have 2 files and 2 nested folders resulting in a total of 5 SDO's
+    // both bags have 2 files and 2 nested folders resulting in a total of five SDO's
     new File(puddingsDir,"no-additional-license").listFiles().length shouldBe 5
     new File(puddingsDir,"additional-license-by-text").listFiles().length shouldBe 5
 
-    // cleanup, leave created SDO sets as puddings to eat with easy-ingest
+    // a bag with one folder with three files also result in five SDO's
+    new File(puddingsDir,"one-invalid-sha1").listFiles().length shouldBe 5
+
+    // with only MD5 in the bag fedora's SHA-1 is just switched on
+    readFileToString(new File(puddingsDir, "no-additional-license/quicksort_hs/fo.xml")) should
+      include (<foxml:contentDigest TYPE="SHA-1"/>.mkString)
+
+    // SHA-1's in a bag are provided to fedora (who disagrees with this particular value)
+    readFileToString(new File(puddingsDir, "one-invalid-sha1/reisverslag_deel03_txt/fo.xml")) should
+      include (<foxml:contentDigest TYPE="SHA-1" DIGEST="a172c01f396818d90cce049a201b4aec4f65cc68"/>.mkString)
+
+    // cleanup, leave created SDO sets as puddings to proof by eating them
     emptyDataDir.delete()
     tmpProps.delete()
   }
@@ -131,6 +158,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
       DOI = Some("doei"),
       disciplines = Map[String, String](
         "D10000" -> "easy-discipline:57",
+        "D30000" -> "easy-discipline:1",
         "E10000" -> "easy-discipline:219",
         "E18000" -> "easy-discipline:226")
     )

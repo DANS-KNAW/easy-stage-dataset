@@ -20,8 +20,9 @@ import org.joda.time.DateTime
 import scala.xml.Elem
 
 object AMD {
+  type AdministrativeMetadata = Elem
 
-  def apply(depositorId: String, submissionTimestamp: DateTime, draft: Boolean): Elem = {
+  def apply(depositorId: String, submissionTimestamp: DateTime, draft: Boolean): AdministrativeMetadata = {
 
     val lastState = {if (draft) "DRAFT" else "SUBMITTED"}
 

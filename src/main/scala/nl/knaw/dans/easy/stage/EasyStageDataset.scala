@@ -15,19 +15,21 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.File
+import java.io.{File, FileNotFoundException}
 import java.nio.file.Path
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
+import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
-import nl.knaw.dans.easy.stage.dataset.{AMD, AdditionalLicense, EMD, PRSQL}
-import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileItemSettings, UserCategory}
+import nl.knaw.dans.easy.stage.dataset._
+import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessRights, FileItemSettings}
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.JSON
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
+import org.apache.commons.io.FileUtils.readFileToString
 import org.slf4j.LoggerFactory
 
 import scala.util.{Failure, Success, Try}
@@ -44,23 +46,23 @@ object EasyStageDataset {
     }
   }
 
-  def run(implicit s: Settings): Try[Unit] = {
+  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
 
-    def createDatasetSdo(): Try[EasyMetadata] = {
+    def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty).toString()
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
         audiences <- readAudiences()
         jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
-        _ <- writeAMD(sdoDir, amdContent)
+        _ <- writeAMD(sdoDir, amdContent.toString())
         _ <- writeFoxml(sdoDir, foxmlContent)
         _ <- writePrsql(sdoDir, PRSQL.create())
         _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-      } yield emdContent
+      } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
     }
 
     def getDataDir = Try {
@@ -72,13 +74,23 @@ object EasyStageDataset {
     for {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
-      emdContent <- createDatasetSdo()
+      (emdContent, amdContent) <- createDatasetSdo()
       _ = log.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
-    } yield ()
+    } yield (emdContent, amdContent)
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
+    val maybeSha1Map: Try[Map[String, String]] = Try {
+      val sha1File = "manifest-sha1.txt"
+      readFileToString(new File(s.bagitDir, sha1File))
+        .lines.filter(_.nonEmpty)
+        .map(_.split("\\h+")) // split into tokens on sequences of horizontal white space characters
+        .map {
+          case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
+          case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${array.mkString(" ")}")
+        }.toMap
+    }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
 
     def createFileAndFolderSdos(dir: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file and folder SDOs for directory: $dir")
@@ -94,22 +106,24 @@ object EasyStageDataset {
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
-      val relativePath = getDatasetRelativePath(file).toString
+      val datasetRelativePath = getDatasetRelativePath(file).toString
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
-        mime <- readMimeType(getBagRelativePath(file).toString)
-        title <- readTitle(getBagRelativePath(file).toString)
+        bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
+        mime <- readMimeType(bagRelativePath)
+        title <- readTitle(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = file,
           ownerId = s.ownerId,
-          pathInDataset = new File(relativePath),
+          pathInDataset = new File(datasetRelativePath),
           size = Some(file.length),
           isMendeley = Some(s.isMendeley),
           format = Some(mime),
+          sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,
-          accessibleTo = UserCategory.accessibleTo(rights),
-          visibleTo = UserCategory.visibleTo(rights)
+          accessibleTo = FileAccessRights.accessibleTo(rights),
+          visibleTo = FileAccessRights.visibleTo(rights)
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
@@ -136,9 +150,9 @@ object EasyStageDataset {
     def getDatasetRelativePath(item: File): Path =
       new File(s.bagitDir, "data").toPath.relativize(item.toPath)
 
-    def getBagRelativePath(item: File): Path =
-    s.bagitDir.toPath.relativize(item.toPath)
-
-    createFileAndFolderSdos(dir, parentSDO)
+    for {
+      _ <- maybeSha1Map
+      _ <- createFileAndFolderSdos(dir, parentSDO)
+    } yield Unit
   }
 }

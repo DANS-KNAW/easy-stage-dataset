@@ -19,7 +19,7 @@ import java.io.File
 import java.net.URL
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
-import nl.knaw.dans.easy.stage.fileitem.UserCategory.UserCategory
+import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Props.props
 
@@ -34,11 +34,12 @@ case class FileItemSettings (sdoSetDir: Option[File],
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
                              format: Option[String] = None,
+                             sha1: Option[String] = None,
 
                              // as in SDO/*/EASY_FILE_METADATA
                              creatorRole: String = defaultCreatorRole,
-                             visibleTo: UserCategory = UserCategory.NONE,
-                             accessibleTo: UserCategory = UserCategory.ANONYMOUS,
+                             visibleTo: UserCategory = FileAccessRights.NONE,
+                             accessibleTo: UserCategory = FileAccessRights.ANONYMOUS,
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
@@ -57,6 +58,7 @@ object FileItemSettings {
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
+            sha1: Option[String],
             title: Option[String],
             size: Option[Long],
             isMendeley: Option[Boolean],
@@ -73,6 +75,7 @@ object FileItemSettings {
       ownerId = ownerId,
       pathInDataset = Some(pathInDataset),
       format = format,
+      sha1 = sha1,
       title = title,
       accessibleTo = accessibleTo,
       visibleTo = visibleTo

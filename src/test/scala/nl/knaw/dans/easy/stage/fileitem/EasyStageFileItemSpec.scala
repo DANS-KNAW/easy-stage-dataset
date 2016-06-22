@@ -80,8 +80,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
       )),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS
     ))
 
     // comparing with sample output
@@ -131,8 +131,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
       )),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS
     ))
 
     // comparing with sample output
@@ -182,8 +182,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
       )),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS
     )).get should have message "None.get"
     // the message is vague, a proper FileItemConf/EasyStageDataset
     // should take care of something clearer for the end user
@@ -206,8 +206,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq("easy-dataset:1")
       )),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS
     )).get should have message "mocked error"
   }
 
@@ -228,8 +228,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       fedora = mockFedora(HashMap(
         "pid~easy-dataset:1" -> Seq() // TODO findObjects should return a Try
       )),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS
     )).get should have message "easy-dataset:1 does not exist in repository"
   }
 
@@ -245,9 +245,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
+      sha1 = None,
       title = Some("A nice title"),
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS)
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
     val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
@@ -269,9 +270,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       size = Some(1),
       isMendeley = Some(true),
       format = Some("text/plain"),
+      sha1 = None,
       title = None,
-      accessibleTo = UserCategory.NONE,
-      visibleTo = UserCategory.ANONYMOUS)
+      accessibleTo = FileAccessRights.NONE,
+      visibleTo = FileAccessRights.ANONYMOUS)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
     val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
