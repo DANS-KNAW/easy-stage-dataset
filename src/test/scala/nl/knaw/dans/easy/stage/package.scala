@@ -17,12 +17,13 @@ package nl.knaw.dans.easy
 
 import java.net.{HttpURLConnection, URL}
 
+import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
+import nl.knaw.dans.pf.language.emd.types.EmdConstants
+
 import scala.util.Try
 
-package object Util {
-
-  val xsds = Array("https://easy.dans.knaw.nl/schemas/md/2016/ddm.xsd",
-    "http://dublincore.org/schemas/xmls/qdc/dc.xsd")
+package object stage {
+  val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
 
   def canConnect(urls: Array[String]): Boolean = Try {
     urls.map { url =>

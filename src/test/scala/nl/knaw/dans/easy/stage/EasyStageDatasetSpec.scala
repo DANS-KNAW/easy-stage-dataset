@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
-import nl.knaw.dans.easy.Util._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils

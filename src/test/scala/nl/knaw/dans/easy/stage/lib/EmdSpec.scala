@@ -17,10 +17,8 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
-import nl.knaw.dans.easy.Util._
-import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
-import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import org.apache.commons.io.FileUtils.{deleteDirectory, deleteQuietly, write}
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -29,7 +27,7 @@ import scala.util.Success
 class EmdSpec extends FlatSpec with Matchers {
 
   val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
-  def newSettings(bagitDir: File, crosswalker: Ddm2EmdCrosswalk = new Ddm2EmdCrosswalk(null)): Settings = {
+  def newSettings(bagitDir: File): Settings = {
     new Settings(ownerId = "", bagitDir = bagitDir, sdoSetDir = sdoSetDir, isMendeley = false, disciplines = Map[String, String]())
   }
 
@@ -48,8 +46,7 @@ class EmdSpec extends FlatSpec with Matchers {
   it should "produce an error containing possible values" in {
     assume(canConnect(xsds))
 
-    val ddm = <ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
-                       xmlns:dc="http://purl.org/dc/elements/1.1/"
+    val ddm = <ddm:DDM xmlns:dc="http://purl.org/dc/elements/1.1/"
                        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
       <ddm:profile>
@@ -67,7 +64,7 @@ class EmdSpec extends FlatSpec with Matchers {
 
     EMD.create(sdoSetDir).failed.get.getMessage should
       include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
-    sdoSetDir.list() shouldBe Array()
+    sdoSetDir.list() shouldBe null
 
     deleteQuietly(tmpDDM)
     deleteDirectory(sdoSetDir)
