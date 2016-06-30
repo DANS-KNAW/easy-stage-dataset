@@ -17,23 +17,38 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.Util._
 import nl.knaw.dans.easy.stage.dataset.EMD
+import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.FileUtils.{deleteDirectory, deleteQuietly, write}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.{Failure, Success}
+import scala.util.{Failure, Success, Try}
 
 class EmdSpec extends FlatSpec with Matchers {
 
-  // Can't test the create method as it implicitly needs Settings which needs a fedora connection
+  val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  def newSettings(bagitDir: File, crosswalker: Ddm2EmdCrosswalk = new Ddm2EmdCrosswalk(null)): Settings = {
+    new Settings(ownerId = "", bagitDir = bagitDir, sdoSetDir = sdoSetDir, isMendeley = false, disciplines = Map[String, String]())
+  }
 
-  "each test bag" should "have a valid DDM file" in {
-    for (bag <- FileUtils.listFiles(new File("src/test/resources/dataset-bags"),Array[String](),false).toArray){
-      EMD.getEasyMetadata(new File(bag+"/metadata/dataset.xml")) shouldBe a[Success[_]]
+  "create" should "succeed for each test bag" in {
+    assume(canConnect(xsds))
+
+    for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
+      sdoSetDir.mkdirs()
+      implicit val s = newSettings(bag)
+      EMD.create(sdoSetDir) shouldBe a[Success[_]]
+      sdoSetDir.list() shouldBe Array("EMD")
+      deleteDirectory(sdoSetDir)
     }
   }
 
-  "invalid access category" should "fail to produce EMD" in {
+  it should "produce an error containing possible values" in {
+    assume(canConnect(xsds))
+
     val ddm = <ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
                        xmlns:dc="http://purl.org/dc/elements/1.1/"
                        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
@@ -47,9 +62,15 @@ class EmdSpec extends FlatSpec with Matchers {
         <ddm:accessRights>invalid</ddm:accessRights>
       </ddm:profile>
     </ddm:DDM>
-    val tmpDDM = new File("target/test/tmp/ddm.xml")
-    FileUtils.write(tmpDDM,ddm.toString())
-    EMD.getEasyMetadata(tmpDDM) shouldBe a[Failure[_]]
-    tmpDDM.delete()
+    val tmpDDM = new File("target/test/EmdSpec/bag/metadata/dataset.xml")
+    write(tmpDDM, ddm.toString())
+    implicit val s = newSettings(tmpDDM.getParentFile.getParentFile)
+
+    EMD.create(sdoSetDir).failed.get.getMessage should
+      include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
+    sdoSetDir.list() shouldBe Array()
+
+    deleteQuietly(tmpDDM)
+    deleteDirectory(sdoSetDir)
   }
 }

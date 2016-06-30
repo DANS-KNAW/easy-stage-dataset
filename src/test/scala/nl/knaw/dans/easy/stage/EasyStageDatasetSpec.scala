@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
+import nl.knaw.dans.easy.Util._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
@@ -96,6 +97,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
   }
 
   "run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
+    assume(canConnect(xsds))
 
     createProps()
 

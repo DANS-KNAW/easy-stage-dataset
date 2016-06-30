@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.stage.fileitem
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import org.scalatest.{FlatSpec, Matchers}
 
-class UserCategorySpec extends FlatSpec with Matchers {
+class FileAccesRightsSpec extends FlatSpec with Matchers {
   /*
   according to ddm.xsd there are 5 options for the dataset AccessRights
         <xs:enumeration value="OPEN_ACCESS">
