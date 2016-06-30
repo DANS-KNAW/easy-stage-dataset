@@ -17,15 +17,14 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.Util._
+import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.dataset.EMD
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{deleteDirectory, deleteQuietly, write}
 import org.scalatest.{FlatSpec, Matchers}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Success
 
 class EmdSpec extends FlatSpec with Matchers {
 
