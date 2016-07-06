@@ -18,7 +18,7 @@ SYNOPSIS
 DESCRIPTION
 -----------
 
-Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-deposit] service. These
+Datasets that are to be archived in EASY are initially received as *deposits* through the [easy-sword2] service. These
 deposits must conform to [BagIt] format.
 
 To prepare the deposit for inclusion in EASY `easy-stage-dataset` performs the following tasks:
@@ -141,7 +141,7 @@ Steps for a regression test:
 * use maven to compile a version of the code without the changes under test
 * Process any example-bag you may find, for example:
   * `./stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
-  * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-deposit/src/test/resources/simple/example-bag out/simple-sdo`
+  * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-sword2/src/test/resources/simple/example-bag out/simple-sdo`
 * Move the created `out` to another location, say `~/old`.
 * Make your changes to the code and repeat until OK:
   * compile the new code with maven
@@ -151,6 +151,6 @@ Steps for a regression test:
 
 
 [dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
-[easy-deposit]: https://github.com/DANS-KNAW/easy-deposit#easy-deposit
+[easy-sword2]: https://github.com/DANS-KNAW/easy-sword2#easy-sword2
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
 [export-import]: https://github.com/DANS-KNAW/easy-export-dataset/wiki#the-export-import-cycle
