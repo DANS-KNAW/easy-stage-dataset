@@ -115,9 +115,7 @@ object EasyStageFileItem {
     sdoDir.mkdir()
     for {
       mime         <- Try { s.format.get }
-      cfgContent   <- Try {
-                            JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)
-                    }
+      cfgContent   <- Try { JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
       foxmlContent  = getFileFOXML(title, s.ownerId, mime)
