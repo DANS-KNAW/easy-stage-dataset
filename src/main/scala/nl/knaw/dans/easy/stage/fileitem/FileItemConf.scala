@@ -118,7 +118,10 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   validate(creatorRole) (s => validateValue(s, creatorRoles))
 
-  val longOptionNames = builder.opts.filter(o => !o.isInstanceOf[TrailingArgsOption] && o.name != "csv-file").map(_.name)
+  val longOptionNames = builder.opts
+    .filter(!_.isInstanceOf[TrailingArgsOption])
+    .filter(_.name != "csv-file")
+    .map(_.name)
 
   override def toString = builder.args.mkString(", ")
   verify()
