@@ -52,7 +52,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   }
 
   it should "create multiple rows from example.csv" in {
-    val args = "src/test/resources/example.csv outdir".split(" ")
+    val args = "--csv-file src/test/resources/example.csv outdir".split(" ")
     val rows = getSettingsRows(new FileItemConf(args)).get
     rows.size shouldBe 5
   }
@@ -63,13 +63,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
   }
 
-  "run" should "create expected file item SDOs in the mendeley use case" in {
+  "run" should "create expected file item SDOs with 'unset' url when neither file-location nor datastream-location provided" in {
     EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
-      file = Some(new File("original/newSub/file.mpeg")),
-      datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
-      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -114,13 +111,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     Path("target/testSDO").deleteRecursively()
   }
 
-  it should "create expected file item SDOs in the multi-deposit use case" in {
+  it should "create expected file item SDOs in the multi-deposit use case (i.e. when file-location is provided)" in {
     EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
       file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
-      datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
-      isMendeley = Some(false),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -168,10 +163,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a missing size" in {
     the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
-      file = Some(new File("original/newSub/file.mpeg")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
-      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = None,
@@ -192,10 +185,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report a fedora error" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
-      file = Some(new File("original/newSub/file.mpeg")),
-      datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
-      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
@@ -214,10 +204,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   it should "report the dataset does not exist" in {
     the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
-      file = Some(new File("original/newSub/file.mpeg")),
-      datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = Some(1),
-      isMendeley = Some(true),
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),

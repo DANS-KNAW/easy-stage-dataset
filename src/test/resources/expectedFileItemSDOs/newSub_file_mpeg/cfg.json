@@ -1,7 +1,7 @@
 {
   "namespace":"easy-file",
   "datastreams":[{
-    "dsLocation":"http://x.nl/l/d",
+    "dsLocation":"http://unset.dans.knaw.nl",
     "dsID":"EASY_FILE",
     "controlGroup":"R",
     "mimeType":"video/mpeg"

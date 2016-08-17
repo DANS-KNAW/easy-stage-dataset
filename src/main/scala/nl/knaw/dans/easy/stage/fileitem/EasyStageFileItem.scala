@@ -114,15 +114,15 @@ object EasyStageFileItem {
     log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
-      mime         <- Try{s.format.get}
-      cfgContent   <- Try{ JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate)}
+      mime         <- Try { s.format.get }
+      cfgContent   <- Try { JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
       foxmlContent  = getFileFOXML(title, s.ownerId, mime)
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
-      _            <- s.isMendeley.filter(b => !b).flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
+      _            <- s.file.flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
     } yield ()
   }
 

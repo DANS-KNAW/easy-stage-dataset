@@ -58,36 +58,33 @@ ARGUMENTS for easy-stage-dataset
 ARGUMENTS for easy-stage-fileItem
 ---------------------------------
 
-     -i, --dataset-id  <arg>            id of the dataset in Fedora that should receive the file to stage (requires
-                                        file-path). If omitted the trailing argument csv-file is required
-     -d, --datastream-location  <arg>   http URL to redirect to
-     -p, --path-in-dataset  <arg>       the path that the file should get in the dataset, a staged digital object
-                                        is created for the file and the ancestor folders that don't yet exist in
-                                        the dataset
-     -s, --size  <arg>                  Size in bytes of the file data
-     -f, --format  <arg>                dcterms property format, the mime type of the file
-                                        (default = application/octet-stream)
+    -i, --dataset-id  <arg>            id of the dataset in Fedora that should receive the file to stage (requires
+                                       file-path). If omitted the trailing argument csv-file is required
+    -d, --datastream-location  <arg>   http URL to redirect to (if specified, file-location MUST NOT be specified)
+    -p, --path-in-dataset  <arg>       the path that the file should get in the dataset, a staged digital object
+                                       is created for the file and the ancestor folders that don't yet exist in
+                                       the dataset
+    -s, --size  <arg>                  Size in bytes of the file data
+    -f, --format  <arg>                dcterms property format, the mime type of the file
+                                       (default = application/octet-stream)
 
-     -a, --accessible-to  <arg>         specifies the accessibility of the file item; one of: ANONYMOUS, KNOWN,
-                                        RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = NONE)
-     -c, --creator-role  <arg>          specifies the role of the file item creator; one of: ARCHIVIST, DEPOSITOR
-                                        (default = DEPOSITOR)
-     -l, --file-location  <arg>         The file to be staged (only required for copying in case of non-mendeley
-                                        use case)
-     -m, --is-mendeley                  Stage the dataset as a "mendeley dataset"
-         --owner-id  <arg>              specifies the id of the owner/creator of the file item (defaults to the one
-                                        configured in the application configuration file)
-     -v, --visible-to  <arg>            specifies the visibility of the file item; one of: ANONYMOUS, KNOWN,
-                                        RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
-         --help                         Show help message
-         --version                      Show version of this program
+    -a, --accessible-to  <arg>         specifies the accessibility of the file item; one of: ANONYMOUS, KNOWN,
+                                       RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = NONE)
+    -c, --creator-role  <arg>          specifies the role of the file item creator; one of: ARCHIVIST, DEPOSITOR
+                                       (default = DEPOSITOR)
+        --csv-file  <arg>              a comma separated file with one column for each option (additional columns
+                                       are ignored) and one set of options per line
+    -l, --file-location  <arg>         The file to be staged (if specified, --datastream-location is ignored)
+        --owner-id  <arg>              specifies the id of the owner/creator of the file item (defaults to the one
+                                       configured in the application configuration file)
+    -v, --visible-to  <arg>            specifies the visibility of the file item; one of: ANONYMOUS, KNOWN,
+                                       RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
+        --help                         Show help message
+        --version                      Show version of this program
 
     trailing arguments:
-     csv-file (not required)                 a comma separated file with one column for each option (additional
-                                             columns are ignored) and one set of options per line
-     staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
-                                             dataset (will be created if it does not exist)
-
+      staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
+                                            dataset (will be created if it does not exist)
 
 INSTALLATION AND CONFIGURATION
 ------------------------------

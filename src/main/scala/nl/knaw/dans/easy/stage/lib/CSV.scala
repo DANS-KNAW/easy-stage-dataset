@@ -36,7 +36,7 @@ class CSV private (csv: Seq[Seq[String]], requiredHeaders: Seq[String]) {
   def getRows: Seq[Seq[String]] =
     csv.tail.map(value => actualHeaders.zip(value)
       // ignore columns with headers that are not options
-      .filter(t => requiredHeaders.contains(t._1))
+      .filter(t => requiredHeaders.contains(t._1) && t._2.nonEmpty)
       // convert to command line options
       .flatMap(t => Array("--" + t._1, t._2))
     ).filter(args => args != Nil)

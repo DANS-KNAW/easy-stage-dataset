@@ -97,7 +97,7 @@ object JSON {
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
     }
 
-    def mendeleyJSON = {
+    def redirectFileDatastreamJson = {
       createJSON(
         ("dsLocation" -> fileLocation.toString) ~
           ("dsID" -> "EASY_FILE") ~
@@ -106,7 +106,7 @@ object JSON {
       )
     }
 
-    def multiDepositJSON = {
+    def managedFileDatastreamJson = {
       createJSON(
         ("contentFile" -> "EASY_FILE") ~
           ("dsID" -> "EASY_FILE") ~
@@ -117,10 +117,9 @@ object JSON {
       )
     }
 
-    val json = settings.isMendeley
-      .filter(identity) // only b == true
-      .map(_ => mendeleyJSON)
-      .getOrElse(multiDepositJSON)
+    val json = settings.file
+      .map(_ => managedFileDatastreamJson)
+      .getOrElse(redirectFileDatastreamJson)
     pretty(render(json))
   }
 
