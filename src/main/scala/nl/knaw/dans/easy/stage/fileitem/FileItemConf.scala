@@ -38,7 +38,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
             |Usage:
             |
             | $printedName [<options>...] <staged-digital-object-set>
-            | $printedName <staged-digital-object-set> <csv-file>
             |
             |Options:
             |""".stripMargin)

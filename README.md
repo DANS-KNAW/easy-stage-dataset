@@ -12,7 +12,6 @@ SYNOPSIS
                           <EASY-bag> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
-    easy-stage-file-item <staged-digital-object-set> <csv-file>
 
 
 DESCRIPTION

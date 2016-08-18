@@ -29,7 +29,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
                              datastreamLocation: Option[URL] = None,
                              unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
                              size: Option[Long] = None,
-                             ownerId: String = props.getString("owner"),
+                             ownerId: Option[String] = None,
                              pathInDataset: Option[File],
                              title:  Option[String] = None,
                              format: Option[String] = None,
@@ -70,7 +70,7 @@ object FileItemSettings {
       file = Some(file),
       datasetId = None,
       size = size,
-      ownerId = ownerId,
+      ownerId = Some(ownerId),
       pathInDataset = Some(pathInDataset),
       format = format,
       sha1 = sha1,
@@ -88,7 +88,7 @@ object FileItemSettings {
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
       datasetId = None,
-      ownerId = ownerId,
+      ownerId = Some(ownerId),
       pathInDataset = Some(pathInDataset)
     )
 
@@ -103,7 +103,7 @@ object FileItemSettings {
       accessibleTo = conf.accessibleTo(),
       visibleTo = conf.visibleTo(),
       creatorRole = conf.creatorRole(),
-      ownerId = conf.ownerId.get.map(_.trim).filter(_.nonEmpty).getOrElse(props.getString("owner")),
+      ownerId = conf.ownerId.get.map(_.trim).filter(_.nonEmpty),
       datasetId = conf.datasetId.get,
       pathInDataset = conf.pathInDataset.get,
       format = conf.format.get,

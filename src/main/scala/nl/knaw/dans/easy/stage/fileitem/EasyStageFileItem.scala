@@ -118,7 +118,7 @@ object EasyStageFileItem {
       cfgContent   <- Try { JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
-      foxmlContent  = getFileFOXML(title, s.ownerId, mime)
+      foxmlContent  = getFileFOXML(title, s.ownerId.get, mime)
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
@@ -131,7 +131,7 @@ object EasyStageFileItem {
     sdoDir.mkdir()
     for {
       _ <- writeJsonCfg(sdoDir,JSON.createDirCfg(parent, s.subordinate))
-      _ <- writeFoxml(sdoDir, getDirFOXML(path, s.ownerId))
+      _ <- writeFoxml(sdoDir, getDirFOXML(path, s.ownerId.get))
       _ <- writeItemContainerMetadata(sdoDir,EasyItemContainerMd(path))
     } yield ()
   }
