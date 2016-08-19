@@ -65,6 +65,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   "run" should "create expected file item SDOs with 'unset' url when neither file-location nor datastream-location provided" in {
     EasyStageFileItem.run(new FileItemSettings(
+      ownerId = Some("testOwner"),
       sdoSetDir = Some(new File("target/testSDO")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
@@ -104,7 +105,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       "dc_title" -> "original/newSub",
       "prop_state" -> "Active",
       "prop_label" -> "original/newSub",
-      "prop_ownerId" -> "{{ easy_stage_dataset_owner }}")
+      "prop_ownerId" -> "testOwner")
 
     // clean up
 
@@ -113,6 +114,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
 
   it should "create expected file item SDOs in the multi-deposit use case (i.e. when file-location is provided)" in {
     EasyStageFileItem.run(new FileItemSettings(
+      ownerId = Some("testOwner"),
       sdoSetDir = Some(new File("target/testSDO")),
       file = Some(new File("original/newSub/file.mpeg")), // TODO this may fail!
       size = Some(1),
@@ -153,7 +155,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       "dc_title" -> "original/newSub",
       "prop_state" -> "Active",
       "prop_label" -> "original/newSub",
-      "prop_ownerId" -> "{{ easy_stage_dataset_owner }}")
+      "prop_ownerId" -> "testOwner")
 
     // clean up
 
