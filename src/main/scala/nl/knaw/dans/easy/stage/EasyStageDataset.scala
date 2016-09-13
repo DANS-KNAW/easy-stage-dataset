@@ -31,6 +31,7 @@ import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
 import org.slf4j.LoggerFactory
+import nl.knaw.dans.lib.error._
 
 import scala.util.{Failure, Success, Try}
 
@@ -101,7 +102,7 @@ object EasyStageDataset {
           createFolderSdo(child, parentSDO).flatMap(_ => createFileAndFolderSdos(child, getSDODir(child).getName))
         else
           Failure(new RuntimeException(s"Unknown object encountered while traversing ${dir.getName}: ${child.getName}"))
-      Try { dir.listFiles().toList }.flatMap(_.map(visit).allSuccess)
+      Try { dir.listFiles().toList }.flatMap(_.map(visit).collectResults.map(_ => ()))
     }
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
