@@ -19,7 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.Settings
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 import scala.xml.{Elem, XML}
 
 object Util {
@@ -36,14 +36,6 @@ object Util {
       }
     }
     else "<Unknown error location>"
-  }
-
-  implicit class TryExtensions(xs: Seq[Try[Unit]]) {
-    def allSuccess: Try[Unit] =
-      if (xs.exists(_.isFailure))
-        Failure(new CompositeException(xs.collect { case Failure(e) => e }))
-      else
-        Success(Unit)
   }
 
   def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
