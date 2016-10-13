@@ -112,8 +112,8 @@ object JSON {
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "M") ~
           ("mimeType" -> mimeType) ~
-          ("checksumType" -> "SHA-1") ++
-          settings.sha1.map(sha => "checksum" -> sha)
+          ("checksumType" -> "SHA-1") ~
+          ("checksum" -> settings.sha1)
       )
     }
 
