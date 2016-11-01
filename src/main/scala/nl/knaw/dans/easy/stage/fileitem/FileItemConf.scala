@@ -102,14 +102,14 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   validateOpt(file)(_.map(f => {
     if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
     else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right(())
-  }).getOrElse(Left("Could not parse parameter file")))
+    else Right()
+  }).getOrElse(Right()))
 
   validateOpt(csvFile)(_.map(f => {
     if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
     else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right(())
-  }).getOrElse(Left("Could not parse parameter csv-file")))
+    else Right()
+  }).getOrElse(Right()))
 
   val longOptionNames = builder.opts
     .filter(!_.isInstanceOf[TrailingArgsOption])
