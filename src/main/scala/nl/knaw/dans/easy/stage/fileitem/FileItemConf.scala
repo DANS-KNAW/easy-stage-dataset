@@ -49,10 +49,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
       throw new IllegalArgumentException(s"$s should have protocol http")
     result
   })
-  val shouldBeFile = fileConverter.flatMap {
-    case f if f.isFile => Right(Some(f))
-    case f => Left(s"file ${f.getAbsoluteFile} does not exist or is not a regular file")
-  }
   def userCategory(default: FileAccessRights.Value) = singleArgConverter(s => {
     if (s.trim.isEmpty) default else FileAccessRights.valueOf(s).get
   })
@@ -70,7 +66,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "http URL to redirect to (if specified, file-location MUST NOT be specified)")(httpUrl)
   val size = opt[Long](name = "size", descr = "Size in bytes of the file data")
   val file = opt[File](name = "file-location", short = 'l',
-    descr = "The file to be staged (if specified, --datastream-location is ignored)")(shouldBeFile)
+    descr = "The file to be staged (if specified, --datastream-location is ignored)")
   val datasetId = opt[String](name = "dataset-id", short = 'i',
     descr = "id of the dataset in Fedora that should receive the file to stage (requires file-path). " +
      "If omitted the trailing argument csv-file is required")
@@ -89,7 +85,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
       "(defaults to the one configured in the application configuration file)")
   val csvFile = opt[File](name = "csv-file",
     descr = "a comma separated file with one column for each option " +
-      "(additional columns are ignored) and one set of options per line")(shouldBeFile)
+      "(additional columns are ignored) and one set of options per line")
   val sdoSetDir = trailArg[File](name = "staged-digital-object-sets", required = true,
     descr = "The resulting directory with Staged Digital Object directories per dataset" +
       " (will be created if it does not exist)")
@@ -102,6 +98,18 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   requireOne(csvFile, datasetId)
 
   validate(creatorRole)(validateValue(_, creatorRoles))
+
+  validateOpt(file)(_.map(f => {
+    if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
+    else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
+    else Right(())
+  }).getOrElse(Left("Could not parse parameter file")))
+
+  validateOpt(csvFile)(_.map(f => {
+    if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
+    else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
+    else Right(())
+  }).getOrElse(Left("Could not parse parameter csv-file")))
 
   val longOptionNames = builder.opts
     .filter(!_.isInstanceOf[TrailingArgsOption])
