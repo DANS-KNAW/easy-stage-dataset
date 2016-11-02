@@ -99,17 +99,17 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   validate(creatorRole)(validateValue(_, creatorRoles))
 
-  validateOpt(file)(_.map(f => {
+  validate(file)(f => {
     if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
     else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right()
-  }).getOrElse(Right()))
+    else Right(())
+  })
 
-  validateOpt(csvFile)(_.map(f => {
+  validate(csvFile)(f => {
     if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
     else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right()
-  }).getOrElse(Right()))
+    else Right(())
+  })
 
   val longOptionNames = builder.opts
     .filter(!_.isInstanceOf[TrailingArgsOption])
