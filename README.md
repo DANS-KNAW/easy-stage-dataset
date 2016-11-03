@@ -83,8 +83,8 @@ ARGUMENTS for easy-stage-fileItem
         --help                         Show help message
         --version                      Show version of this program
   
-   trailing arguments:
-    staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
+    trailing arguments:
+     staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
                                             dataset (will be created if it does not exist)
 
 INSTALLATION AND CONFIGURATION
