@@ -43,12 +43,6 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
             |Options:
             |""".stripMargin)
 
-  val httpUrl: ValueConverter[URL] = singleArgConverter[URL](s => {
-    val result = new URL(s)
-    if(result.getProtocol == null || !result.getProtocol.startsWith("http"))
-      throw new IllegalArgumentException(s"$s should have protocol http")
-    result
-  })
   def userCategory(default: FileAccessRights.Value) = singleArgConverter(s => {
     if (s.trim.isEmpty) default else FileAccessRights.valueOf(s).get
   })
@@ -63,7 +57,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = s"dcterms property format, the mime type of the file",
     default = Some(defaultFormat))(emptyIsDefault(defaultFormat))
   val dsLocation = opt[URL](name = "datastream-location",
-    descr = "http URL to redirect to (if specified, file-location MUST NOT be specified)")(httpUrl)
+    descr = "http URL to redirect to (if specified, file-location MUST NOT be specified)")
   val size = opt[Long](name = "size", descr = "Size in bytes of the file data")
   val file = opt[File](name = "file-location", short = 'l',
     descr = "The file to be staged (if specified, --datastream-location is ignored)")
@@ -97,19 +91,19 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   conflicts(csvFile, List(datasetId, pathInDataset, size, dsLocation))
   requireOne(csvFile, datasetId)
 
+  validate(dsLocation)(url => {
+    if (url.getProtocol == null || !url.getProtocol.startsWith("http"))
+      Left("$url should have protocol http")
+    else Right(())
+  })
+
   validate(creatorRole)(validateValue(_, creatorRoles))
 
-  validate(file)(f => {
-    if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
-    else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right(())
-  })
+  validateFileExists(file)
+  validateFileIsFile(file)
 
-  validate(csvFile)(f => {
-    if (!f.exists()) Left(s"file ${f.getAbsoluteFile} does not exist")
-    else if (!f.isFile) Left(s"file ${f.getAbsoluteFile} is not a file")
-    else Right(())
-  })
+  validateFileExists(csvFile)
+  validateFileIsFile(csvFile)
 
   val longOptionNames = builder.opts
     .filter(!_.isInstanceOf[TrailingArgsOption])

@@ -19,7 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopConf, ScallopOption, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ScallopConf, ScallopOption, singleArgConverter}
 import org.slf4j.LoggerFactory
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
@@ -43,7 +43,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
            |Options:
            |""".stripMargin)
 
-  implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
+  implicit val dateTimeConv = singleArgConverter[DateTime](conv = DateTime.parse)
 
   val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
     name = "submission-timestamp", short = 't',
