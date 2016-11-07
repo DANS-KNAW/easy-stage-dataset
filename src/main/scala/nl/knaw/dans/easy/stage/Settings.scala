@@ -73,8 +73,8 @@ object Settings {
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
       bagitDir = getBagDir(conf.deposit()).get,
       sdoSetDir = conf.sdoSet(),
-      URN = conf.urn.get,
-      DOI = conf.doi.get,
+      URN = conf.urn.toOption,
+      DOI = conf.doi.toOption,
       otherAccessDOI = conf.otherAccessDOI(),
       isMendeley = conf.isMendeley(),
       disciplines = Fedora.disciplines)

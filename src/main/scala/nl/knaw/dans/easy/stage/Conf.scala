@@ -19,16 +19,17 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopConf, ScallopOption, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ScallopConf, ScallopOption, singleArgConverter}
 import org.slf4j.LoggerFactory
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
 
-  printedName = "easy-stage-dataset"
-  version(s"$printedName v${Version()}")
   editBuilder(sc => sc.setHelpWidth(110))
   appendDefaultToDescription = true
+
+  printedName = "easy-stage-dataset"
+  version(s"$printedName v${Version()}")
 
   private val _________ = printedName.map(_ => " ").mkString("")
   banner(s"""
@@ -42,15 +43,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
            |Options:
            |""".stripMargin)
 
-  implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
-  val mayNotExist = singleArgConverter[File](conv = new File(_))
-  val shouldExist = singleArgConverter[File](conv = {f =>
-    if (!new File(f).isDirectory) {
-      log.error(s"$f is not an existing directory")
-      throw new IllegalArgumentException()
-    }
-    new File(f)
-  })
+  implicit val dateTimeConv = singleArgConverter[DateTime](conv = DateTime.parse)
 
   val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
     name = "submission-timestamp", short = 't',
@@ -72,11 +65,14 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val deposit = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
-    required = true)(shouldExist)
+    required = true)
   val sdoSet = trailArg[File](
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
-    required = true)(mayNotExist)
+    required = true)
+
+  validateFileExists(deposit)
+
   verify()
 }
 

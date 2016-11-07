@@ -96,17 +96,17 @@ object FileItemSettings {
   def apply(conf: FileItemConf) =
     // no need to catch exceptions thrown by the constructor as FileItemConf performs the same checks
     new FileItemSettings(
-      sdoSetDir = conf.sdoSetDir.get,
-      file = conf.file.get,
-      datastreamLocation = conf.dsLocation.get,
-      size = conf.size.get,
+      sdoSetDir = conf.sdoSetDir.toOption,
+      file = conf.file.toOption,
+      datastreamLocation = conf.dsLocation.toOption,
+      size = conf.size.toOption,
       accessibleTo = conf.accessibleTo(),
       visibleTo = conf.visibleTo(),
       creatorRole = conf.creatorRole(),
-      ownerId = conf.ownerId.get.map(_.trim).filter(_.nonEmpty),
-      datasetId = conf.datasetId.get,
-      pathInDataset = conf.pathInDataset.get,
-      format = conf.format.get,
+      ownerId = conf.ownerId.toOption.map(_.trim).filter(_.nonEmpty),
+      datasetId = conf.datasetId.toOption,
+      pathInDataset = conf.pathInDataset.toOption,
+      format = conf.format.toOption,
       subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
     ) {
       override def toString = conf.toString
