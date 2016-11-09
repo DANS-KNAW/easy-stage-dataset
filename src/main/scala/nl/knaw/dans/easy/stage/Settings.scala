@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
+import java.net.{URI, URL}
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
@@ -27,10 +27,11 @@ case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = new DateTime(),
                     bagitDir: File,
                     sdoSetDir: File,
-                    URN: Option[String] = None,
-                    DOI: Option[String] = None,
-                    otherAccessDOI: Boolean = false,
-                    isMendeley: Boolean,
+                    urn: Option[String] = None,
+                    doi: Option[String] = None,
+                    otherAccessDoi: Boolean = false,
+                    stageFileDataAsRedirectDatastreams: Boolean = false,
+                    fileDataRedirectBaseUrl: Option[URL] = None,
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -40,26 +41,28 @@ object Settings {
 
   /** backward compatible call for EasyIngestFlow */
   def apply(
-            submissionTimestamp: String,
-            depositDir: File,
-            sdoSetDir: File,
-            URN: String,
-            DOI: String,
-            otherAccessDOI: Boolean,
-            isMendeley: Boolean,
-            fedoraUser: String,
-            fedoraPassword: String,
-            fedoraUrl: URL) = {
+             submissionTimestamp: String,
+             depositDir: File,
+             sdoSetDir: File,
+             urn: String,
+             doi: String,
+             otherAccessDoi: Boolean,
+             stageFileDataAsRedirectDatastreams: Boolean,
+             fileDataRedirectBaseUrl: Option[URL],
+             fedoraUser: String,
+             fedoraPassword: String,
+             fedoraUrl: URL) = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(
       ownerId = getUserId(depositDir),
       submissionTimestamp = DateTime.parse(submissionTimestamp),
       bagitDir = getBagDir(depositDir).get,
       sdoSetDir = sdoSetDir,
-      URN = Some(URN),
-      DOI = Some(DOI),
-      otherAccessDOI = otherAccessDOI,
-      isMendeley = isMendeley,
+      urn = Some(urn),
+      doi = Some(doi),
+      otherAccessDoi = otherAccessDoi,
+      stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
+      fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
       disciplines = Fedora.disciplines)
   }
 
@@ -73,10 +76,11 @@ object Settings {
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
       bagitDir = getBagDir(conf.deposit()).get,
       sdoSetDir = conf.sdoSet(),
-      URN = conf.urn.toOption,
-      DOI = conf.doi.toOption,
-      otherAccessDOI = conf.otherAccessDOI(),
-      isMendeley = conf.isMendeley(),
+      urn = conf.urn.toOption,
+      doi = conf.doi.toOption,
+      otherAccessDoi = conf.otherAccessDOI(),
+      stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
+      fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
       disciplines = Fedora.disciplines)
   }
 

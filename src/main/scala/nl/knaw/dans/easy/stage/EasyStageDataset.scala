@@ -16,7 +16,8 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.nio.file.Path
+import java.net.{URI, URL, URLEncoder}
+import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
@@ -33,6 +34,7 @@ import org.apache.commons.io.FileUtils.readFileToString
 import org.slf4j.LoggerFactory
 import nl.knaw.dans.lib.error._
 
+import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object EasyStageDataset {
@@ -53,7 +55,7 @@ object EasyStageDataset {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty)
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
@@ -107,7 +109,8 @@ object EasyStageDataset {
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
-      val datasetRelativePath = getDatasetRelativePath(file).toString
+      val datasetRelativePath = getDatasetRelativePath(file)
+      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map {case p => URLEncoder.encode(p.toString, "UTF-8") }.toArray :_*)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
@@ -115,11 +118,12 @@ object EasyStageDataset {
         title <- readTitle(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = file,
+          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
+          datastreamLocation = if (s.stageFileDataAsRedirectDatastreams) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
+                               else None,
           ownerId = s.ownerId,
-          pathInDataset = new File(datasetRelativePath),
+          pathInDataset = new File(datasetRelativePath.toString),
           size = Some(file.length),
-          isMendeley = Some(s.isMendeley),
           format = Some(mime),
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,

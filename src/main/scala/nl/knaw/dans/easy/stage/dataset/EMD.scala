@@ -36,8 +36,8 @@ object EMD {
     }
     for {
       emd <- getEasyMetadata(ddm)
-      _   = s.URN.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
-      _   = s.DOI.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDOI)))
+      _   = s.urn.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
+      _   = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
       _   = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the

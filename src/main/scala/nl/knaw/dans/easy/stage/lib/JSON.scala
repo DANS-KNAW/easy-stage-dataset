@@ -35,8 +35,8 @@ object JSON {
 
   def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String]= Try {
     def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
-    checkProvided("DOI", s.DOI)
-    checkProvided("URN", s.URN)
+    checkProvided("DOI", s.doi)
+    checkProvided("URN", s.urn)
 
     val datastreams =
       List(
@@ -65,8 +65,8 @@ object JSON {
       ("namespace" -> "easy-dataset") ~
       ("datastreams" -> datastreams) ~
       ("relations" -> (List(
-        ("predicate" -> HAS_DOI) ~ ("object" -> s.DOI) ~ ("isLiteral" -> true),
-        ("predicate" -> HAS_PID) ~ ("object" -> s.URN) ~ ("isLiteral" -> true),
+        ("predicate" -> HAS_DOI) ~ ("object" -> s.doi) ~ ("isLiteral" -> true),
+        ("predicate" -> HAS_PID) ~ ("object" -> s.urn) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
@@ -78,7 +78,7 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: URL,
+  def createFileCfg(dsLocation: URL,
                     mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String))(implicit settings: FileItemSettings): String = {
@@ -99,7 +99,7 @@ object JSON {
 
     def redirectFileDatastreamJson = {
       createJSON(
-        ("dsLocation" -> fileLocation.toString) ~
+        ("dsLocation" -> dsLocation.toURI.toASCIIString) ~
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "R") ~
           ("mimeType" -> mimeType)
