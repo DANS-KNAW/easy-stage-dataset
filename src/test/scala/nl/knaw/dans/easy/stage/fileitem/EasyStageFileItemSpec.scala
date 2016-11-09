@@ -229,6 +229,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
       file = Some(new File("path/to/uuid-as-file-name")),
+      datastreamLocation = None,
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),
@@ -253,6 +254,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     implicit val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
       file = Some(new File("path/to/uuid-as-file-name")),
+      datastreamLocation = None,
       ownerId = "testOwner",
       pathInDataset = new File("path/to/uuid-as-file-name"),
       size = Some(1),

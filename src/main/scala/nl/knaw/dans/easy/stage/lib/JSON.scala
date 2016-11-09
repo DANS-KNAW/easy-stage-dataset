@@ -78,7 +78,7 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(fileLocation: URL,
+  def createFileCfg(dsLocation: URL,
                     mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String))(implicit settings: FileItemSettings): String = {
@@ -99,7 +99,7 @@ object JSON {
 
     def redirectFileDatastreamJson = {
       createJSON(
-        ("dsLocation" -> fileLocation.toString) ~
+        ("dsLocation" -> dsLocation.toURI.toASCIIString) ~
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "R") ~
           ("mimeType" -> mimeType)

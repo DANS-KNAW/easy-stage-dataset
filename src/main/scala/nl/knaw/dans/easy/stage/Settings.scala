@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
+import java.net.{URI, URL}
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
@@ -31,6 +31,7 @@ case class Settings(ownerId: String,
                     doi: Option[String] = None,
                     otherAccessDoi: Boolean = false,
                     stageFileDataAsRedirectDatastreams: Boolean = false,
+                    fileDataRedirectBaseUrl: Option[URL] = None,
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -47,6 +48,7 @@ object Settings {
              doi: String,
              otherAccessDoi: Boolean,
              stageFileDataAsRedirectDatastreams: Boolean,
+             fileDataRedirectBaseUrl: Option[URL],
              fedoraUser: String,
              fedoraPassword: String,
              fedoraUrl: URL) = {
@@ -60,6 +62,7 @@ object Settings {
       doi = Some(doi),
       otherAccessDoi = otherAccessDoi,
       stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
+      fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
       disciplines = Fedora.disciplines)
   }
 
@@ -76,6 +79,8 @@ object Settings {
       urn = conf.urn.toOption,
       doi = conf.doi.toOption,
       otherAccessDoi = conf.otherAccessDOI(),
+      stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
+      fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
       disciplines = Fedora.disciplines)
   }
 

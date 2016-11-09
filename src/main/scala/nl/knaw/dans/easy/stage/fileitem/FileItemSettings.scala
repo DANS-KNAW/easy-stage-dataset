@@ -54,6 +54,7 @@ object FileItemSettings {
   /** new file for a new dataset */
   def apply(sdoSetDir: File,
             file: Option[File],
+            datastreamLocation: Option[URL],
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
@@ -67,6 +68,7 @@ object FileItemSettings {
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
       file = file,
+      datastreamLocation = datastreamLocation,
       datasetId = None,
       size = size,
       ownerId = Some(ownerId),

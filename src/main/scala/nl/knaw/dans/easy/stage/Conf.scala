@@ -16,11 +16,14 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.net.URL
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
 import org.rogach.scallop.{ScallopConf, ScallopOption, singleArgConverter}
 import org.slf4j.LoggerFactory
+
+
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
@@ -62,6 +65,10 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "stage-file-data-as-redirect-datastreams", short = 'r',
     descr = """Stage file items so that the content of file data will NOT be stored in managed Fedora Storage""",
     default = Some(false))
+  val fileDataRedirectBaseUrl = opt[URL](
+    name = "file-data-redirect-base-url", short = 'b',
+    descr = """Base URL from which redirect URLs to the file items in this dataset will be constructed""",
+    default = None)
   val deposit = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
@@ -72,6 +79,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     required = true)
 
   validateFileExists(deposit)
+  dependsOnAll(fileDataRedirectBaseUrl, List(stageFileDataAsRedirectDatastreams))
 
   verify()
 }
