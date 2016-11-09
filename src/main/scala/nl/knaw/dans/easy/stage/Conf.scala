@@ -58,9 +58,9 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
     default = Some(false))
-  val isMendeley = opt[Boolean](
-    name = "dataset-is-mendeley-dataset", short = 'm',
-    descr = """Stage the dataset as a "mendeley dataset"""",
+  val stageFileDataAsRedirectDatastreams = opt[Boolean](
+    name = "stage-file-data-as-redirect-datastreams", short = 'r',
+    descr = """Stage file items so that the content of file data will NOT be stored in managed Fedora Storage""",
     default = Some(false))
   val deposit = trailArg[File](
     name = "EASY-deposit",

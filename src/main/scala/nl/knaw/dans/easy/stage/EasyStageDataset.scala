@@ -53,7 +53,7 @@ object EasyStageDataset {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.DOI.isEmpty)
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
@@ -115,11 +115,10 @@ object EasyStageDataset {
         title <- readTitle(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = file,
+          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath),
           size = Some(file.length),
-          isMendeley = Some(s.isMendeley),
           format = Some(mime),
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,

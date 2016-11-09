@@ -53,21 +53,20 @@ object FileItemSettings {
 
   /** new file for a new dataset */
   def apply(sdoSetDir: File,
-            file: File,
+            file: Option[File],
             ownerId: String,
             pathInDataset: File,
             format: Option[String],
             sha1: Option[String],
             title: Option[String],
             size: Option[Long],
-            isMendeley: Option[Boolean],
             visibleTo: UserCategory,
             accessibleTo: UserCategory
            ) =
     // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
     new FileItemSettings(
       sdoSetDir = Some(sdoSetDir),
-      file = Some(file),
+      file = file,
       datasetId = None,
       size = size,
       ownerId = Some(ownerId),

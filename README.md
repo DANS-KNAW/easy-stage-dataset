@@ -39,19 +39,20 @@ the command `easy-stage-file-item`. It executes step 3 to stage one or more file
 ARGUMENTS for easy-stage-dataset
 --------------------------------
 
-     -m, --dataset-is-mendeley-dataset   Stage the dataset as a "mendeley dataset"
-     -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
-     -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
-     -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
-     -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
-         --help                          Show help message
-         --version                       Show version of this program
+    -d, --doi  <arg>                                The DOI to assign to the new dataset in EASY
+    -o, --doi-is-other-access-doi                   Stage the provided DOI as an "other access DOI"
+    -r, --stage-file-data-as-redirect-datastreams   Stage file items so that the content of file data will NOT
+                                                    be stored in managed Fedora Storage
+    -t, --submission-timestamp  <arg>               Timestamp in ISO8601 format
+    -u, --urn  <arg>                                The URN to assign to the new dataset in EASY
+        --help                                      Show help message
+        --version                                   Show version of this program
 
     trailing arguments:
      EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
-                                            metadata for EASY to be staged for ingest into Fedora
-     staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
-                                            does not exist)
+                                           metadata for EASY to be staged for ingest into Fedora
+        staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
+                                           does not exist)
 
 
 ARGUMENTS for easy-stage-fileItem
