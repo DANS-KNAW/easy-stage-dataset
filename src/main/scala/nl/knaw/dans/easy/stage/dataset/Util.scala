@@ -17,8 +17,10 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.{Settings, State}
+import org.apache.commons.configuration.PropertiesConfiguration
 
+import scala.sys.error
 import scala.util.Try
 import scala.xml.{Elem, XML}
 
@@ -68,8 +70,15 @@ object Util {
   private def loadXML(fileName: String)(implicit s: Settings): Elem = {
     val metadataFile = new File(s.bagitDir, fileName)
     if (!metadataFile.exists) {
-      throw new scala.RuntimeException(s"Unable to find `$fileName` in bag.")
+      error(s"Unable to find `$fileName` in bag.")
     }
     XML.loadFile(metadataFile)
+  }
+
+  def setDepositState(state: String, description: String)(implicit s: Settings): Try[Unit] = Try {
+    val stateFile = new PropertiesConfiguration(new File(s.depositDir, "deposit.properties"))
+    stateFile.setProperty("state.label", state)
+    stateFile.setProperty("state.description", description)
+    stateFile.save()
   }
 }

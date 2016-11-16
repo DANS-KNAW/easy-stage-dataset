@@ -27,8 +27,9 @@ import scala.util.Success
 class EmdSpec extends FlatSpec with Matchers {
 
   val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  val depositDir = new File("target/test/EmdSpec/deposit")
   def newSettings(bagitDir: File): Settings = {
-    new Settings(ownerId = "", bagitDir = bagitDir, sdoSetDir = sdoSetDir, disciplines = Map[String, String]())
+    new Settings(depositDir = depositDir, ownerId = "", bagitDir = bagitDir, sdoSetDir = sdoSetDir, disciplines = Map[String, String]())
   }
 
   "create" should "succeed for each test bag" in {

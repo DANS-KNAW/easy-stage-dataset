@@ -15,11 +15,19 @@
  */
 package nl.knaw.dans.easy.stage
 
-import org.scalatest.{Matchers, FlatSpec}
+import java.io.File
 
+import org.scalatest.{FlatSpec, Matchers}
 import nl.knaw.dans.easy.stage.dataset.AdditionalLicense._
 
 class AdditionalLicenseSpec extends FlatSpec with Matchers {
+
+  val depositDir = new File("target/test/AdditionalLicenseSpec/depositDir")
+  def settings(depositDir: File): Settings = {
+    new Settings(depositDir = depositDir, ownerId = "", bagitDir = new File(""), sdoSetDir = new File(""), disciplines = Map[String, String]())
+  }
+  implicit val s = settings(depositDir)
+
   "hasXsiType" should
     """
       |return true if
