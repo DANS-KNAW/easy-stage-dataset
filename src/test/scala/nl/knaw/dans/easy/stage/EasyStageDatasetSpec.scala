@@ -143,7 +143,6 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
     new Settings(
-      depositDir = new File("target/test/EasyStageDatasetSpec/deposit"),
       ownerId = "digger001",
       bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,

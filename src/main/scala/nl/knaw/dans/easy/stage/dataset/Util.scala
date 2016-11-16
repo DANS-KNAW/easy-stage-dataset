@@ -17,8 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.{Settings, State}
-import org.apache.commons.configuration.PropertiesConfiguration
+import nl.knaw.dans.easy.stage.Settings
 
 import scala.sys.error
 import scala.util.Try
@@ -73,12 +72,5 @@ object Util {
       error(s"Unable to find `$fileName` in bag.")
     }
     XML.loadFile(metadataFile)
-  }
-
-  def setDepositState(state: String, description: String)(implicit s: Settings): Try[Unit] = Try {
-    val stateFile = new PropertiesConfiguration(new File(s.depositDir, "deposit.properties"))
-    stateFile.setProperty("state.label", state)
-    stateFile.setProperty("state.description", description)
-    stateFile.save()
   }
 }

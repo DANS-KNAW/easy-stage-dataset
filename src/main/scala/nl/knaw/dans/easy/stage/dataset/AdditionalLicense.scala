@@ -17,13 +17,11 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.dataset.Util.setDepositState
 import nl.knaw.dans.easy.stage.lib.Constants
-import nl.knaw.dans.easy.stage.{Settings, State}
+import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 
-import scala.sys.error
 import scala.util.{Success, Try}
 import scala.xml.{Elem, Node, XML}
 
@@ -51,7 +49,7 @@ object AdditionalLicense {
             (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), getLicenseMimeType(licenseTemplateFile.getName))
           }
           else (license.text, "text/plain")
-      case lics => setDepositStateToRejected(s"Found ${lics.size} dcterms:license elements. There should be exactly one")
+      case lics => throw RejectedDepositException(s"Found ${lics.size} dcterms:license elements. There should be exactly one")
     }
   }
 
@@ -64,21 +62,18 @@ object AdditionalLicense {
      case _ => false
    }
 
-  def getLicenseMimeType(licenseFileName: String)(implicit s: Settings): MimeType =
+  def getLicenseMimeType(licenseFileName: String): MimeType =
     licenseFileName.split("\\.").last match {
       case "txt" => "text/plain"
       case "html" => "text/html"
-      case ext => {val reason = s"Unknown extension for license: .$ext"
-        setDepositState(State.REJECTED.toString, reason)
-        throw new IllegalArgumentException(reason)
-      }
+      case ext => throw RejectedDepositException(s"Unknown extension for license: .$ext")
     }
 
 
   def getDdmXml()(implicit s: Settings): Try[Elem] = Try {
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists) {
-      setDepositStateToRejected("Unable to find `metadata/dataset.xml` in bag.")
+      throw RejectedDepositException("Unable to find `metadata/dataset.xml` in bag.")
     }
     XML.loadFile(ddm)
   }
@@ -94,18 +89,13 @@ object AdditionalLicense {
 
   def getRightsHolder()(implicit s: Settings): Try[String] = Try {
     val rightsHolders = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "rightsHolder"
-    if(rightsHolders.isEmpty) setDepositStateToRejected("No dcterms:rightsHolder element found. There should be at least one")
+    if(rightsHolders.isEmpty) throw RejectedDepositException("No dcterms:rightsHolder element found. There should be at least one")
     else rightsHolders.toList.map(_.text).mkString(", ")
   }
 
   def getYear()(implicit s: Settings): Try[String] = Try {
     val years = getDdmXml().get \\ "DDM" \ "profile" \ "created"
     if(years.size == 1) DateTime.parse(years.head.text).getYear.toString
-    else setDepositStateToRejected(s"${years.size} ddm:created elements found. There must be exactly one")
-  }
-
-  private def setDepositStateToRejected(reason: String)(implicit s: Settings) = {
-    setDepositState(State.REJECTED.toString, reason)
-    error(reason)
+    else throw RejectedDepositException(s"${years.size} ddm:created elements found. There must be exactly one")
   }
 }

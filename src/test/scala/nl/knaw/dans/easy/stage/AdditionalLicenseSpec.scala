@@ -15,18 +15,10 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.File
-
 import org.scalatest.{FlatSpec, Matchers}
 import nl.knaw.dans.easy.stage.dataset.AdditionalLicense._
 
 class AdditionalLicenseSpec extends FlatSpec with Matchers {
-
-  val depositDir = new File("target/test/AdditionalLicenseSpec/depositDir")
-  def settings(depositDir: File): Settings = {
-    new Settings(depositDir = depositDir, ownerId = "", bagitDir = new File(""), sdoSetDir = new File(""), disciplines = Map[String, String]())
-  }
-  implicit val s = settings(depositDir)
 
   "hasXsiType" should
     """
@@ -100,7 +92,7 @@ class AdditionalLicenseSpec extends FlatSpec with Matchers {
   }
 
   it should "throw an exception if any other extension is used" in {
-    val expectedException = the [IllegalArgumentException] thrownBy getLicenseMimeType("/some/license/file.pdf")
+    val expectedException = the [RejectedDepositException] thrownBy getLicenseMimeType("/some/license/file.pdf")
     expectedException.getMessage should include("Unknown extension")
   }
 

@@ -16,15 +16,14 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.{URI, URL}
+import java.net.URL
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
 
-case class Settings(depositDir: File,
-                    ownerId: String,
+case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = new DateTime(),
                     bagitDir: File,
                     sdoSetDir: File,
@@ -55,7 +54,6 @@ object Settings {
              fedoraUrl: URL) = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(
-      depositDir,
       ownerId = getUserId(depositDir),
       submissionTimestamp = DateTime.parse(submissionTimestamp),
       bagitDir = getBagDir(depositDir).get,
@@ -74,7 +72,6 @@ object Settings {
       props.getString("fcrepo.user"),
       props.getString("fcrepo.password"))
     new Settings(
-      conf.deposit(),
       ownerId = getUserId(conf.deposit()),
       submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
       bagitDir = getBagDir(conf.deposit()).get,
