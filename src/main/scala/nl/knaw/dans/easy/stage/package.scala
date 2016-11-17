@@ -23,8 +23,7 @@ import scala.util.{Failure, Success, Try}
 
 package object stage {
 
-  // exceptions
-  case class RejectedDepositException(msg: String = "", cause: Throwable = null) extends Exception(msg, cause)
+  case class RejectedDepositException(msg: String, cause: Throwable = null) extends Exception(msg, cause)
 
   val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
 
