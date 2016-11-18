@@ -19,6 +19,7 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage.Settings
 
+import scala.sys.error
 import scala.util.Try
 import scala.xml.{Elem, XML}
 
@@ -68,7 +69,7 @@ object Util {
   private def loadXML(fileName: String)(implicit s: Settings): Elem = {
     val metadataFile = new File(s.bagitDir, fileName)
     if (!metadataFile.exists) {
-      throw new scala.RuntimeException(s"Unable to find `$fileName` in bag.")
+      error(s"Unable to find `$fileName` in bag.")
     }
     XML.loadFile(metadataFile)
   }
