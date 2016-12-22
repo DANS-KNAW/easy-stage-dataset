@@ -48,6 +48,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   }
 
   "getSettingsRows" should "create a single row from dummy conf" in {
+    // requires a FileItemConf instance with verified arguments
     getSettingsRows(FileItemConf.dummy).get.size shouldBe 1
   }
 

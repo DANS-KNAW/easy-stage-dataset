@@ -34,11 +34,14 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   printedName = "easy-stage-file-item"
   version(s"$printedName v${Version()}")
 
-  banner(s"""Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository.
+  val synopsis = s"""$printedName [<options>...] <staged-digital-object-set>"""
+  val description = """Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository."""
+
+  banner(s"""$description
             |
             |Usage:
             |
-            | $printedName [<options>...] <staged-digital-object-set>
+            | $synopsis
             |
             |Options:
             |""".stripMargin)
