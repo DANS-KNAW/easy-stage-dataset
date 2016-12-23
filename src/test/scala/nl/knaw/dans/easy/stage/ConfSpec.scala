@@ -22,11 +22,19 @@ import org.rogach.scallop.ScallopConf
 
 class ConfSpec extends AbstractConfSpec {
 
-  override def getConf: ScallopConf = Conf.dummy
+  private def clo = new Conf(Array[String]()) {
+    // avoids System.exit() in case of invalid arguments or "--help"
+    override def verify(): Unit = {}
+  }
 
-  "first banner line" should "be part of README.md and pom.xml" in {
-    val description = helpInfo.split("\n")(1)
-    new File("README.md") should containTrimmed(description)
-    new File("pom.xml") should containTrimmed(description)
+  override def getConf: ScallopConf = clo
+
+  "synopsis in help info" should "be part of README.md" in {
+    new File("README.md") should containTrimmed(clo.synopsis)
+  }
+
+  "description line(s) in help info" should "be part of README.md and pom.xml" in {
+    new File("README.md") should containTrimmed(clo.description)
+    new File("pom.xml") should containTrimmed(clo.description)
   }
 }

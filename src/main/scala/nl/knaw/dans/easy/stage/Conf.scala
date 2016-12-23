@@ -35,13 +35,17 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   version(s"$printedName v${Version()}")
 
   private val _________ = printedName.map(_ => " ").mkString("")
+
+  val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
+  val synopsis =
+    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
+       |  ${_________}    <EASY-bag> <staged-digital-object-set>""".stripMargin
   banner(s"""
-           |Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.
+           |  $description
            |
            |Usage:
            |
-           | $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
-           | ${_________}    <EASY-bag> <staged-digital-object-set>
+           |$synopsis
            |
            |Options:
            |""".stripMargin)
@@ -82,8 +86,4 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   dependsOnAll(fileDataRedirectBaseUrl, List(stageFileDataAsRedirectDatastreams))
 
   verify()
-}
-
-object Conf {
-  val dummy = new Conf(". -".split(" "))
 }

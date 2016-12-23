@@ -15,10 +15,20 @@
  */
 package nl.knaw.dans.easy.stage.fileitem
 
+import java.io.File
+
 import nl.knaw.dans.easy.stage.AbstractConfSpec
+import nl.knaw.dans.easy.stage.CustomMatchers._
 import org.rogach.scallop.ScallopConf
 
 class FileItemConfSpec extends AbstractConfSpec {
 
+  // Overriding verify to create an instance without arguments
+  // (as done for other README/pom tests) changes the order of the listed options.
+  // Another test needs a verified instance, so we keep using the dummy here too.
   override def getConf: ScallopConf = FileItemConf.dummy
+
+  "synopsis in help info" should "be part of README.md" in {
+    new File("README.md") should containTrimmed(FileItemConf.dummy.synopsis)
+  }
 }

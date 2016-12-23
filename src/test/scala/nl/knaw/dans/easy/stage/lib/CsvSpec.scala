@@ -22,13 +22,11 @@ import org.scalatest.{FlatSpec, Matchers}
 
 class CsvSpec extends FlatSpec with Matchers {
 
-  private val conf = FileItemConf.dummy
-
   "apply" should "fail with too few headers in the input" in {
     val in = new ByteArrayInputStream (
       "FORMAT,DATASET-ID,xxx,STAGED-DIGITAL-OBJECT-SET"
         .stripMargin.getBytes)
-    the[Exception] thrownBy CSV(in, conf.longOptionNames).get should
+    the[Exception] thrownBy CSV(in, FileItemConf.dummy.longOptionNames).get should
       have message "Missing columns: PATH-IN-DATASET, DATASTREAM-LOCATION, SIZE, FILE-LOCATION, ACCESSIBLE-TO, VISIBLE-TO, CREATOR-ROLE, OWNER-ID"
   }
 
