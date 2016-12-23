@@ -23,18 +23,21 @@ import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML, getFileFOXML}
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Success, Try}
 
 object EasyStageFileItem {
-  val log = LoggerFactory.getLogger(getClass)
+  val log: Logger = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
-    log.debug(s"app.home = ${System.getProperty("app.home")}")
-    val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    //props.save(System.out)
-    Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
+    val props = if (args(0) != "--help") {
+      log.debug(s"app.home = ${System.getProperty("app.home")}")
+      val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
+      //props.save(System.out)
+      Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
+      props
+    } else null // ScallopConf will exit so just satisfy the compiler
     val conf = new FileItemConf(args)
     getSettingsRows(conf).map {
       _.foreach { settings =>
@@ -75,7 +78,7 @@ object EasyStageFileItem {
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                = log.debug(s"Items to stage: $items")
       _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
-      _                <- items.last match {case (sdo, path, parentRelation) => createFileSdo(sdo, parentRelation) }
+      _                <- items.last match {case (sdo, _, parentRelation) => createFileSdo(sdo, parentRelation) }
     } yield ()
   }
 
