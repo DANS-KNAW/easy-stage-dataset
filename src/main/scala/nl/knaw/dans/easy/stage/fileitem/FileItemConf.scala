@@ -42,7 +42,7 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
             |
             |Usage:
             |
-            | $synopsis
+            |  $synopsis
             |
             |Options:
             |""".stripMargin)

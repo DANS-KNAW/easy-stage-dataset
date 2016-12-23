@@ -38,10 +38,10 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
   val synopsis =
-    s""" $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
-       | ${_________}    <EASY-bag> <staged-digital-object-set>""".stripMargin
+    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
+       |  ${_________}    <EASY-bag> <staged-digital-object-set>""".stripMargin
   banner(s"""
-           |$description
+           |  $description
            |
            |Usage:
            |
