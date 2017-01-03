@@ -88,7 +88,7 @@ object EasyStageDataset {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File))
         .lines.filter(_.nonEmpty)
-        .map(_.split("\\h+")) // split into tokens on sequences of horizontal white space characters
+        .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
           case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
           case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${array.mkString(" ")}")
