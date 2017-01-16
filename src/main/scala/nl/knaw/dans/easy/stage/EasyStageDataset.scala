@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.net.{URI, URL, URLEncoder}
+import java.net.{URL, URLEncoder}
 import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
@@ -28,17 +28,17 @@ import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
 import nl.knaw.dans.easy.stage.lib.JSON
 import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.lib.error._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
-import org.slf4j.LoggerFactory
-import nl.knaw.dans.lib.error._
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 object EasyStageDataset {
-  val log = LoggerFactory.getLogger(getClass)
+  val log: Logger = LoggerFactory.getLogger(getClass)
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
@@ -86,7 +86,7 @@ object EasyStageDataset {
   def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
-      readFileToString(new File(s.bagitDir, sha1File))
+      readFileToString(new File(s.bagitDir, sha1File),"UTF-8")
         .lines.filter(_.nonEmpty)
         .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
@@ -110,7 +110,7 @@ object EasyStageDataset {
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
-      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map {case p => URLEncoder.encode(p.toString, "UTF-8") }.toArray :_*)
+      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map {p => URLEncoder.encode(p.toString, "UTF-8") }.toArray :_*)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString

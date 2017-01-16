@@ -17,11 +17,12 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
-import org.apache.commons.io.FileUtils._
+import org.apache.commons.io.FileUtils.readFileToString
+import nl.knaw.dans.easy.stage.lib.Util.loadXML
 import org.json4s.native._
 
+import scala.io.Source
 import scala.reflect.io.Path
-import scala.xml.XML
 
 /**
   * Gets filenames of and SDO set or essential contents of SDO files
@@ -35,14 +36,14 @@ object SdoFiles {
 
   /** Gets (label,text) of elements in the root of the document */
   def readFlatXml(file: String): Set[(String, String)] =
-    (XML.loadFile(file) \ "_")
+    (loadXML(new File(file)) \ "_")
       .map(n => n.label -> n.text)
       .toSet
 
   /** Gets (label,text) of dc elements and (name,value)-attributes of object properties,
     * labels are prefixed with "dc_" and names are prefixed with "prop_". */
   def readDatastreamFoxml(file: String): Set[(String, String)] = {
-    val xml = XML.loadFile(file)
+    val xml = loadXML(new File(file))
     (xml \\ "dc" \ "_")
       .map(node => "dc_" + node.label -> node.text)
       .toSet ++
@@ -57,7 +58,7 @@ object SdoFiles {
   type S2A = Map[String, Any]
 
   def readCfgJson(file: String): (Option[String], Option[Set[S2S]], Option[Set[S2S]]) = {
-    val content = readFileToString(new File(file))
+    val content = readFileToString(new File(file),"UTF-8")
     val map = parseJson(content).values.asInstanceOf[S2A]
     val namespace = map.get("namespace").map(_.asInstanceOf[String])
     val datastreams = map.get("datastreams").map(_.asInstanceOf[List[S2S]].toSet[S2S])

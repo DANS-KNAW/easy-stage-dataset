@@ -15,15 +15,19 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.File
+import java.io.{File, FileInputStream, InputStreamReader}
 
 import org.apache.commons.io.FileUtils
-import org.slf4j.LoggerFactory
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.util.{Failure, Try}
+import scala.xml.{Elem, XML}
 
 object Util {
-  val log = LoggerFactory.getLogger(getClass)
+  val log: Logger = LoggerFactory.getLogger(getClass)
+
+  def loadXML(metadataFile: File): Elem =
+    XML.load(new InputStreamReader(new FileInputStream(metadataFile), "UTF-8"))
 
   def writeToFile(f: File, s: String): Try[Unit] =
     /*
