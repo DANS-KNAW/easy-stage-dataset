@@ -132,12 +132,14 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     // a bag with one folder with three files also result in five SDO's
     new File(puddingsDir,"one-invalid-sha1").listFiles().length shouldBe 5
 
+    FileUtils.readFileToString(new File ("target/sdoPuddings/one-invalid-sha1/dataset/EMD"),"UTF-8") should include ("planetoïde")
+
     // cleanup, leave created SDO sets as puddings to proof by eating them
     emptyDataDir.delete()
     tmpProps.delete()
   }
 
-  def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
+  def createProps(): Unit = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
     // the user and disciplines should exist in deasy
