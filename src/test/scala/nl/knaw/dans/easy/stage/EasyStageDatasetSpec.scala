@@ -83,7 +83,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     implicit val s = createSettings(bagitDir, sdoSetDir)
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>KNOWN</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
     readFileToString(fileMetadataFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
     deleteDirectory(sdoSetDir)
 
@@ -137,7 +137,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     tmpProps.delete()
   }
 
-  def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
+  private def createProps() = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
     // the user and disciplines should exist in deasy
