@@ -31,6 +31,8 @@ object FileAccessRights extends Enumeration {
   = Value
 
   private val rightsMap = Map[AccessCategory, FileAccessRights.Value](
+    // https://github.com/DANS-KNAW/easy-app/blob/1080eff457/lib/easy-business/src/main/java/nl/knaw/dans/easy/domain/model/AccessibleTo.java#L23-L37
+    // the legacy code lacks OPEN_ACCESS, ACCESS_ELSEWHERE, FREELY_AVAILABLE
     ANONYMOUS_ACCESS -> ANONYMOUS,
     OPEN_ACCESS_FOR_REGISTERED_USERS -> KNOWN,
     GROUP_ACCESS -> RESTRICTED_GROUP,
@@ -53,19 +55,23 @@ object FileAccessRights extends Enumeration {
   def valueOf(s: String): Option[FileAccessRights.Value] =
     FileAccessRights.values.find(v => v.toString == s)
 
-  /** gets the default category of users that have download permission for files in a new dataset
+  /** gets the default category of users that have download permission for files in a new dataset,
+    * an archivist may decide differently
     *
     * @param datasetAccesCategory from the EMD of the dataset
     * @return
     */
   def accessibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
-    rightsMap.get(datasetAccesCategory).get
+    rightsMap(datasetAccesCategory)
 
-  /** gets the default category of users that have visibility permission for files in a new dataset
+  /** gets the default category of users that have visibility permission for files in a new dataset:
+    * all files are visible unless an archivist decides differently
     *
     * @param datasetAccesCategory from the EMD of the dataset
     * @return
     */
   def visibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
-    rightsMap.get(datasetAccesCategory).get
+    // https://github.com/DANS-KNAW/easy-app/blob/1080eff457/lib/easy-business/src/main/java/nl/knaw/dans/easy/business/dataset/DatasetIngester.java#L51
+    // https://github.com/DANS-KNAW/easy-app/blob/1080eff457/lib/easy-business/src/main/java/nl/knaw/dans/easy/business/item/ItemIngester.java#L305
+    ANONYMOUS
 }
