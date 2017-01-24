@@ -33,16 +33,16 @@ class FileAccesRightsSpec extends FlatSpec with Matchers {
   }
 
   "visibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
-    FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.KNOWN
+    FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.ANONYMOUS
   }
   "visibleTo GROUP_ACCESS" should "properly map" in {
-    FileAccessRights.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.RESTRICTED_GROUP
+    FileAccessRights.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
   "visibleTo REQUEST_PERMISSION)" should "properly map" in {
-    FileAccessRights.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.RESTRICTED_REQUEST
+    FileAccessRights.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.ANONYMOUS
   }
   "visibleTo NO_ACCESS)" should "properly map" in {
-    FileAccessRights.visibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.NONE
+    FileAccessRights.visibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
   "accessibleTo OPEN_ACCESS" should "properly map" in {

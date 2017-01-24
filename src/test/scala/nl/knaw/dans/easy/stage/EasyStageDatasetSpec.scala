@@ -83,7 +83,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     implicit val s = createSettings(bagitDir, sdoSetDir)
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>KNOWN</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
     readFileToString(fileMetadataFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
     deleteDirectory(sdoSetDir)
 
