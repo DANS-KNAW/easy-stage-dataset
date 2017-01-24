@@ -21,12 +21,12 @@ import java.net.URL
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.fileitem.SdoFiles._
 import nl.knaw.dans.easy.stage.lib.Fedora
+import nl.knaw.dans.easy.stage.lib.Util.loadXML
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.immutable.HashMap
 import scala.reflect.io.Path
 import scala.util.{Failure, Success, Try}
-import scala.xml.XML
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers {
   System.setProperty("app.home", "src/main/assembly/dist")
@@ -241,10 +241,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       visibleTo = FileAccessRights.ANONYMOUS)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
-    val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
+    val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "A nice title"
     (efmd \ "path").text shouldBe "path/to/A nice title"
-    val foxml = XML.loadFile(new File(sdoDir, "fo.xml"))
+    val foxml = loadXML(new File(sdoDir, "fo.xml"))
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "A nice title"
   }
 
@@ -266,22 +266,22 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       visibleTo = FileAccessRights.ANONYMOUS)
     EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
 
-    val efmd =  XML.loadFile(new File(sdoDir, "EASY_FILE_METADATA"))
+    val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "uuid-as-file-name"
     (efmd \ "path").text shouldBe "path/to/uuid-as-file-name"
-    val foxml = XML.loadFile(new File(sdoDir, "fo.xml"))
+    val foxml = loadXML(new File(sdoDir, "fo.xml"))
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "uuid-as-file-name"
   }
 
   def mockEasyFilesAndFolders(expectations: Map[String,Try[(String,String)]]): EasyFilesAndFolders =
     new EasyFilesAndFolders {
       override def getExistingAncestor(file: File, datasetId: String): Try[(String, String)] =
-        expectations.get(s"$datasetId $file").get
+        expectations(s"$datasetId $file")
     }
 
   def mockFedora(expectations: Map[String,Seq[String]]): Fedora =
     new Fedora {
       override def findObjects(query: String, acc: Seq[String], token: Option[String]): Seq[String] =
-        expectations.get(query).get
+        expectations(query)
     }
 }

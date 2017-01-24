@@ -17,31 +17,34 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.dataset.Util.loadBagXML
 import nl.knaw.dans.easy.stage.lib.Constants
 import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 
 import scala.util.{Success, Try}
-import scala.xml.{Elem, Node, XML}
+import scala.xml.{Node, NodeSeq}
 
 object AdditionalLicense {
   type MimeType = String
+  private val ddmFileName = "metadata/dataset.xml"
 
   def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] =
-   if((getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license").isEmpty) Success(None)
+   if((loadBagXML(ddmFileName) \\ "DDM" \ "dcmiMetadata" \ "license").isEmpty) Success(None)
    else create(sdo).map(m => Some(m))
 
   def create(sdo: File)(implicit s: Settings): Try[MimeType] =
     for {
-      (template, mime) <- getAdditionalLicenseTemplate()
-      rightsHolder <- getRightsHolder()
-      year <- getYear()
+      ddm <- Try{loadBagXML(ddmFileName)}
+      (template, mime) <- getAdditionalLicenseTemplate(ddm)
+      rightsHolder <- getRightsHolder(ddm)
+      year <- getYear(ddm)
       _ <- copyAdditionalLicense(template, rightsHolder, year, sdo)
     } yield mime
 
-  def getAdditionalLicenseTemplate()(implicit s: Settings): Try[(String, MimeType)] = Try {
-    val licenses = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "license"
+  def getAdditionalLicenseTemplate(ddm: NodeSeq)(implicit s: Settings): Try[(String, MimeType)] = Try {
+    val licenses = ddm \\ "DDM" \ "dcmiMetadata" \ "license"
     licenses match {
       case Seq(license) =>
           if(hasXsiType(license, "http://purl.org/dc/terms/", "URI")) {
@@ -69,15 +72,6 @@ object AdditionalLicense {
       case ext => throw RejectedDepositException(s"Unknown extension for license: .$ext")
     }
 
-
-  def getDdmXml()(implicit s: Settings): Try[Elem] = Try {
-    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
-    if (!ddm.exists) {
-      throw RejectedDepositException("Unable to find `metadata/dataset.xml` in bag.")
-    }
-    XML.loadFile(ddm)
-  }
-
   def copyAdditionalLicense(template: String, rightsHolder: String, year: String, sdo: File): Try[File] = Try {
     val additionalLicenseFile = new File(sdo, Constants.ADDITIONAL_LICENSE)
     val content = template
@@ -87,14 +81,14 @@ object AdditionalLicense {
     additionalLicenseFile
   }
 
-  def getRightsHolder()(implicit s: Settings): Try[String] = Try {
-    val rightsHolders = getDdmXml().get \\ "DDM" \ "dcmiMetadata" \ "rightsHolder"
+  def getRightsHolder(ddm: NodeSeq): Try[String] = Try {
+    val rightsHolders = ddm \\ "DDM" \ "dcmiMetadata" \ "rightsHolder"
     if(rightsHolders.isEmpty) throw RejectedDepositException("No dcterms:rightsHolder element found. There should be at least one")
     else rightsHolders.toList.map(_.text).mkString(", ")
   }
 
-  def getYear()(implicit s: Settings): Try[String] = Try {
-    val years = getDdmXml().get \\ "DDM" \ "profile" \ "created"
+  def getYear(ddm: NodeSeq): Try[String] = Try {
+    val years = ddm \\ "DDM" \ "profile" \ "created"
     if(years.size == 1) DateTime.parse(years.head.text).getYear.toString
     else throw RejectedDepositException(s"${years.size} ddm:created elements found. There must be exactly one")
   }
