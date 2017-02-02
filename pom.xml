@@ -26,7 +26,7 @@
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset</artifactId>
     <name>EASY Stage Dataset</name>
-    <version>1.x-SNAPSHOT</version>
+    <version>1.4-beta-2</version>
     <url>https://github.com/DANS-KNAW/easy-stage-dataset</url>
     <description>Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.</description>
     <inceptionYear>2015-2016</inceptionYear>
@@ -35,7 +35,7 @@
     </properties>
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
-        <tag>HEAD</tag>
+        <tag>v1.4-beta-2</tag>
     </scm>
     <dependencies>
         <dependency>
