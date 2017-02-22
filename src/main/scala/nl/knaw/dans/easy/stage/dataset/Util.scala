@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 import scala.sys.error
@@ -47,7 +47,7 @@ object Util {
       mime <- file \ "format"
     } yield mime
     if (mimes.size != 1)
-      throw new scala.RuntimeException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
+      throw RejectedDepositException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
     mimes.head.text
   }
 
