@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
 
+println(args)
+
   editBuilder(_.setHelpWidth(110))
   appendDefaultToDescription = true
 
@@ -58,8 +60,8 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
     descr = "the path that the file should get in the dataset, a staged digital object is created" +
       " for the file and the ancestor folders that don't yet exist in the dataset")
   val format = opt[String](name = "format", short = 'f',
-    descr = s"dcterms property format, the mime type of the file",
-    default = Some(defaultFormat))(emptyIsDefault(defaultFormat))
+    descr = s"dcterms property format, the mime type of the file")
+//    , default = Some(defaultFormat))(emptyIsDefault(defaultFormat))
   val dsLocation = opt[URL](name = "datastream-location",
     descr = "http URL to redirect to (if specified, file-location MUST NOT be specified)")
   val size = opt[Long](name = "size", descr = "Size in bytes of the file data")
@@ -90,10 +92,11 @@ class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
 
   mainOptions = Seq(datasetId, dsLocation, pathInDataset, size, format)
 
-  dependsOnAll(format, List(datasetId, pathInDataset, size, dsLocation))
-  dependsOnAll(datasetId, List(pathInDataset, size, dsLocation))
-  conflicts(csvFile, List(datasetId, pathInDataset, size, dsLocation))
   requireOne(csvFile, datasetId)
+  conflicts(csvFile, List(datasetId, pathInDataset, size, file, dsLocation))
+  dependsOnAll(datasetId, List(pathInDataset, size, format))
+  dependsOnAny(datasetId, List(dsLocation, file))
+  conflicts(dsLocation, List(file))
 
   validate(dsLocation)(url => {
     if (url.getProtocol == null || !url.getProtocol.startsWith("http"))
