@@ -74,7 +74,7 @@
         <dependency>
             <groupId>nl.knaw.dans.easy</groupId>
             <artifactId>ddm</artifactId>
-            <version>2.15.1</version>
+            <version>3.0</version>
         </dependency>
         <dependency>
             <groupId>com.yourmediashelf.fedora.client</groupId>
