@@ -47,7 +47,6 @@ case class FileItemSettings (sdoSetDir: Option[File],
 }
 
 object FileItemSettings {
-  val defaultFormat = "application/octet-stream"
   val defaultCreatorRole = "DEPOSITOR"
   val creatorRoles =  Array("ARCHIVIST", "DEPOSITOR")
 
