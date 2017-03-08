@@ -28,8 +28,6 @@ import org.slf4j.LoggerFactory
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
   val log = LoggerFactory.getLogger(getClass)
 
-println(args)
-
   editBuilder(_.setHelpWidth(110))
   appendDefaultToDescription = true
 
@@ -61,7 +59,6 @@ println(args)
       " for the file and the ancestor folders that don't yet exist in the dataset")
   val format = opt[String](name = "format", short = 'f',
     descr = s"dcterms property format, the mime type of the file")
-//    , default = Some(defaultFormat))(emptyIsDefault(defaultFormat))
   val dsLocation = opt[URL](name = "datastream-location",
     descr = "http URL to redirect to (if specified, file-location MUST NOT be specified)")
   val size = opt[Long](name = "size", descr = "Size in bytes of the file data")

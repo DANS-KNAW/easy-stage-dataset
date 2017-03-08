@@ -58,6 +58,12 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
     rows.size shouldBe 5
   }
 
+  "FileItemConf" should "accept correct options" in {
+    val args = "--csv-file src/test/resources/file_properties-test.csv outdir".split(" ")
+    val rows = getSettingsRows(new FileItemConf(args)).get
+    rows.size shouldBe 1
+  }
+
   "main" should "report a configuration problem" in {
     val args = "src/test/resources/example.csv target/testSDO".split(" ")
     the[Exception] thrownBy EasyStageFileItem.main(args) should
