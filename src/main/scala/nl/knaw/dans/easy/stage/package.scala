@@ -43,7 +43,7 @@ package object stage {
 
 
   /*
-   Logic opperators that work with Try, potentially part of future DANS library
+   Logic opperators that work with Try[Boolean]
    */
   implicit class TryLogic(val t: Try[Boolean]) extends AnyVal {
     def &&(t2: => Try[Boolean]): Try[Boolean] = {
@@ -65,15 +65,4 @@ package object stage {
     }
   }
 
-  implicit class BooleanLogic(val b: Boolean) extends AnyVal {
-    def &&(t2: => Try[Boolean]): Try[Boolean] = {
-      if (b) t2
-      else Success(false)
-    }
-
-    def ||(t2: => Try[Boolean]): Try[Boolean] = {
-      if (b) Success(true)
-      else t2
-    }
-  }
 }
