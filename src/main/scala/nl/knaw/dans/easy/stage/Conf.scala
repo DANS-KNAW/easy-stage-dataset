@@ -73,6 +73,10 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "file-data-redirect-base-url", short = 'b',
     descr = """Base URL from which redirect URLs to the file items in this dataset will be constructed""",
     default = None)
+  val stubAVfiles = opt[Boolean](
+    name = "stub-av-files", short = 's',
+    descr = """Stage audio or video (AV) file items so that the content of file data will NOT be stored in managed Fedora Storage""",
+    default = Some(false))
   val deposit = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",

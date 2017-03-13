@@ -116,10 +116,11 @@ object EasyStageDataset {
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
         mime <- readMimeType(bagRelativePath)
         title <- readTitle(bagRelativePath)
+        isRedirecting <- isRidirecting(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
-          datastreamLocation = if (s.stageFileDataAsRedirectDatastreams) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
+          file = if (isRedirecting) None else Some(file),
+          datastreamLocation = if (isRedirecting) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
                                else None,
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),
@@ -132,6 +133,15 @@ object EasyStageDataset {
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
+    }
+
+    def isRidirecting(bagRelativePath: String): Try[Boolean] = {
+      if(s.stageFileDataAsRedirectDatastreams)
+        Success(true)
+      else if (!s.stubAVfiles )
+        Success(false)
+      else
+        isAVType(bagRelativePath)
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {

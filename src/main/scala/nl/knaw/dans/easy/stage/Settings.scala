@@ -32,6 +32,7 @@ case class Settings(ownerId: String,
                     otherAccessDoi: Boolean = false,
                     stageFileDataAsRedirectDatastreams: Boolean = false,
                     fileDataRedirectBaseUrl: Option[URL] = None,
+                    stubAVfiles: Boolean = false,
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -49,6 +50,7 @@ object Settings {
              otherAccessDoi: Boolean,
              stageFileDataAsRedirectDatastreams: Boolean,
              fileDataRedirectBaseUrl: Option[URL],
+             stubAVfiles: Boolean,
              fedoraUser: String,
              fedoraPassword: String,
              fedoraUrl: URL) = {
@@ -63,6 +65,7 @@ object Settings {
       otherAccessDoi = otherAccessDoi,
       stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
       fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
+      stubAVfiles = stubAVfiles,
       disciplines = Fedora.disciplines)
   }
 
@@ -81,6 +84,7 @@ object Settings {
       otherAccessDoi = conf.otherAccessDOI(),
       stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
       fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
+      stubAVfiles = conf.stubAVfiles(),
       disciplines = Fedora.disciplines)
   }
 

@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 import scala.sys.error
-import scala.util.Try
+import scala.util.{Success, Try}
 import scala.xml.Elem
 
 object Util {
@@ -67,6 +67,25 @@ object Util {
     } yield audience.text
   }
 
+  def readFileType(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
+    val filetype = for {
+      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
+      if (file \ "@filepath").text == filePath
+      filetype <- file \ "type"
+    } yield filetype
+    if (filetype.size == 1) Option(filetype.head.text)
+    else None
+  }
+
+  def isAVType(filePath: String)(implicit s: Settings): Try[Boolean] = {
+    readFileType(filePath).flatMap {
+      case Some("http://schema.org/AudioObject") => Success(true)
+      case Some("http://schema.org/VideoObject") => Success(true)
+      case _ => Success(false)
+    }
+  }
+
+  @throws[SecurityException]()
   def loadBagXML(fileName: String)(implicit s: Settings): Elem = {
     val metadataFile = new File(s.bagitDir, fileName)
     if (!metadataFile.exists) {

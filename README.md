@@ -44,6 +44,8 @@ ARGUMENTS for easy-stage-dataset
                                                     dataset will be constructed
     -r, --stage-file-data-as-redirect-datastreams   Stage file items so that the content of file data will NOT
                                                     be stored in managed Fedora Storage
+    -s, --stub-av-files                             Stage audio or video (AV) file items so that the content of
+                                                    file data will NOT be stored in managed Fedora Storage
     -t, --submission-timestamp  <arg>               Timestamp in ISO8601 format
     -u, --urn  <arg>                                The URN to assign to the new dataset in EASY
         --help                                      Show help message
