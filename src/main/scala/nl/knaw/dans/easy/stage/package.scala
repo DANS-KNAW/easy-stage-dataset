@@ -40,4 +40,40 @@ package object stage {
       }
     }
   }.isSuccess
+
+
+  /*
+   Logic opperators that work with Try, potentially part of future DANS library
+   */
+  implicit class TryLogic(val t: Try[Boolean]) extends AnyVal {
+    def &&(t2: => Try[Boolean]): Try[Boolean] = {
+      t.flatMap {
+        case true => t2
+        case _ => Success(false)
+      }
+    }
+
+    def ||(t2: => Try[Boolean]): Try[Boolean] = {
+      t.flatMap {
+        case false => t2
+        case _ => Success(true)
+      }
+    }
+
+    def unary_! : Try[Boolean] = {
+      t.map(!_)
+    }
+  }
+
+  implicit class BooleanLogic(val b: Boolean) extends AnyVal {
+    def &&(t2: => Try[Boolean]): Try[Boolean] = {
+      if (b) t2
+      else Success(false)
+    }
+
+    def ||(t2: => Try[Boolean]): Try[Boolean] = {
+      if (b) Success(true)
+      else t2
+    }
+  }
 }
