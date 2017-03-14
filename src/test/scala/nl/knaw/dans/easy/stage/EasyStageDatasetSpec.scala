@@ -109,11 +109,11 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     val puddingsDir = new File ("target/sdoPuddings")
     emptyDataDir.mkdir()
 
-    // clean up old results
-    FileUtils.deleteDirectory(puddingsDir)
-
     for (bag <- testBags) {
       val sdoSetDir = new File(puddingsDir,bag.getName)
+      // clean up old results
+      FileUtils.deleteDirectory(sdoSetDir)
+
       implicit val settings = createSettings(bag, sdoSetDir)
 
       EasyStageDataset.run(settings) shouldBe a[Success[_]]
@@ -151,11 +151,11 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
     val puddingsDir = new File ("target/sdoPuddings")
 
-    // clean up old results
-    FileUtils.deleteDirectory(puddingsDir)
-
     for (bag <- testBags) {
       val sdoSetDir = new File(puddingsDir,bag.getName)
+      // clean up old results
+      FileUtils.deleteDirectory(sdoSetDir)
+
       implicit val settings = createSettings(bag, sdoSetDir, stubAVfiles=true)
 
       EasyStageDataset.run(settings) shouldBe a[Success[_]]
