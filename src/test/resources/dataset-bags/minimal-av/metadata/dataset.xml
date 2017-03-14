@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ddm:DDM 
+xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2012/11/ddm.xsd" xmlns:abr="http://www.den.nl/standaard/166/Archeologisch-Basisregister/" xmlns:narcis="http://easy.dans.knaw.nl/schemas/vocab/narcis-type/" xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/" xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/" xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/">
+  <ddm:profile>
+    <dc:title>Good morning</dc:title>
+    <dcterms:description>Sample showing a rabbit</dcterms:description>
+    <dcx-dai:creatorDetails>
+      <dcx-dai:author>
+        <dcx-dai:titles>Dad</dcx-dai:titles>
+        <dcx-dai:surname>Simpson</dcx-dai:surname>
+        <dcx-dai:initials>H.</dcx-dai:initials>
+        <dcx-dai:organization>
+          <dcx-dai:name xml:lang="en">Springfield</dcx-dai:name>
+        </dcx-dai:organization>
+      </dcx-dai:author>
+    </dcx-dai:creatorDetails>
+    <ddm:created>2015-05-19</ddm:created>
+    <ddm:audience>D30000</ddm:audience>
+    <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
+  </ddm:profile>
+  <ddm:dcmiMetadata>
+    <dc:language>NL</dc:language>
+    <dc:language>encoding=UTF-8</dc:language>
+    <dc:format>video/mpeg</dc:format>
+    <dc:format>text/plain</dc:format>
+    <dc:subject>dierkunde</dc:subject>
+  </ddm:dcmiMetadata>
+</ddm:DDM>
