@@ -9,7 +9,7 @@ SYNOPSIS
 --------
 
     easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \
-                          <EASY-bag> <staged-digital-object-set>
+                          <EASY-deposit> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
 
