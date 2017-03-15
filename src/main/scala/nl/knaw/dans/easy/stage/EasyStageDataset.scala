@@ -136,7 +136,7 @@ object EasyStageDataset {
     }
 
     def isRidirecting(bagRelativePath: String): Try[Boolean] = {
-      Success(s.stageFileDataAsRedirectDatastreams) || (Success(s.stubAVfiles) && isAVType(bagRelativePath))
+      s.stageFileDataAsRedirectDatastreams || (s.stubAVfiles && isAVType(bagRelativePath))
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {
