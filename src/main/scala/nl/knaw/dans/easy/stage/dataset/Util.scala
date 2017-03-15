@@ -43,7 +43,7 @@ object Util {
   def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
     val mimes = for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       mime <- file \ "format"
     } yield mime
     if (mimes.size != 1)
@@ -54,7 +54,7 @@ object Util {
   def readTitle(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
     val titles = for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       title <- file \ "title"
     } yield title
     if(titles.size == 1) Option(titles.head.text)
@@ -70,7 +70,7 @@ object Util {
   def readFileType(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
     val filetype = for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       filetype <- file \ "type"
     } yield filetype
     if (filetype.size == 1) Option(filetype.head.text)
@@ -79,8 +79,7 @@ object Util {
 
   def isAVType(filePath: String)(implicit s: Settings): Try[Boolean] = {
     readFileType(filePath).flatMap {
-      case Some("http://schema.org/AudioObject") => Success(true)
-      case Some("http://schema.org/VideoObject") => Success(true)
+      case Some("http://schema.org/AudioObject") | Some("http://schema.org/VideoObject") => Success(true)
       case _ => Success(false)
     }
   }

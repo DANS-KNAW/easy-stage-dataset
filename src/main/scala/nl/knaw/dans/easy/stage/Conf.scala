@@ -36,7 +36,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   private val _________ = printedName.map(_ => " ").mkString("")
 
-  val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
+  val description = "Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."
   val synopsis =
     s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
        |  ${_________}    <EASY-bag> <staged-digital-object-set>""".stripMargin
@@ -67,15 +67,15 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     default = Some(false))
   val stageFileDataAsRedirectDatastreams = opt[Boolean](
     name = "stage-file-data-as-redirect-datastreams", short = 'r',
-    descr = """Stage file items so that the content of file data will NOT be stored in managed Fedora Storage""",
+    descr = "Stage file items so that the content of file data will NOT be stored in managed Fedora Storage",
     default = Some(false))
   val fileDataRedirectBaseUrl = opt[URL](
     name = "file-data-redirect-base-url", short = 'b',
-    descr = """Base URL from which redirect URLs to the file items in this dataset will be constructed""",
+    descr = "Base URL from which redirect URLs to the file items in this dataset will be constructed",
     default = None)
   val stubAVfiles = opt[Boolean](
     name = "stub-av-files", short = 's',
-    descr = """Stage audio or video (AV) file items so that the content of file data will NOT be stored in managed Fedora Storage""",
+    descr = "Stage audio or video (AV) file items so that the content of file data will NOT be stored in managed Fedora Storage",
     default = Some(false))
   val deposit = trailArg[File](
     name = "EASY-deposit",

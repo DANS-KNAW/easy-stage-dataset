@@ -102,7 +102,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
 
     // license-by-url seems to require mocking web-access, probably beyond the purpose of this test,
     // av is tested seperately
-    def useTestBag(f: File) = f.getName != "additional-license-by-url" && f.getName != "minimal-av"
+    def useTestBag(f: File) = List("additional-license-by-url", "minimal-av").forall(_ != f.getName)
 
     val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
     val emptyDataDir = new File("src/test/resources/dataset-bags/minimal/data")

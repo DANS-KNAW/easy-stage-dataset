@@ -44,6 +44,7 @@ package object stage {
 
   /*
    Logic opperators that work with Try[Boolean]
+   TODO future candidate for dans-scala-lib.
    */
   implicit class TryLogic(val t: Try[Boolean]) extends AnyVal {
     def &&(t2: => Try[Boolean]): Try[Boolean] = {
