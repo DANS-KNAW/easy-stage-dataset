@@ -22,7 +22,7 @@ import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 import scala.sys.error
 import scala.util.Try
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
 
 object Util {
 
@@ -59,6 +59,22 @@ object Util {
     } yield title
     if(titles.size == 1) Option(titles.head.text)
     else None
+  }
+
+  def readAccessRights(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
+    val rights = readFileMetadata(filePath, "accessRights")
+    if(rights.size == 1) Option(rights.head.text)
+    else None
+    // ? could we do map ?
+  }
+
+  // TODO refactor
+  private def readFileMetadata(filePath: String, tagName: String)(implicit s: Settings): NodeSeq = {
+    for {
+      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
+      if (file \ "@filepath").text == filePath
+      node <- file \ tagName
+    } yield node
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {

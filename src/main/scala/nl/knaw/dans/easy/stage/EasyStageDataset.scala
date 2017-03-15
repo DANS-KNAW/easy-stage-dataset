@@ -116,6 +116,7 @@ object EasyStageDataset {
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
         mime <- readMimeType(bagRelativePath)
         title <- readTitle(bagRelativePath)
+        fileRights <- getFileRights(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
@@ -127,11 +128,18 @@ object EasyStageDataset {
           format = Some(mime),
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,
-          accessibleTo = FileAccessRights.accessibleTo(rights),
-          visibleTo = FileAccessRights.visibleTo(rights)
+          accessibleTo = FileAccessRights.accessibleTo(fileRights),
+          visibleTo = FileAccessRights.visibleTo(fileRights)
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
+    }
+
+    def getFileRights(filePath: String)(implicit s: Settings): Try[AccessCategory] = {
+      readAccessRights(filePath) map {
+        case Some(fileRightsStr) => AccessCategory.valueOf(fileRightsStr)
+        case None => rights // default
+      }
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {
