@@ -43,7 +43,7 @@ object Util {
   private def readFileMetadata(filePath: String, tagName: String)(implicit s: Settings): NodeSeq = {
     for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       node <- file \ tagName
     } yield node
   }

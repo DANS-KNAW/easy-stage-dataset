@@ -121,7 +121,6 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     tmpProps.delete()
   }
 
-
   "run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
     assume(canConnect(xsds))
 
