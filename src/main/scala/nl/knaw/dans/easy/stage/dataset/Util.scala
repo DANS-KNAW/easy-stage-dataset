@@ -40,23 +40,23 @@ object Util {
     else "<Unknown error location>"
   }
 
-  def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
-    val mimes = for {
+  private def readFileMetadata(filePath: String, tagName: String)(implicit s: Settings): NodeSeq = {
+    for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
       if (file \ "@filepath").text == filePath
-      mime <- file \ "format"
-    } yield mime
+      node <- file \ tagName
+    } yield node
+  }
+
+  def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
+    val mimes =  readFileMetadata(filePath, "format")
     if (mimes.size != 1)
       throw RejectedDepositException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
     mimes.head.text
   }
 
   def readTitle(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
-    val titles = for {
-      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
-      title <- file \ "title"
-    } yield title
+    val titles = readFileMetadata(filePath, "title")
     if(titles.size == 1) Option(titles.head.text)
     else None
   }
@@ -65,16 +65,6 @@ object Util {
     val rights = readFileMetadata(filePath, "accessRights")
     if(rights.size == 1) Option(rights.head.text)
     else None
-    // ? could we do map ?
-  }
-
-  // TODO refactor
-  private def readFileMetadata(filePath: String, tagName: String)(implicit s: Settings): NodeSeq = {
-    for {
-      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
-      node <- file \ tagName
-    } yield node
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
