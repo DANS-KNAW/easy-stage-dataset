@@ -78,9 +78,9 @@ object Util {
   }
 
   def isAVType(filePath: String)(implicit s: Settings): Try[Boolean] = {
-    readFileType(filePath).flatMap {
-      case Some("http://schema.org/AudioObject") | Some("http://schema.org/VideoObject") => Success(true)
-      case _ => Success(false)
+    readFileType(filePath).map {
+      case Some("http://schema.org/AudioObject") | Some("http://schema.org/VideoObject") => true
+      case _ => false
     }
   }
 
