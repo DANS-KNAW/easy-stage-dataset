@@ -53,7 +53,7 @@ object Settings {
              stubAVfiles: Boolean,
              fedoraUser: String,
              fedoraPassword: String,
-             fedoraUrl: URL) = {
+             fedoraUrl: URL): Settings = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(
       ownerId = getUserId(depositDir),
@@ -69,7 +69,7 @@ object Settings {
       disciplines = Fedora.disciplines)
   }
 
-  def apply(conf: Conf, props: PropertiesConfiguration) = {
+  def apply(conf: Conf, props: PropertiesConfiguration): Settings = {
     Fedora.setFedoraConnectionSettings(
       new URL(props.getString("fcrepo.url")).toString,// detour for early validation
       props.getString("fcrepo.user"),
