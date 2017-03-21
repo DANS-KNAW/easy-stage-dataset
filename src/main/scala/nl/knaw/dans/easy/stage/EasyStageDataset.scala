@@ -116,7 +116,7 @@ object EasyStageDataset {
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
         mime <- readMimeType(bagRelativePath)
         title <- readTitle(bagRelativePath)
-        isRedirecting <- isRidirecting(bagRelativePath)
+        isRedirecting <- isRedirecting(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = if (isRedirecting) None else Some(file),
@@ -135,8 +135,10 @@ object EasyStageDataset {
       } yield ()
     }
 
-    def isRidirecting(bagRelativePath: String): Try[Boolean] = {
-      s.stageFileDataAsRedirectDatastreams ||| (s.stubAVfiles &&& isAVType(bagRelativePath))
+    def isRedirecting(bagRelativePath: String): Try[Boolean] = {
+      // Passing the implicit parameter 's' explicitly to isAVType is needed because of a BUG in scala-maven-plugin:doc-jar
+      // https://github.com/davidB/scala-maven-plugin/issues/204
+      s.stageFileDataAsRedirectDatastreams || (s.stubAVfiles && isAVType(bagRelativePath)(s))
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {
