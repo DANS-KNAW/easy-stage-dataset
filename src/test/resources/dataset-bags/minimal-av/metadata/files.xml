@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files xmlns:dcterms="http://purl.org/dc/terms/">
+  <file filepath="data/sample.mp4">
+    <dcterms:format>video/mp4</dcterms:format>
+    <dcterms:type>http://schema.org/VideoObject</dcterms:type>
+  </file>
+  <file filepath="data/sample.srt">
+    <dcterms:format>text/plain</dcterms:format>
+  </file>
+</files>

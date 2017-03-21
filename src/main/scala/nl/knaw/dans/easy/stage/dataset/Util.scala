@@ -21,7 +21,7 @@ import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 import scala.sys.error
-import scala.util.Try
+import scala.util.{Success, Try}
 import scala.xml.Elem
 
 object Util {
@@ -43,7 +43,7 @@ object Util {
   def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
     val mimes = for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       mime <- file \ "format"
     } yield mime
     if (mimes.size != 1)
@@ -54,7 +54,7 @@ object Util {
   def readTitle(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
     val titles = for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
+      if (file \@ "filepath") == filePath
       title <- file \ "title"
     } yield title
     if(titles.size == 1) Option(titles.head.text)
@@ -67,6 +67,24 @@ object Util {
     } yield audience.text
   }
 
+  def readFileType(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
+    val filetype = for {
+      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
+      if (file \@ "filepath") == filePath
+      filetype <- file \ "type"
+    } yield filetype
+    if (filetype.size == 1) Option(filetype.head.text)
+    else None
+  }
+
+  def isAVType(filePath: String)(implicit s: Settings): Try[Boolean] = {
+    readFileType(filePath).map {
+      case Some("http://schema.org/AudioObject") | Some("http://schema.org/VideoObject") => true
+      case _ => false
+    }
+  }
+
+  @throws[SecurityException]()
   def loadBagXML(fileName: String)(implicit s: Settings): Elem = {
     val metadataFile = new File(s.bagitDir, fileName)
     if (!metadataFile.exists) {

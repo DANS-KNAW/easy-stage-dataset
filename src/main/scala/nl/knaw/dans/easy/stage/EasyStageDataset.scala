@@ -116,10 +116,11 @@ object EasyStageDataset {
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
         mime <- readMimeType(bagRelativePath)
         title <- readTitle(bagRelativePath)
+        isRedirecting <- isRedirecting(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
-          datastreamLocation = if (s.stageFileDataAsRedirectDatastreams) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
+          file = if (isRedirecting) None else Some(file),
+          datastreamLocation = if (isRedirecting) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
                                else None,
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),
@@ -132,6 +133,12 @@ object EasyStageDataset {
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
+    }
+
+    def isRedirecting(bagRelativePath: String): Try[Boolean] = {
+      // Passing the implicit parameter 's' explicitly to isAVType is needed because of a BUG in scala-maven-plugin:doc-jar
+      // https://github.com/davidB/scala-maven-plugin/issues/204
+      s.stageFileDataAsRedirectDatastreams || (s.stubAVfiles && isAVType(bagRelativePath)(s))
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {

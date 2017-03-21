@@ -20,6 +20,7 @@ import java.net.{HttpURLConnection, URL}
 import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
 
 import scala.util.{Failure, Success, Try}
+import scala.language.implicitConversions
 
 package object stage {
 
@@ -40,4 +41,58 @@ package object stage {
       }
     }
   }.isSuccess
+
+
+  /*
+   Logic opperators that work with Try[Boolean]
+   TODO future candidate for dans-scala-lib.
+   */
+  implicit class TryLogic(val t: Try[Boolean]) extends AnyVal {
+    def &&(t2: => Try[Boolean]): Try[Boolean] = {
+      t.flatMap {
+        case true => t2
+        case _ => Success(false)
+      }
+    }
+
+    // Using DummyImplicit to prevent 'have same type after type erasure' !
+    def &&(b: => Boolean)(implicit d: DummyImplicit): Try[Boolean] = {
+      t.map {
+        case true => b
+        case _ => false
+      }
+    }
+
+    def ||(t2: => Try[Boolean]): Try[Boolean] = {
+      t.flatMap {
+        case false => t2
+        case _ => Success(true)
+      }
+    }
+
+    // Using DummyImplicit to prevent 'have same type after type erasure' !
+    def ||(b: => Boolean)(implicit d: DummyImplicit): Try[Boolean] = {
+      t.map {
+        case false => b
+        case _ => true
+      }
+    }
+
+    def unary_! : Try[Boolean] = {
+      t.map(!_)
+    }
+  }
+
+  implicit class BooleanLogicWithTry(val b: Boolean) extends AnyVal {
+    def &&(t2: => Try[Boolean]): Try[Boolean] = {
+      if (b) t2
+      else Success(false)
+    }
+
+    def ||(t2: => Try[Boolean]): Try[Boolean] = {
+      if (b) Success(true)
+      else t2
+    }
+  }
+
 }

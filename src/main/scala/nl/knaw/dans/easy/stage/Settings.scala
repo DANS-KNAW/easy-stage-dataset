@@ -32,6 +32,7 @@ case class Settings(ownerId: String,
                     otherAccessDoi: Boolean = false,
                     stageFileDataAsRedirectDatastreams: Boolean = false,
                     fileDataRedirectBaseUrl: Option[URL] = None,
+                    stubAVfiles: Boolean = false,
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -49,9 +50,10 @@ object Settings {
              otherAccessDoi: Boolean,
              stageFileDataAsRedirectDatastreams: Boolean,
              fileDataRedirectBaseUrl: Option[URL],
+             stubAVfiles: Boolean,
              fedoraUser: String,
              fedoraPassword: String,
-             fedoraUrl: URL) = {
+             fedoraUrl: URL): Settings = {
     Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
     new Settings(
       ownerId = getUserId(depositDir),
@@ -63,10 +65,11 @@ object Settings {
       otherAccessDoi = otherAccessDoi,
       stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
       fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
+      stubAVfiles = stubAVfiles,
       disciplines = Fedora.disciplines)
   }
 
-  def apply(conf: Conf, props: PropertiesConfiguration) = {
+  def apply(conf: Conf, props: PropertiesConfiguration): Settings = {
     Fedora.setFedoraConnectionSettings(
       new URL(props.getString("fcrepo.url")).toString,// detour for early validation
       props.getString("fcrepo.user"),
@@ -81,6 +84,7 @@ object Settings {
       otherAccessDoi = conf.otherAccessDOI(),
       stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
       fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
+      stubAVfiles = conf.stubAVfiles(),
       disciplines = Fedora.disciplines)
   }
 

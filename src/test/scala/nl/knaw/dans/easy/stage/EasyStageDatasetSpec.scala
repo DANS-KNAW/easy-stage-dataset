@@ -100,19 +100,20 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
 
     createProps()
 
-    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
-    def useTestBag(f: File) = f.getName != "additional-license-by-url"
+    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test,
+    // av is tested seperately
+    def useTestBag(f: File) = List("additional-license-by-url", "minimal-av").forall(_ != f.getName)
 
     val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
     val emptyDataDir = new File("src/test/resources/dataset-bags/minimal/data")
     val puddingsDir = new File ("target/sdoPuddings")
     emptyDataDir.mkdir()
 
-    // clean up old results
-    FileUtils.deleteDirectory(puddingsDir)
-
     for (bag <- testBags) {
       val sdoSetDir = new File(puddingsDir,bag.getName)
+      // clean up old results
+      FileUtils.deleteDirectory(sdoSetDir)
+
       implicit val settings = createSettings(bag, sdoSetDir)
 
       EasyStageDataset.run(settings) shouldBe a[Success[_]]
@@ -139,15 +140,43 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     tmpProps.delete()
   }
 
+  it should "create SDO sets from AV test bags and honor the 'stubAVfiles' option" in {
+    assume(canConnect(xsds))
+
+    createProps()
+
+    // only av, just one for now
+    def useTestBag(f: File) = f.getName == "minimal-av"
+
+    val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
+    val puddingsDir = new File ("target/sdoPuddings")
+
+    for (bag <- testBags) {
+      val sdoSetDir = new File(puddingsDir,bag.getName)
+      // clean up old results
+      FileUtils.deleteDirectory(sdoSetDir)
+
+      implicit val settings = createSettings(bag, sdoSetDir, stubAVfiles=true)
+
+      EasyStageDataset.run(settings) shouldBe a[Success[_]]
+      new File(sdoSetDir, "sample_srt/EASY_FILE").exists() shouldBe true
+      new File(sdoSetDir, "sample_mp4/EASY_FILE").exists() shouldBe false
+    }
+
+    // NO cleanup, leave created SDO sets as puddings to proof by eating them
+    tmpProps.delete()
+  }
+
   def createProps(): Unit = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
 
-  def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
+  def createSettings(bagitDir: File, sdoSetDir: File, stubAVfiles:Boolean = false): Settings = {
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
     new Settings(
       ownerId = "digger001",
       bagitDir = bagitDir,
       sdoSetDir = sdoSetDir,
+      stubAVfiles = stubAVfiles,
       urn = Some("someUrn"),
       doi = Some("doei"),
       disciplines = Map[String, String](
@@ -157,4 +186,5 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
         "E18000" -> "easy-discipline:226")
     )
   }
+
 }
