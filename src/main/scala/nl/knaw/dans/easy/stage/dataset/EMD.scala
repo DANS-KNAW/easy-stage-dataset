@@ -72,7 +72,7 @@ object EMD {
   def wrapDoi(doi: String, otherAccessDOI: Boolean): BasicIdentifier = {
     val basicId = new BasicIdentifier(doi)
     basicId.setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
-    basicId.setIdentificationSystem(new URI("http://dx.doi.org"))
+    basicId.setIdentificationSystem(new URI(EmdConstants.DOI_RESOLVER))
     basicId
   }
 
