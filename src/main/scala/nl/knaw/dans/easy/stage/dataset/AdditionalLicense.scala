@@ -45,7 +45,6 @@ object AdditionalLicense {
     } yield mime
 
   def getAdditionalLicenseTemplate(ddm: NodeSeq)(implicit s: Settings): Try[(String, MimeType)] = Try {
-
     val licenses = ddm \\ "DDM" \ "dcmiMetadata" \ "license"
     licenses match {
       case Seq(license) =>
@@ -59,20 +58,22 @@ object AdditionalLicense {
   }
 
   /**
-   * Retrieves a matching license, while being liberal in what it excepts:
+   * Retrieves a matching license, while being liberal in what it accepts:
    *
-   * - https is excepted instead of http
+   * - both http and https accepted
    * - a trailing slash is ignored
    *
    * @param uri the URI of the license
    * @param licenses the map from license URI-string to license File
-   * @return
+   * @return the license File if found, otherwise None
    */
   def getMatchingLicense(uri: URI, licenses: Map[String, File]): Option[File] = {
-    val httpUri = {
-      if (uri.getScheme == "https") new URI("http", uri.getUserInfo, uri.getHost, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment)
+    def withScheme(uri: URI, scheme: String) = new URI(scheme, uri.getUserInfo, uri.getHost, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment)
+
+    val httpUri =
+      if (uri.getScheme == "https") withScheme(uri, "https")
       else uri
-    }
+
     licenses.get(httpUri.toASCIIString).orElse {
       if (httpUri.toASCIIString.last == '/') licenses.get(httpUri.toASCIIString.init)
       else None
