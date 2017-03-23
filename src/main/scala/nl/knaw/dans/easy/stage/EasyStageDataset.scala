@@ -116,7 +116,7 @@ object EasyStageDataset {
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
         mime <- readMimeType(bagRelativePath)
         title <- readTitle(bagRelativePath)
-        fileRights <- getFileRights(bagRelativePath)
+        fileAccessRights <- getFileAccessRights(bagRelativePath)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
@@ -128,17 +128,18 @@ object EasyStageDataset {
           format = Some(mime),
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,
-          accessibleTo = FileAccessRights.accessibleTo(fileRights),
-          visibleTo = FileAccessRights.visibleTo(fileRights)
+          accessibleTo = fileAccessRights,
+          visibleTo = FileAccessRights.ANONYMOUS
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
     }
 
-    def getFileRights(filePath: String)(implicit s: Settings): Try[AccessCategory] = {
+    def getFileAccessRights(filePath: String)(implicit s: Settings): Try[FileAccessRights.Value] = {
+      lazy val defaultRights = FileAccessRights.accessibleTo(rights)
       readAccessRights(filePath) map {
-        case Some(fileRightsStr) => AccessCategory.valueOf(fileRightsStr)
-        case None => rights // default
+        case Some(fileRightsStr) => FileAccessRights.valueOf(fileRightsStr).getOrElse(defaultRights) // ignore unknown values
+        case None => defaultRights
       }
     }
 

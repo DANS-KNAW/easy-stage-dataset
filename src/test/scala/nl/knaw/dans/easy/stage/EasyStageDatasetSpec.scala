@@ -106,7 +106,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     val fileMetadataFile = new File(sdoSetDir, "path_to_file_txt/EASY_FILE_METADATA")
     implicit val s = createSettings(bagitDir, sdoSetDir)
 
-    // Note that files.xml specifies NO_ACCESS for data/path/to/file.txt
+    // Note that files.xml specifies NONE for data/path/to/file.txt
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
     readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
