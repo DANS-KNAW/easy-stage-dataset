@@ -129,7 +129,7 @@ object EasyStageDataset {
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,
           accessibleTo = fileAccessRights,
-          visibleTo = FileAccessRights.ANONYMOUS
+          visibleTo = FileAccessRights.visibleTo(rights)
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
