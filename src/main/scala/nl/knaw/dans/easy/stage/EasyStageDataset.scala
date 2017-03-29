@@ -36,6 +36,7 @@ import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
+import scala.xml.NodeSeq
 
 object EasyStageDataset {
   val log: Logger = LoggerFactory.getLogger(getClass)
@@ -83,7 +84,7 @@ object EasyStageDataset {
     } yield (emdContent, amdContent)
   }
 
-  def createFileAndFolderSdos(dir: File, parentSDO: String, rights: AccessCategory)(implicit s: Settings): Try[Unit] = {
+  def createFileAndFolderSdos(dir: File, parentSDO: String, datasetRights: AccessCategory)(implicit s: Settings): Try[Unit] = {
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File),"UTF-8")
@@ -114,9 +115,10 @@ object EasyStageDataset {
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
-        mime <- readMimeType(bagRelativePath)
-        title <- readTitle(bagRelativePath)
-        fileAccessRights <- getFileAccessRights(bagRelativePath)
+        fileMetadata <- readFileMetadata(bagRelativePath)
+        mime <- readMimeType(fileMetadata)
+        title <- readTitle(fileMetadata)
+        fileAccessRights <- getFileAccessRights(fileMetadata)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
           file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
@@ -129,15 +131,15 @@ object EasyStageDataset {
           sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
           title = title,
           accessibleTo = fileAccessRights,
-          visibleTo = FileAccessRights.visibleTo(rights)
+          visibleTo = FileAccessRights.visibleTo(datasetRights)
         )
         _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
       } yield ()
     }
 
-    def getFileAccessRights(filePath: String)(implicit s: Settings): Try[FileAccessRights.Value] = {
-      lazy val defaultRights = FileAccessRights.accessibleTo(rights)
-      readAccessRights(filePath) map {
+    def getFileAccessRights(fileMetadata: NodeSeq)(implicit s: Settings): Try[FileAccessRights.Value] = {
+      lazy val defaultRights = FileAccessRights.accessibleTo(datasetRights)
+      readAccessRights(fileMetadata: NodeSeq) map {
         case Some(fileRightsStr) => FileAccessRights.valueOf(fileRightsStr).getOrElse(defaultRights) // ignore unknown values
         case None => defaultRights
       }
