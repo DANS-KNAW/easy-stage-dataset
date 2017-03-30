@@ -22,7 +22,7 @@ import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 import scala.sys.error
 import scala.util.Try
-import scala.xml.Elem
+import scala.xml.{Elem, NodeSeq}
 
 object Util {
 
@@ -40,24 +40,37 @@ object Util {
     else "<Unknown error location>"
   }
 
-  def readMimeType(filePath: String)(implicit s: Settings): Try[String] = Try {
-    val mimes = for {
+  /**
+   * Load file metadata XML file and extract the metadata for the specified file.
+   * Use this as input for further processing and extraction of sub-elements like title and mime type.
+   *
+   * @param filePath Path to the file, relative to the bag
+   * @param s Settings
+   * @return File metadata (XML Nodes) for the specified file
+   */
+  def readFileMetadata(filePath: String)(implicit s: Settings): Try[NodeSeq] = Try {
+    for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
-      mime <- file \ "format"
-    } yield mime
+      if (file \@ "filepath") == filePath
+    } yield file
+  }
+
+  def readMimeType(fileMetadata: NodeSeq)(implicit s: Settings): Try[String] = Try {
+    val mimes =  fileMetadata \ "format"
     if (mimes.size != 1)
-      throw RejectedDepositException(s"Filepath [$filePath] doesn't exist in files.xml, or isn't unique.")
+      throw RejectedDepositException(s"format element doesn't exist for the file, or isn't unique.")
     mimes.head.text
   }
 
-  def readTitle(filePath: String)(implicit s: Settings): Try[Option[String]] = Try {
-    val titles = for {
-      file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
-      if (file \ "@filepath").text == filePath
-      title <- file \ "title"
-    } yield title
+  def readTitle(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
+    val titles = fileMetadata \ "title"
     if(titles.size == 1) Option(titles.head.text)
+    else None
+  }
+
+  def readAccessRights(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
+    val rights = fileMetadata \ "accessRights"
+    if(rights.size == 1) Option(rights.head.text)
     else None
   }
 

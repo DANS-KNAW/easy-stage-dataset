@@ -73,7 +73,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     deleteDirectory(bagitDir)
   }
 
-  it should "create file rights computed from dataset access rights" in {
+  it should "create file rights computed from dataset access rights by default" in {
 
     createProps()
     val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
@@ -81,6 +81,8 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     val sdoSetDir = new File("target/test/sdoSet")
     val fileMetadataFile = new File(sdoSetDir, "quicksort_hs/EASY_FILE_METADATA")
     implicit val s = createSettings(bagitDir, sdoSetDir)
+
+    // Note that files.xml specifies no accessRights for data/quicksort.hs
 
     createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
     readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
@@ -90,6 +92,30 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers {
     createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
     readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
     readFileToString(fileMetadataFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
+    deleteDirectory(sdoSetDir)
+
+    tmpProps.delete()
+  }
+
+  it should "override default dataset rights when rights are explicitly specified for a file" in {
+
+    createProps()
+    val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
+    val dataDir = new File(bagitDir, "data")
+    val sdoSetDir = new File("target/test/sdoSet")
+    val fileMetadataFile = new File(sdoSetDir, "path_to_file_txt/EASY_FILE_METADATA")
+    implicit val s = createSettings(bagitDir, sdoSetDir)
+
+    // Note that files.xml specifies NONE for data/path/to/file.txt
+
+    createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<accessibleTo>NONE</accessibleTo>")
+    deleteDirectory(sdoSetDir)
+
+    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile) should include ("<accessibleTo>NONE</accessibleTo>")
     deleteDirectory(sdoSetDir)
 
     tmpProps.delete()
