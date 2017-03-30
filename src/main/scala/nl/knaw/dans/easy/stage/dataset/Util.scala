@@ -52,8 +52,7 @@ object Util {
     for {
       file <- loadBagXML("metadata/files.xml") \\ "files" \ "file"
       if (file \@ "filepath") == filePath
-      node <- file
-    } yield node
+    } yield file
   }
 
   def readMimeType(fileMetadata: NodeSeq)(implicit s: Settings): Try[String] = Try {
