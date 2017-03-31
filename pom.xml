@@ -103,6 +103,10 @@
             <groupId>nl.knaw.dans.lib</groupId>
             <artifactId>dans-scala-lib</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.jsuereth</groupId>
+            <artifactId>scala-arm_2.11</artifactId>
+        </dependency>
     </dependencies>
     <repositories>
         <repository>

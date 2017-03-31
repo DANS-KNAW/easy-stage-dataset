@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.net.{URL, URLEncoder}
+import java.net.{URI, URL, URLEncoder}
 import java.nio.file.{Path, Paths}
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
@@ -43,7 +43,7 @@ object EasyStageDataset {
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    implicit val s = Settings(new Conf(args),props)
+    implicit val s = Settings(new Conf(args), props)
     run match {
       case Success(_) => log.info("Staging SUCCESS")
       case Failure(t) => log.error("Staging FAIL", t)
@@ -108,6 +108,8 @@ object EasyStageDataset {
       Try { dir.listFiles().toList }.flatMap(_.map(visit).collectResults.map(_ => ()))
     }
 
+    def getBagRelativePath(path: Path) = s.bagitDir.toPath.relativize(path)
+
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
@@ -121,9 +123,8 @@ object EasyStageDataset {
         fileAccessRights <- getFileAccessRights(fileMetadata)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
-          datastreamLocation = if (s.stageFileDataAsRedirectDatastreams) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
-                               else None,
+          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None else Some(file),
+          datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),
           size = Some(file.length),

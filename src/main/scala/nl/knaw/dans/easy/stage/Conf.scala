@@ -16,17 +16,20 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
+import java.net.{URI, URL}
+import java.nio.file.{Path, Paths}
+import java.util.regex.Pattern
 
 import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
 import org.rogach.scallop.{ScallopConf, ScallopOption, singleArgConverter}
 import org.slf4j.LoggerFactory
 
-
+import scala.io.Source
+import scala.util.Try
 
 class Conf(args: Seq[String]) extends ScallopConf(args) {
-  val log = LoggerFactory.getLogger(getClass)
+  private val log = LoggerFactory.getLogger(getClass)
 
   editBuilder(sc => sc.setHelpWidth(110))
   appendDefaultToDescription = true
@@ -37,7 +40,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   private val _________ = printedName.map(_ => " ").mkString("")
 
   val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
-  val synopsis =
+  val synopsis: String =
     s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
        |  ${_________}    <EASY-deposit> <staged-digital-object-set>""".stripMargin
   banner(s"""
@@ -61,29 +64,42 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val doi: ScallopOption[String] = opt[String](
     name = "doi", short = 'd',
     descr = "The DOI to assign to the new dataset in EASY")
-  val otherAccessDOI = opt[Boolean](
+  val otherAccessDOI: ScallopOption[Boolean] = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
     default = Some(false))
-  val stageFileDataAsRedirectDatastreams = opt[Boolean](
-    name = "stage-file-data-as-redirect-datastreams", short = 'r',
-    descr = """Stage file items so that the content of file data will NOT be stored in managed Fedora Storage""",
-    default = Some(false))
-  val fileDataRedirectBaseUrl = opt[URL](
-    name = "file-data-redirect-base-url", short = 'b',
-    descr = """Base URL from which redirect URLs to the file items in this dataset will be constructed""",
-    default = None)
-  val deposit = trailArg[File](
+  val dsLocationMappings: ScallopOption[File] = opt[File](
+    name = "external-file-uris", short = 'f',
+    descr = "File with mappings from bag local path to external file URI. Each line in this " +
+            "file must contain a mapping. The path is separated from the URI by one ore more " +
+            "whitespaces. If more groups of whitespaces are encountered, they are considered " +
+            "part of the path.")
+  val deposit: ScallopOption[File] = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
     required = true)
-  val sdoSet = trailArg[File](
+  val sdoSet: ScallopOption[File] = trailArg[File](
     name = "staged-digital-object-set",
     descr = "The resulting Staged Digital Object directory (will be created if it does not exist)",
     required = true)
 
   validateFileExists(deposit)
-  dependsOnAll(fileDataRedirectBaseUrl, List(stageFileDataAsRedirectDatastreams))
-
   verify()
+
+  def getDsLocationMappings(): Map[Path, URI] = {
+    if(dsLocationMappings.isSupplied) readDsLocationMappings(dsLocationMappings()).get
+    else Map()
+  }
+
+  val dsLocationsFileLinePattern = Pattern.compile("""^(.*)\s+(.*)$""")
+
+  private def readDsLocationMappings(file: File) = Try {
+    resource.managed(Source.fromFile(file, "UTF-8")).acquireAndGet (
+      _.getLines().toList.filter(_.nonEmpty).map {
+        line =>
+          val m = dsLocationsFileLinePattern.matcher(line)
+          if (m.find()) (Paths.get(m.group(1).trim), new URI(m.group(2).trim))
+          else throw new IllegalArgumentException(s"Invalid line in input: '$line'")
+      }.toMap)
+  }
 }

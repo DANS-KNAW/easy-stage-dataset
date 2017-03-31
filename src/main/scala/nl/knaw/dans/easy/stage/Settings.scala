@@ -16,12 +16,17 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
+import java.net.{URI, URL}
+import java.nio.file.{Path, Paths}
+import java.util.regex.Pattern
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
+
+import scala.io.Source
+import scala.util.Try
 
 case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = new DateTime(),
@@ -30,8 +35,7 @@ case class Settings(ownerId: String,
                     urn: Option[String] = None,
                     doi: Option[String] = None,
                     otherAccessDoi: Boolean = false,
-                    stageFileDataAsRedirectDatastreams: Boolean = false,
-                    fileDataRedirectBaseUrl: Option[URL] = None,
+                    fileUris: Map[Path, URI] = Map(),
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -47,8 +51,6 @@ object Settings {
              urn: String,
              doi: String,
              otherAccessDoi: Boolean,
-             stageFileDataAsRedirectDatastreams: Boolean,
-             fileDataRedirectBaseUrl: Option[URL],
              fedoraUser: String,
              fedoraPassword: String,
              fedoraUrl: URL) = {
@@ -61,8 +63,6 @@ object Settings {
       urn = Some(urn),
       doi = Some(doi),
       otherAccessDoi = otherAccessDoi,
-      stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
-      fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
       disciplines = Fedora.disciplines)
   }
 
@@ -79,12 +79,12 @@ object Settings {
       urn = conf.urn.toOption,
       doi = conf.doi.toOption,
       otherAccessDoi = conf.otherAccessDOI(),
-      stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
-      fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
+      fileUris = conf.getDsLocationMappings(),
       disciplines = Fedora.disciplines)
   }
 
   private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
   private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
+
 
 }
