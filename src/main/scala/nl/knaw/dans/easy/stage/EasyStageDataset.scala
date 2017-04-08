@@ -17,8 +17,9 @@ package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
 import java.net.{URI, URL, URLEncoder}
-import java.nio.file.{Path, Paths}
+import java.nio.file.{Files, Path, Paths}
 
+import gov.loc.repository.bagit.BagFactory
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
@@ -40,6 +41,7 @@ import scala.xml.NodeSeq
 
 object EasyStageDataset {
   val log: Logger = LoggerFactory.getLogger(getClass)
+  implicit val bagFactory = new BagFactory
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
@@ -50,8 +52,25 @@ object EasyStageDataset {
     }
   }
 
-  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
+  // TODO: candidate for a possible dans-bagit-lib
+  /**
+   * Checks that all paths in `files` are part of the payload of the bag in `bagDir`. This means that they must be in at least one payload manifest.
+   *
+   * @param files the files to check
+   * @param bagDir the directory containing the bag
+   * @return Success if all files were part, otherwise Failure
+   */
+  def checkFilesInBag(files: Set[Path], bagDir: Path): Try[Unit] = {
+    resource.managed(bagFactory.createBag(bagDir.toFile, BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)).acquireAndGet {
+      b =>
+        val filesInBag = b.getPayloadManifests.asScala.map(_.keySet.asScala).reduce(_ ++ _).map(Paths.get(_))
+        val filesNotInBag = files.diff(filesInBag)
+        if (filesNotInBag.isEmpty) Success(())
+        else Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $filesNotInBag"))
+    }
+  }
 
+  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
@@ -76,6 +95,7 @@ object EasyStageDataset {
 
     log.debug(s"Settings = $s")
     for {
+
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()

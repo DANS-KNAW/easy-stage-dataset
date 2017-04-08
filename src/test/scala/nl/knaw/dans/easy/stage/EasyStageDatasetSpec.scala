@@ -16,156 +16,144 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.nio.file.{Files, Paths}
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{deleteDirectory, readFileToString}
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
+import org.scalatest.Inside._
 
 import scala.util.{Failure, Success}
 
-class EasyStageDatasetSpec extends FlatSpec with Matchers {
+class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest {
+  private val testDir = Paths.get("target/test", getClass.getSimpleName)
+  FileUtils.deleteQuietly(testDir.toFile)
+  Files.createDirectories(testDir)
 
-  private val tmpProps = new File("cfg/application.properties")
+  private val testBagMedium = Paths.get("src/test/resources/dataset-bags/medium")
 
   "createFileAndFolderSdos" should "stumble if the data folder does not exist" in {
+    val bagDir = testDir.resolve("bag")
+    val dataDir = bagDir.resolve("data") // Note that this directory is never created, on purpose.
+    val sdoSetDir = testDir.resolve("someSDO")
+    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    Files.createDirectories(bagDir)
 
-    val bagitDir = new File("target/test/bag")
-    val dataDir = new File(bagitDir, "data")
-    val sdoSetDir = new File("target/test/someSDO")
-    implicit val s = createSettings(bagitDir, sdoSetDir)
-    bagitDir.mkdirs()
-
-    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Failure[_]]
-
-    deleteDirectory(bagitDir)
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Failure[_]]
   }
 
   it should "be happy with an empty data folder" in {
+    val bagDir = testDir.resolve("bag")
+    val dataDir = bagDir.resolve("data")
+    val sdoSetDir = testDir.resolve("someSDO")
+    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    Files.createDirectories(dataDir)
 
-    val bagitDir = new File("target/test/bag")
-    val dataDir = new File(bagitDir, "data")
-    val sdoSetDir = new File("target/test/someSDO")
-    implicit val s = createSettings(bagitDir, sdoSetDir)
-    dataDir.mkdirs()
-
-    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    sdoSetDir.exists() shouldBe false
-
-    deleteDirectory(bagitDir)
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
+    Files.exists(sdoSetDir) shouldBe false
   }
 
   it should "stumble over a manifest-sha1.txt with too many fields on a line" in {
+    val bagDir = testDir.resolve("bag")
+    val dataDir = bagDir.resolve("data")
+    val sdoSetDir = testDir.resolve("someSDO")
+    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    Files.createDirectories(dataDir)
+    FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile,"a b c")
 
-    val bagitDir = new File("target/test/bag")
-    val dataDir = new File(bagitDir, "data")
-    val sdoSetDir = new File("target/test/someSDO")
-    implicit val s = createSettings(bagitDir, sdoSetDir)
-    dataDir.mkdirs()
-    FileUtils.write(new File(bagitDir,"manifest-sha1.txt"),"a b c")
-
-    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS).failed.get should
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS).failed.get should
       have message "Invalid line in manifest-sha1.txt: a b c"
-    sdoSetDir.exists() shouldBe false
-
-    deleteDirectory(bagitDir)
+    Files.exists(sdoSetDir) shouldBe false
   }
 
   it should "create file rights computed from dataset access rights by default" in {
-
-    createProps()
-    val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
-    val dataDir = new File(bagitDir, "data")
-    val sdoSetDir = new File("target/test/sdoSet")
-    val fileMetadataFile = new File(sdoSetDir, "quicksort_hs/EASY_FILE_METADATA")
-    implicit val s = createSettings(bagitDir, sdoSetDir)
+    val bagDir = testDir.resolve("bag")
+    FileUtils.copyDirectory(Paths.get("src/test/resources/dataset-bags/no-additional-license").toFile, bagDir.toFile)
+    val dataDir = bagDir.resolve("data")
+    val sdoSetDir = testDir.resolve("SDO-set")
+    val fileMetadataFile = sdoSetDir.resolve("quicksort_hs/EASY_FILE_METADATA")
+    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
 
     // Note that files.xml specifies no accessRights for data/quicksort.hs
 
-    createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
-    deleteDirectory(sdoSetDir)
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
 
-    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
-    deleteDirectory(sdoSetDir)
-
-    tmpProps.delete()
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
   }
 
   it should "override default dataset rights when rights are explicitly specified for a file" in {
-
-    createProps()
-    val bagitDir = new File("src/test/resources/dataset-bags/no-additional-license")
-    val dataDir = new File(bagitDir, "data")
-    val sdoSetDir = new File("target/test/sdoSet")
-    val fileMetadataFile = new File(sdoSetDir, "path_to_file_txt/EASY_FILE_METADATA")
-    implicit val s = createSettings(bagitDir, sdoSetDir)
+    val bagDir = testDir.resolve("bag")
+    FileUtils.copyDirectory(Paths.get("src/test/resources/dataset-bags/no-additional-license").toFile, bagDir.toFile)
+    val dataDir = bagDir.resolve("data")
+    val sdoSetDir = testDir.resolve("SDO-set")
+    val fileMetadataFile = sdoSetDir.resolve("path_to_file_txt/EASY_FILE_METADATA")
+    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
 
     // Note that files.xml specifies NONE for data/path/to/file.txt
 
-    createFileAndFolderSdos(dataDir, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile) should include ("<accessibleTo>NONE</accessibleTo>")
-    deleteDirectory(sdoSetDir)
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>NONE</accessibleTo>")
 
-    createFileAndFolderSdos(dataDir, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile) should include ("<accessibleTo>NONE</accessibleTo>")
-    deleteDirectory(sdoSetDir)
-
-    tmpProps.delete()
+    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
+    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>NONE</accessibleTo>")
   }
 
-  "run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
-    assume(canConnect(xsds))
+  "checkFilesInBag" should "result in Success if files argument is empty" in {
+    checkFilesInBag(Set.empty, testBagMedium) shouldBe a[Success[_]]
+  }
 
-    createProps()
+  it should "result in Failure if passed list of one file that is not in the bag" in {
+    val result = checkFilesInBag(Set(Paths.get("data/NOT-README.md")), testBagMedium)
 
-    // license-by-url seems to require mocking web-access, probably beyond the purpose of this test
-    def useTestBag(f: File) = f.getName != "additional-license-by-url"
-
-    val testBags = new File ("src/test/resources/dataset-bags").listFiles().filter(useTestBag)
-    val emptyDataDir = new File("src/test/resources/dataset-bags/minimal/data")
-    val puddingsDir = new File ("target/sdoPuddings")
-    emptyDataDir.mkdir()
-
-    // clean up old results
-    FileUtils.deleteDirectory(puddingsDir)
-
-    for (bag <- testBags) {
-      val sdoSetDir = new File(puddingsDir,bag.getName)
-      implicit val settings = createSettings(bag, sdoSetDir)
-
-      EasyStageDataset.run(settings) shouldBe a[Success[_]]
-      new File(sdoSetDir, "dataset/EMD").exists() shouldBe true
-      new File(sdoSetDir, "dataset/AMD").exists() shouldBe true
-      new File(sdoSetDir, "dataset/cfg.json").exists() shouldBe true
-      new File(sdoSetDir, "dataset/fo.xml").exists() shouldBe true
-      new File(sdoSetDir, "dataset/PRSQL").exists() shouldBe true
+    result shouldBe a[Failure[_]]
+    inside(result) {
+      case Failure(e) =>
+        e shouldBe a[RejectedDepositException]
+        e.getMessage should include("data/NOT-README.md")
     }
-    // a bag with an empty data folder results in a single SDO
-    new File(puddingsDir,"minimal").listFiles().length shouldBe 1
-
-    // both bags have 2 files and 2 nested folders resulting in a total of five SDO's
-    new File(puddingsDir,"no-additional-license").listFiles().length shouldBe 5
-    new File(puddingsDir,"additional-license-by-text").listFiles().length shouldBe 5
-
-    // a bag with one folder with three files also result in five SDO's
-    new File(puddingsDir,"one-invalid-sha1").listFiles().length shouldBe 5
-
-    FileUtils.readFileToString(new File ("target/sdoPuddings/one-invalid-sha1/dataset/EMD"),"UTF-8") should include ("planetoïde")
-
-    // cleanup, leave created SDO sets as puddings to proof by eating them
-    emptyDataDir.delete()
-    tmpProps.delete()
   }
 
-  def createProps(): Unit = FileUtils.write(tmpProps, "owner=dsowner\nredirect-unset-url=http://unset.dans.knaw.nl")
+  it should "result in Success if all files are found in the bag" in {
+    val files = Set(
+      Paths.get("data/README.md"),
+      Paths.get("data/random images/image01.png"),
+      Paths.get("data/random images/image02.jpeg"),
+      Paths.get("data/random images/image03.jpeg"),
+      Paths.get("data/a/deeper/path/With some file.txt"))
+
+    checkFilesInBag(files, testBagMedium) shouldBe a[Success[_]]
+  }
+
+  it should "result in Failure if all files are found in the bag but an extra file is added" in {
+    val files = Set(
+      Paths.get("data/README.md"),
+      Paths.get("data/random images/image01.png"),
+      Paths.get("data/random images/image02.jpeg"),
+      Paths.get("data/random images/image03.jpeg"),
+      Paths.get("data/random images/WRONG.jpeg"),
+      Paths.get("data/a/deeper/path/With some file.txt"))
+
+    val result = checkFilesInBag(files, testBagMedium)
+    result shouldBe a[Failure[_]]
+
+    inside(result) {
+      case Failure(e) =>
+        e shouldBe a[RejectedDepositException]
+        e.getMessage should include("WRONG.jpeg")
+        e.getMessage shouldNot include("image01")
+        e.getMessage shouldNot include("image02")
+        e.getMessage shouldNot include("image03")
+    }
+  }
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
     // the user and disciplines should exist in deasy
