@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -41,7 +41,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
   val synopsis: String =
-    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \\
+    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \\
        |  ${_________}    <EASY-deposit> <staged-digital-object-set>""".stripMargin
   banner(s"""
            |  $description

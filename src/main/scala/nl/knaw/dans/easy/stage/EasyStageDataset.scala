@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -74,6 +74,7 @@ object EasyStageDataset {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
+        _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
         amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
         emdContent <- EMD.create(sdoDir)

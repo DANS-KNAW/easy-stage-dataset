@@ -8,8 +8,8 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \
-                          <EASY-deposit> <staged-digital-object-set>
+    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] \
+                              <EASY-deposit> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
 
