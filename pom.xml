@@ -88,6 +88,8 @@
                     To get rid of build warnings complaining about not being able to build parent project.
                     According to the following post this dependency is only needed for Java 5
                     http://stackoverflow.com/questions/32794791/maven-build-error-cannot-find-parent-org-apache-geronimo-genesis-configconfig#33055632
+
+                    TODO: move this up to dans-parent
                 -->
                 <exclusion>
                     <groupId>org.apache.geronimo.specs</groupId>
