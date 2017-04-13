@@ -16,8 +16,8 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.net.{URI, URL, URLEncoder}
-import java.nio.file.{Files, Path, Paths}
+import java.net.URLEncoder
+import java.nio.file.{Path, Paths}
 
 import gov.loc.repository.bagit.BagFactory
 import nl.knaw.dans.common.lang.dataset.AccessCategory
@@ -41,7 +41,7 @@ import scala.xml.NodeSeq
 
 object EasyStageDataset {
   val log: Logger = LoggerFactory.getLogger(getClass)
-  implicit val bagFactory = new BagFactory
+  private val bagFactory = new BagFactory
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
@@ -74,7 +74,6 @@ object EasyStageDataset {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
-        _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
         amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
         emdContent <- EMD.create(sdoDir)
@@ -96,7 +95,7 @@ object EasyStageDataset {
 
     log.debug(s"Settings = $s")
     for {
-
+      _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()
@@ -129,12 +128,12 @@ object EasyStageDataset {
       Try { dir.listFiles().toList }.flatMap(_.map(visit).collectResults.map(_ => ()))
     }
 
-    def getBagRelativePath(path: Path) = s.bagitDir.toPath.relativize(path)
+    def getBagRelativePath(path: Path): Path = s.bagitDir.toPath.relativize(path)
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
-      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map {p => URLEncoder.encode(p.toString, "UTF-8") }.toArray :_*)
+      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map { p => URLEncoder.encode(p.toString, "UTF-8") }.toArray: _*)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
@@ -144,7 +143,8 @@ object EasyStageDataset {
         fileAccessRights <- getFileAccessRights(fileMetadata)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None else Some(file),
+          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None
+                 else Some(file),
           datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),

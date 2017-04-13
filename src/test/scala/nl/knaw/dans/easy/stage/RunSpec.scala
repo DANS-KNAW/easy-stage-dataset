@@ -38,10 +38,11 @@ class RunSpec extends FlatSpec with Matchers {
    *   complete application context (settings, licenses, etc).
    */
 
-  "run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
+  "EasyStageDataset.run" should "create SDO sets from test bags (proof the puddings by eating them with easy-ingest)" in {
     assume(canConnect(xsds))
     val datasetBags = testDir.resolve("dataset-bags")
     FileUtils.copyDirectory(Paths.get("src/test/resources/dataset-bags").toFile, datasetBags.toFile)
+    Files.createDirectory(datasetBags.resolve("minimal/data"))
     val puddingsDir = testDir.resolve("sdoPuddings")
 
     val testBags = resource.managed(Files.list(datasetBags)).acquireAndGet(_.iterator.asScala.toList)
@@ -51,11 +52,11 @@ class RunSpec extends FlatSpec with Matchers {
       implicit val settings = createSettings(bag.toFile, sdoSetDir.toFile)
 
       EasyStageDataset.run(settings) shouldBe a[Success[_]]
-      Files.exists(sdoSetDir.resolve("dataset/EMD")) shouldBe true
-      Files.exists(sdoSetDir.resolve("dataset/AMD")) shouldBe true
-      Files.exists(sdoSetDir.resolve("dataset/cfg.json")) shouldBe true
-      Files.exists(sdoSetDir.resolve("dataset/fo.xml")) shouldBe true
-      Files.exists(sdoSetDir.resolve("dataset/PRSQL")) shouldBe true
+      sdoSetDir.resolve("dataset/EMD").toFile should exist
+      sdoSetDir.resolve("dataset/AMD").toFile should exist
+      sdoSetDir.resolve("dataset/cfg.json").toFile should exist
+      sdoSetDir.resolve("dataset/fo.xml").toFile should exist
+      sdoSetDir.resolve("dataset/PRSQL").toFile should exist
     }
 
     numberOfFilesInDir(puddingsDir.resolve("minimal")) shouldBe 1

@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import java.net.URL
-
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import org.json4s.JsonAST.JValue

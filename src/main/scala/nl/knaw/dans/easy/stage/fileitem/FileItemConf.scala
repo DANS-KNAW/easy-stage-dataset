@@ -18,9 +18,9 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.fileitem.FileItemConf._
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
-import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.lib.Version
 import org.rogach.scallop._
 import org.slf4j.LoggerFactory

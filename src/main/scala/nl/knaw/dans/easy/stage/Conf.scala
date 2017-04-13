@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.{URI, URL}
+import java.net.URI
 import java.nio.file.{Path, Paths}
 import java.util.regex.Pattern
 
@@ -86,17 +86,16 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   validateFileExists(deposit)
   verify()
 
-  def getDsLocationMappings(): Map[Path, URI] = {
-    if(dsLocationMappings.isSupplied) readDsLocationMappings(dsLocationMappings()).get
-    else Map()
+  def getDsLocationMappings: Map[Path, URI] = {
+    dsLocationMappings.map(readDsLocationMappings(_).get).getOrElse(Map.empty)
   }
 
-  val dsLocationsFileLinePattern = Pattern.compile("""^(.*)\s+(.*)$""")
+  private val dsLocationsFileLinePattern = Pattern.compile("""^(.*)\s+(.*)$""")
 
   private def readDsLocationMappings(file: File) = Try {
     resource.managed(Source.fromFile(file, "UTF-8")).acquireAndGet (
-      _.getLines().toList.filter(_.nonEmpty).map {
-        line =>
+      _.getLines().collect {
+        case line if line.nonEmpty =>
           val m = dsLocationsFileLinePattern.matcher(line)
           if (m.find()) (Paths.get(m.group(1).trim), new URI(m.group(2).trim))
           else throw new IllegalArgumentException(s"Invalid line in input: '$line'")

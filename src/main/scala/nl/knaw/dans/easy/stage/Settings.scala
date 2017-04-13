@@ -17,16 +17,12 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 import java.net.{URI, URL}
-import java.nio.file.{Path, Paths}
-import java.util.regex.Pattern
+import java.nio.file.Path
 
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
-
-import scala.io.Source
-import scala.util.Try
 
 case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = new DateTime(),
@@ -79,12 +75,10 @@ object Settings {
       urn = conf.urn.toOption,
       doi = conf.doi.toOption,
       otherAccessDoi = conf.otherAccessDOI(),
-      fileUris = conf.getDsLocationMappings(),
+      fileUris = conf.getDsLocationMappings,
       disciplines = Fedora.disciplines)
   }
 
   private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
   private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
-
-
 }

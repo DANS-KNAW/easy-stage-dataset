@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.{ByteArrayInputStream, FileInputStream}
+import java.io.ByteArrayInputStream
 
 import nl.knaw.dans.easy.stage.fileitem.FileItemConf
 import org.scalatest.{FlatSpec, Matchers}

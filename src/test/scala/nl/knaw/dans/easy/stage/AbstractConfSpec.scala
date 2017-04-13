@@ -15,12 +15,13 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{File, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, File}
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
+
 import scala.collection.JavaConverters._
 
 abstract class AbstractConfSpec extends FlatSpec with Matchers {

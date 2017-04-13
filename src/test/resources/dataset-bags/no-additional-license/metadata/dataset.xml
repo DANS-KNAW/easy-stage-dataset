@@ -1,9 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ddm:DDM xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/"
-         xmlns:dc="http://purl.org/dc/elements/1.1/"
-         xmlns:dcterms="http://purl.org/dc/terms/"
-         xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<ddm:DDM
+        xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/"
+>
     <ddm:profile>
         <dc:title>Dataset with files but no additional license</dc:title>
         <dc:description>A dataset with some files but no additional license</dc:description>

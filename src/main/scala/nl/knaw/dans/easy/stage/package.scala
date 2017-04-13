@@ -19,7 +19,7 @@ import java.net.{HttpURLConnection, URL}
 
 import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
 
-import scala.util.{Failure, Success, Try}
+import scala.util.Try
 
 package object stage {
 

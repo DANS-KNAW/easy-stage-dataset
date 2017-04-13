@@ -17,8 +17,8 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
+import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
 
 import scala.sys.error
 import scala.util.Try

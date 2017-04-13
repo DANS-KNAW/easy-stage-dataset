@@ -22,9 +22,9 @@ import nl.knaw.dans.common.lang.dataset.AccessCategory._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
-import org.apache.commons.io.FileUtils.{deleteDirectory, readFileToString}
-import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
+import org.apache.commons.io.FileUtils.readFileToString
 import org.scalatest.Inside._
+import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
 
 import scala.util.{Failure, Success}
 
@@ -53,7 +53,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     Files.createDirectories(dataDir)
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    Files.exists(sdoSetDir) shouldBe false
+    sdoSetDir.toFile shouldNot exist
   }
 
   it should "stumble over a manifest-sha1.txt with too many fields on a line" in {
@@ -64,9 +64,13 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     Files.createDirectories(dataDir)
     FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile,"a b c")
 
-    createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS).failed.get should
-      have message "Invalid line in manifest-sha1.txt: a b c"
-    Files.exists(sdoSetDir) shouldBe false
+    val result = createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS)
+    result shouldBe a[Failure[_]]
+    inside(result) {
+      case Failure(e) => e should have message "Invalid line in manifest-sha1.txt: a b c"
+    }
+
+    sdoSetDir.toFile shouldNot exist
   }
 
   it should "create file rights computed from dataset access rights by default" in {

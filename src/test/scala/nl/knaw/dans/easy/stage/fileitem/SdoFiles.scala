@@ -17,11 +17,10 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
-import org.apache.commons.io.FileUtils.readFileToString
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
+import org.apache.commons.io.FileUtils.readFileToString
 import org.json4s.native._
 
-import scala.io.Source
 import scala.reflect.io.Path
 
 /**

@@ -15,8 +15,8 @@
  */
 package nl.knaw.dans.easy.stage
 
-import org.scalatest.{FlatSpec, Matchers}
 import nl.knaw.dans.easy.stage.dataset.AdditionalLicense._
+import org.scalatest.{FlatSpec, Matchers}
 
 class AdditionalLicenseSpec extends FlatSpec with Matchers {
 
