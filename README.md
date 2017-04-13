@@ -39,22 +39,22 @@ ARGUMENTS for easy-stage-dataset
 --------------------------------
 
     -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
-        -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
-        -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
-                                            in this file must contain a mapping. The path is separated from the URI
-                                            by one ore more whitespaces. If more groups of whitespaces are
-                                            encountered, they are considered part of the path.
-        -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
-        -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
-            --help                          Show help message
-            --version                       Show version of this program
-    
-       trailing arguments:
-        EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
-                                               metadata for EASY to be staged for ingest into Fedora
-        staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
-                                               does not exist)
- 
+    -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
+    -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
+                                        in this file must contain a mapping. The path is separated from the URI
+                                        by one ore more whitespaces. If more groups of whitespaces are
+                                        encountered, they are considered part of the path.
+    -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
+    -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
+        --help                          Show help message
+        --version                       Show version of this program
+
+   trailing arguments:
+    EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
+                                           metadata for EASY to be staged for ingest into Fedora
+    staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
+                                           does not exist)
+
 
 ARGUMENTS for easy-stage-fileItem
 ---------------------------------
