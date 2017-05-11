@@ -133,7 +133,6 @@ object EasyStageDataset {
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
-      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map { p => URLEncoder.encode(p.toString, "UTF-8") }.toArray: _*)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
