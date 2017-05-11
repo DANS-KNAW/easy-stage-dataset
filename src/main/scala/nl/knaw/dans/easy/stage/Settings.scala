@@ -16,9 +16,10 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.{URI, URL}
+import java.net.{ URI, URL }
 import java.nio.file.Path
 
+import com.yourmediashelf.fedora.client.FedoraCredentials
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
@@ -39,30 +40,35 @@ case class Settings(ownerId: String,
 
 object Settings {
 
-  /** backward compatible call for EasyIngestFlow */
-  def apply(
-             submissionTimestamp: String,
-             depositDir: File,
-             sdoSetDir: File,
-             urn: String,
-             doi: String,
-             otherAccessDoi: Boolean,
-             fedoraUser: String,
-             fedoraPassword: String,
-             fedoraUrl: URL) = {
-    Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
+  /** for EasyIngestFlow */
+  def apply(depositorId: String,
+            submissionTimestamp: DateTime,
+            bagDir: File,
+            sdoSetDir: File,
+            urn: Option[String],
+            doi: Option[String],
+            otherAccessDoi: Boolean,
+            fileUris: Map[Path, URI],
+            credentials: FedoraCredentials
+           ): Settings = {
+    Fedora.setFedoraConnectionSettings(
+      credentials.getBaseUrl.toString,
+      credentials.getUsername,
+      credentials.getPassword
+    )
     new Settings(
-      ownerId = getUserId(depositDir),
-      submissionTimestamp = DateTime.parse(submissionTimestamp),
-      bagitDir = getBagDir(depositDir).get,
+      ownerId = depositorId,
+      submissionTimestamp = submissionTimestamp,
+      bagitDir = bagDir,
       sdoSetDir = sdoSetDir,
-      urn = Some(urn),
-      doi = Some(doi),
+      urn = urn,
+      doi = doi,
       otherAccessDoi = otherAccessDoi,
+      fileUris = fileUris,
       disciplines = Fedora.disciplines)
   }
 
-  def apply(conf: Conf, props: PropertiesConfiguration) = {
+  def apply(conf: Conf, props: PropertiesConfiguration): Settings = {
     Fedora.setFedoraConnectionSettings(
       new URL(props.getString("fcrepo.url")).toString,// detour for early validation
       props.getString("fcrepo.user"),
