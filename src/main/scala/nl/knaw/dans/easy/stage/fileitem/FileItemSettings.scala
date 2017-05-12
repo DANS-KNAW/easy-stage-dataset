@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,16 +18,14 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
-import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
+import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Fedora
-import nl.knaw.dans.easy.stage.lib.Props.props
 
 case class FileItemSettings (sdoSetDir: Option[File],
                              file: Option[File] = None,
                              datasetId: Option[String],
                              datastreamLocation: Option[URL] = None,
-                             unsetUrl: URL = new URL(props.getString("redirect-unset-url")),
                              size: Option[Long] = None,
                              ownerId: Option[String] = None,
                              pathInDataset: Option[File],
@@ -109,6 +107,6 @@ object FileItemSettings {
       format = conf.format.toOption,
       subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
     ) {
-      override def toString = conf.toString
+      override def toString: String = conf.toString
     }
 }

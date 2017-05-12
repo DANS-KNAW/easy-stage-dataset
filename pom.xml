@@ -7,7 +7,7 @@
     you may not use this file except in compliance with the License.
     You may obtain a copy of the License at
 
-            http://www.apache.org/licenses/LICENSE-2.0
+    http://www.apache.org/licenses/LICENSE-2.0
 
     Unless required by applicable law or agreed to in writing, software
     distributed under the License is distributed on an "AS IS" BASIS,
@@ -21,7 +21,7 @@
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-scala-prototype</artifactId>
-        <version>1.35</version>
+        <version>1.43</version>
     </parent>
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset</artifactId>
@@ -83,6 +83,19 @@
         <dependency>
             <groupId>com.yourmediashelf.fedora.client</groupId>
             <artifactId>fedora-client-messaging</artifactId>
+            <exclusions>
+                <!--
+                    To get rid of build warnings complaining about not being able to build parent project.
+                    According to the following post this dependency is only needed for Java 5
+                    http://stackoverflow.com/questions/32794791/maven-build-error-cannot-find-parent-org-apache-geronimo-genesis-configconfig#33055632
+
+                    TODO: move this up to dans-parent
+                -->
+                <exclusion>
+                    <groupId>org.apache.geronimo.specs</groupId>
+                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -102,6 +115,14 @@
         <dependency>
             <groupId>nl.knaw.dans.lib</groupId>
             <artifactId>dans-scala-lib</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.jsuereth</groupId>
+            <artifactId>scala-arm_2.11</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>gov.loc</groupId>
+            <artifactId>bagit</artifactId>
         </dependency>
     </dependencies>
     <repositories>

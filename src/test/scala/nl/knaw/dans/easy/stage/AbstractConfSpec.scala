@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,12 +15,13 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{File, ByteArrayOutputStream}
+import java.io.{ByteArrayOutputStream, File}
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
-import org.scalatest.{Matchers, FlatSpec}
+import org.scalatest.{FlatSpec, Matchers}
+
 import scala.collection.JavaConverters._
 
 abstract class AbstractConfSpec extends FlatSpec with Matchers {

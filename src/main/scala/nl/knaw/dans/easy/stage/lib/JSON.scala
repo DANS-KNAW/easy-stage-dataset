@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 package nl.knaw.dans.easy.stage.lib
-
-import java.net.URL
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
@@ -31,7 +29,6 @@ object JSON {
   val HAS_MODEL = "info:fedora/fedora-system:def/model#hasModel"
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
-  val STORED_IN_DARKARCHIVE = "http://dans.knaw.nl/ontologies/relations#storedInDarkArchive"
 
   def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String]= Try {
     def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
@@ -69,8 +66,7 @@ object JSON {
         ("predicate" -> HAS_PID) ~ ("object" -> s.urn) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
-        ("predicate" -> STORED_IN_DARKARCHIVE) ~ ("object" -> "true") ~ ("isLiteral" -> true)
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1")
         ) ++ audiences.map(audience =>
           ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${s.disciplines(audience)}"))
       ))
@@ -78,8 +74,7 @@ object JSON {
     pretty(render(sdoCfg(audiences)))
   }
 
-  def createFileCfg(dsLocation: URL,
-                    mimeType: String,
+  def createFileCfg(mimeType: String,
                     parent: (String,String),
                     subordinate: (String,String))(implicit settings: FileItemSettings): String = {
     def createJSON(dataJSON: JValue) = {
@@ -99,7 +94,7 @@ object JSON {
 
     def redirectFileDatastreamJson = {
       createJSON(
-        ("dsLocation" -> dsLocation.toURI.toASCIIString) ~
+        ("dsLocation" -> settings.datastreamLocation.get.toURI.toASCIIString) ~
           ("dsID" -> "EASY_FILE") ~
           ("controlGroup" -> "R") ~
           ("mimeType" -> mimeType)

@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -70,54 +70,6 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
   }
 
-  "run" should "create expected file item SDOs with 'unset' url when neither file-location nor datastream-location provided" in {
-    EasyStageFileItem.run(new FileItemSettings(
-      ownerId = Some("testOwner"),
-      sdoSetDir = Some(new File("target/testSDO")),
-      size = Some(1),
-      datasetId = Some("easy-dataset:1"),
-      pathInDataset = Some(new File("original/newSub/file.mpeg")),
-      format = Some("video/mpeg"),
-      subordinate = "object" -> s"info:fedora/easy-dataset:1",
-      easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
-        "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
-      )),
-      fedora = mockFedora(HashMap(
-        "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-      )),
-      accessibleTo = FileAccessRights.NONE,
-      visibleTo = FileAccessRights.ANONYMOUS
-    ))
-
-    // comparing with sample output
-
-    // TODO sdoDir "newSub" should have been "original_newSub" to avoid potential conflicts !!!
-    val actualSdoSet = Path("target/testSDO/easy-dataset_1")
-    val expectedSdoSet = Path("src/test/resources/expectedFileItemSDOs")
-    getRelativeFiles(actualSdoSet) shouldBe getRelativeFiles(expectedSdoSet)
-    actualSdoSet.walk.toSeq.map(_.path).sortBy(s => s).zip(
-      expectedSdoSet.walk.toSeq.map(_.path).sortBy(s => s)
-    ).foreach {
-      case (actual, expected) if actual.endsWith("cfg.json") =>
-        readCfgJson(expected) shouldBe readCfgJson(actual)
-      case (actual, expected) if actual.endsWith("fo.xml") =>
-        readDatastreamFoxml(actual) shouldBe readDatastreamFoxml(expected)
-      case (actual, expected) => // metadata of a file or folder
-        readFlatXml(actual) shouldBe readFlatXml(expected)
-    }
-
-    // a less verbose check reworded
-
-    readDatastreamFoxml("target/testSDO/easy-dataset_1/newSub/fo.xml") shouldBe Set(
-      "dc_title" -> "original/newSub",
-      "prop_state" -> "Active",
-      "prop_label" -> "original/newSub",
-      "prop_ownerId" -> "testOwner")
-
-    // clean up
-
-    Path("target/testSDO").deleteRecursively()
-  }
 
   it should "create expected file item SDOs in the multi-deposit use case (i.e. when file-location is provided)" in {
     EasyStageFileItem.run(new FileItemSettings(

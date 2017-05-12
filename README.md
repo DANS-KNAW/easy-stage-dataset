@@ -8,8 +8,8 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -m ] \
-                          <EASY-deposit> <staged-digital-object-set>
+    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] \
+                              <EASY-deposit> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
 
@@ -38,23 +38,23 @@ the command `easy-stage-file-item`. It executes step 3 to stage one or more file
 ARGUMENTS for easy-stage-dataset
 --------------------------------
 
-    -d, --doi  <arg>                                The DOI to assign to the new dataset in EASY
-    -o, --doi-is-other-access-doi                   Stage the provided DOI as an "other access DOI"
-    -b, --file-data-redirect-base-url  <arg>        Base URL from which redirect URLs to the file items in this
-                                                    dataset will be constructed
-    -r, --stage-file-data-as-redirect-datastreams   Stage file items so that the content of file data will NOT
-                                                    be stored in managed Fedora Storage
-    -t, --submission-timestamp  <arg>               Timestamp in ISO8601 format
-    -u, --urn  <arg>                                The URN to assign to the new dataset in EASY
-        --help                                      Show help message
-        --version                                   Show version of this program
+    -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
+    -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
+    -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
+                                        in this file must contain a mapping. The path is separated from the URI
+                                        by one ore more whitespaces. If more groups of whitespaces are
+                                        encountered, they are considered part of the path.
+    -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
+    -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
+        --help                          Show help message
+        --version                       Show version of this program
 
-    trailing arguments:
-     EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
-                                            metadata for EASY to be staged for ingest into Fedora
-     staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
-                                            does not exist)
- 
+   trailing arguments:
+    EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
+                                           metadata for EASY to be staged for ingest into Fedora
+    staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
+                                           does not exist)
+
 
 ARGUMENTS for easy-stage-fileItem
 ---------------------------------

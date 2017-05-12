@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -114,11 +114,12 @@ object EasyStageFileItem {
 
 
   def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
+    require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
     log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
       mime         <- Try { s.format.get }
-      cfgContent   <- Try { JSON.createFileCfg(s.datastreamLocation.getOrElse(s.unsetUrl), mime, parent, s.subordinate) }
+      cfgContent   <- Try { JSON.createFileCfg(mime, parent, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
       foxmlContent  = getFileFOXML(title, s.ownerId.get, mime)

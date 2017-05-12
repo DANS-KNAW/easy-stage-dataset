@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,8 +16,10 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.URL
+import java.net.{ URI, URL }
+import java.nio.file.Path
 
+import com.yourmediashelf.fedora.client.FedoraCredentials
 import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
@@ -30,8 +32,7 @@ case class Settings(ownerId: String,
                     urn: Option[String] = None,
                     doi: Option[String] = None,
                     otherAccessDoi: Boolean = false,
-                    stageFileDataAsRedirectDatastreams: Boolean = false,
-                    fileDataRedirectBaseUrl: Option[URL] = None,
+                    fileUris: Map[Path, URI] = Map(),
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -39,34 +40,35 @@ case class Settings(ownerId: String,
 
 object Settings {
 
-  /** backward compatible call for EasyIngestFlow */
-  def apply(
-             submissionTimestamp: String,
-             depositDir: File,
-             sdoSetDir: File,
-             urn: String,
-             doi: String,
-             otherAccessDoi: Boolean,
-             stageFileDataAsRedirectDatastreams: Boolean,
-             fileDataRedirectBaseUrl: Option[URL],
-             fedoraUser: String,
-             fedoraPassword: String,
-             fedoraUrl: URL) = {
-    Fedora.setFedoraConnectionSettings(fedoraUrl.toString, fedoraUser, fedoraPassword)
+  /** for EasyIngestFlow */
+  def apply(depositorId: String,
+            submissionTimestamp: DateTime,
+            bagDir: File,
+            sdoSetDir: File,
+            urn: Option[String],
+            doi: Option[String],
+            otherAccessDoi: Boolean,
+            fileUris: Map[Path, URI],
+            credentials: FedoraCredentials
+           ): Settings = {
+    Fedora.setFedoraConnectionSettings(
+      credentials.getBaseUrl.toString,
+      credentials.getUsername,
+      credentials.getPassword
+    )
     new Settings(
-      ownerId = getUserId(depositDir),
-      submissionTimestamp = DateTime.parse(submissionTimestamp),
-      bagitDir = getBagDir(depositDir).get,
+      ownerId = depositorId,
+      submissionTimestamp = submissionTimestamp,
+      bagitDir = bagDir,
       sdoSetDir = sdoSetDir,
-      urn = Some(urn),
-      doi = Some(doi),
+      urn = urn,
+      doi = doi,
       otherAccessDoi = otherAccessDoi,
-      stageFileDataAsRedirectDatastreams = stageFileDataAsRedirectDatastreams,
-      fileDataRedirectBaseUrl = fileDataRedirectBaseUrl,
+      fileUris = fileUris,
       disciplines = Fedora.disciplines)
   }
 
-  def apply(conf: Conf, props: PropertiesConfiguration) = {
+  def apply(conf: Conf, props: PropertiesConfiguration): Settings = {
     Fedora.setFedoraConnectionSettings(
       new URL(props.getString("fcrepo.url")).toString,// detour for early validation
       props.getString("fcrepo.user"),
@@ -79,12 +81,10 @@ object Settings {
       urn = conf.urn.toOption,
       doi = conf.doi.toOption,
       otherAccessDoi = conf.otherAccessDOI(),
-      stageFileDataAsRedirectDatastreams = conf.stageFileDataAsRedirectDatastreams(),
-      fileDataRedirectBaseUrl = conf.fileDataRedirectBaseUrl.toOption,
+      fileUris = conf.getDsLocationMappings,
       disciplines = Fedora.disciplines)
   }
 
   private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
   private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
-
 }

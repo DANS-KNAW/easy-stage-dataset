@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ddm:DDM 
-xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2012/11/ddm.xsd" xmlns:abr="http://www.den.nl/standaard/166/Archeologisch-Basisregister/" xmlns:narcis="http://easy.dans.knaw.nl/schemas/vocab/narcis-type/" xmlns:dcx-gml="http://easy.dans.knaw.nl/schemas/dcx/gml/" xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/" xmlns:dcx="http://easy.dans.knaw.nl/schemas/dcx/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dct="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/">
+<ddm:DDM
+        xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2012/11/ddm.xsd"
+        xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
+        xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:ddm="http://easy.dans.knaw.nl/schemas/md/ddm/">
   <ddm:profile>
     <dc:title>Reis naar Centaur-planetoïde</dc:title>
     <dc:title>Trip to Centaur asteroid</dc:title>

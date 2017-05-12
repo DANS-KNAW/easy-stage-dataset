@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *         http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -16,9 +16,10 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.net.{URL, URLEncoder}
+import java.net.URLEncoder
 import java.nio.file.{Path, Paths}
 
+import gov.loc.repository.bagit.BagFactory
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
@@ -40,18 +41,36 @@ import scala.xml.NodeSeq
 
 object EasyStageDataset {
   val log: Logger = LoggerFactory.getLogger(getClass)
+  private val bagFactory = new BagFactory
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    implicit val s = Settings(new Conf(args),props)
+    implicit val s = Settings(new Conf(args), props)
     run match {
       case Success(_) => log.info("Staging SUCCESS")
       case Failure(t) => log.error("Staging FAIL", t)
     }
   }
 
-  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
+  // TODO: candidate for a possible dans-bagit-lib
+  /**
+   * Checks that all paths in `files` are part of the payload of the bag in `bagDir`. This means that they must be in at least one payload manifest.
+   *
+   * @param files the files to check
+   * @param bagDir the directory containing the bag
+   * @return Success if all files were part, otherwise Failure
+   */
+  def checkFilesInBag(files: Set[Path], bagDir: Path): Try[Unit] = {
+    resource.managed(bagFactory.createBag(bagDir.toFile, BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)).acquireAndGet {
+      b =>
+        val filesInBag = b.getPayloadManifests.asScala.map(_.keySet.asScala).reduce(_ ++ _).map(Paths.get(_))
+        val filesNotInBag = files.diff(filesInBag)
+        if (filesNotInBag.isEmpty) Success(())
+        else Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $filesNotInBag"))
+    }
+  }
 
+  def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
@@ -76,6 +95,7 @@ object EasyStageDataset {
 
     log.debug(s"Settings = $s")
     for {
+      _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()
@@ -108,10 +128,11 @@ object EasyStageDataset {
       Try { dir.listFiles().toList }.flatMap(_.map(visit).collectResults.map(_ => ()))
     }
 
+    def getBagRelativePath(path: Path): Path = s.bagitDir.toPath.relativize(path)
+
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
       log.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
-      val urlEncodedDatasetRelativePath = Paths.get("", datasetRelativePath.asScala.map {p => URLEncoder.encode(p.toString, "UTF-8") }.toArray :_*)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
         bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
@@ -121,9 +142,9 @@ object EasyStageDataset {
         fileAccessRights <- getFileAccessRights(fileMetadata)
         fis = FileItemSettings(
           sdoSetDir = s.sdoSetDir,
-          file = if (s.stageFileDataAsRedirectDatastreams) None else Some(file),
-          datastreamLocation = if (s.stageFileDataAsRedirectDatastreams) s.fileDataRedirectBaseUrl.map(baseUrl => new URL(baseUrl, urlEncodedDatasetRelativePath.toString))
-                               else None,
+          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None
+                 else Some(file),
+          datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
           ownerId = s.ownerId,
           pathInDataset = new File(datasetRelativePath.toString),
           size = Some(file.length),
