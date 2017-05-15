@@ -8,6 +8,7 @@
         <dc:description>A dataset with some files but no additional license</dc:description>
         <dc:creator>A Creator</dc:creator>
         <ddm:created>2015</ddm:created>
+        <ddm:available>2016</ddm:available>
         <ddm:audience>D10000</ddm:audience>
         <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
     </ddm:profile>
