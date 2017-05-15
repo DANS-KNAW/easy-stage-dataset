@@ -54,6 +54,7 @@ class EmdSpec extends FlatSpec with Matchers {
         <dc:description>Minimal description</dc:description>
         <dc:creator>A Creator</dc:creator>
         <ddm:created>2015</ddm:created>
+        <ddm:available>2015</ddm:available>
         <ddm:audience>D10000</ddm:audience>
         <ddm:accessRights>invalid</ddm:accessRights>
       </ddm:profile>

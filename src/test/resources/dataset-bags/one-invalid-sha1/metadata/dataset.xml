@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ddm:DDM
-        xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ http://easy.dans.knaw.nl/schemas/md/2012/11/ddm.xsd"
+        xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/md/ddm/ https://easy.dans.knaw.nl/schemas/md/ddm/ddm.xsd"
         xmlns:dcx-dai="http://easy.dans.knaw.nl/schemas/dcx/dai/"
         xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dc="http://purl.org/dc/elements/1.1/"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -21,6 +21,7 @@
       </dcx-dai:author>
     </dcx-dai:creatorDetails>
     <ddm:created>2015-05-19</ddm:created>
+    <ddm:available>2016-10-19</ddm:available>
     <ddm:audience>D30000</ddm:audience>
     <ddm:accessRights>OPEN_ACCESS</ddm:accessRights>
   </ddm:profile>
