@@ -17,19 +17,23 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 import java.net.URL
+import java.nio.file.Paths
 
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.fileitem.SdoFiles._
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
-import org.scalatest.{FlatSpec, Matchers}
+import org.apache.commons.io.FileUtils.{ deleteQuietly, write }
+import org.scalatest.{ FlatSpec, Matchers, OneInstancePerTest }
 
 import scala.collection.immutable.HashMap
 import scala.reflect.io.Path
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
-class EasyStageFileItemSpec extends FlatSpec with Matchers {
-  System.setProperty("app.home", "src/main/assembly/dist")
+class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTest {
+
+  private val testDir = Paths.get("target/test", getClass.getSimpleName)
+  deleteQuietly(testDir.toFile)
 
   "getItemsToStage" should "return list of SDO with parent relations that are internally consistent" in {
     getItemsToStage(Seq("path", "to", "new", "file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe
@@ -65,13 +69,14 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
   }
 
   "main" should "report a configuration problem" in {
+    System.setProperty("app.home", "src/main/assembly/dist")
     val args = "src/test/resources/example.csv target/testSDO".split(" ")
     the[Exception] thrownBy EasyStageFileItem.main(args) should
       have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
   }
 
 
-  it should "create expected file item SDOs in the multi-deposit use case (i.e. when file-location is provided)" in {
+  "run" should "create expected file item SDOs in the multi-deposit use case (i.e. when file-location is provided)" in {
     EasyStageFileItem.run(new FileItemSettings(
       ownerId = Some("testOwner"),
       sdoSetDir = Some(new File("target/testSDO")),
@@ -179,6 +184,70 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers {
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS
     )).get should have message "easy-dataset:1 does not exist in repository"
+  }
+
+  it should "not overwrite files" in {
+    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/some.csv").toFile,
+      s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
+         |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
+         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir2/some.txt"""".stripMargin)
+
+    runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
+      "easy-dataset:1 data/some.txt" -> Success("original", "easy-folder:1"),
+      "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
+    )))
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "data_some_txt", "data")
+  }
+
+  it should "not overwrite files with same names in root and sub folder" in {
+
+    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/some.csv").toFile,
+      s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
+         |easy-dataset:1,8521,text/plain,"dir1/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
+         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
+
+    runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
+      "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),
+      "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
+    )))
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "dir1_some_txt", "data")
+  }
+
+  it should "not overwrite files with same names in sibling folders" in {
+
+    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/some.csv").toFile,
+      s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
+         |easy-dataset:1,8521,text/plain,"dir1/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
+         |easy-dataset:1,8585,text/plain,"dir2/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir2/some.txt"""".stripMargin)
+
+    runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
+      "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),
+      "easy-dataset:1 dir2/some.txt" -> Success("dir2", "easy-folder:2")
+    )))
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("dir1_some_txt", "dir2_some_txt")
+  }
+
+  private def runForEachCsvRow(filesAndFolders: EasyFilesAndFolders,
+                               fedora: Fedora = mockFedora(HashMap(
+                                 "pid~easy-dataset:1" -> Seq("easy-dataset:1")
+                               )),
+                               args: Array[String] = Array(
+                                 "--csv-file",
+                                 s"$testDir/to-be-staged/some.csv",
+                                 s"$testDir/SDO"
+                               )) = {
+    for {
+      fileItemSettings <- getSettingsRows(new FileItemConf(args)).get.map(_.copy(
+        fedora = fedora,
+        easyFilesAndFolders = filesAndFolders
+      ))
+    } EasyStageFileItem.run(fileItemSettings) shouldBe a[Success[_]]
   }
 
   "createFileSdo" should "use title (if exactly one provided) instead of file name" in {

@@ -90,20 +90,28 @@ object EasyStageFileItem {
     val file = s.pathInDataset.get
     s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
       .map { case (parentPath, parentId) =>
-        log.debug(s"Parent in repository: $parentId $parentPath")
         val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
+        log.debug(s"Parent in repository: file=$file id=$parentId path=$parentPath items=[${newItems.mkString(",")}]")
         (parentId, parentPath, newItems.toSeq)
       }
   }
 
-  def getItemsToStage(pathElements: Seq[String], datasetSdoSet: File, existingFolderId: String): Seq[(File, String, (String, String))] = {
+  def getItemsToStage(pathElements: Seq[String],
+                      datasetSdoSet: File,
+                      existingFolderId: String
+                     ): Seq[(File, String, (String, String))] = {
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
       items match {
-        case s@Seq() => s :+ (new File(datasetSdoSet, toSdoName(path)), path, "object" -> s"info:fedora/$existingFolderId")
+        case s@Seq() =>
+          val sdoDir = new File(datasetSdoSet, toSdoName(path))
+          log.debug(s"$sdoDir $path")
+          s :+ (sdoDir, path, "object" -> s"info:fedora/$existingFolderId")
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          seq :+ (new File(datasetSdoSet, toSdoName(path)), path, "objectSDO" -> parentFolderSdoName)
+          val sdoDir = new File(datasetSdoSet, toSdoName(path))
+          log.debug(s"$sdoDir $path")
+          seq :+ (sdoDir, path, "objectSDO" -> parentFolderSdoName)
       }
     })
   }
