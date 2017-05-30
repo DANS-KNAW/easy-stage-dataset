@@ -31,11 +31,15 @@ package object stage {
 
   type ObjectKey = String
 
+  type PathInDataset = String
+
   /**
    * ObjectKey is a SDO folder name if ObjectType == "objectSDO"
    * ObjectKey is a URI (info:fedora/easy-f...:...) if ObjectType == "object"
    */
   type RelationObject = (ObjectType, ObjectKey)
+
+  type ExistingAncestor = (PathInDataset, ObjectKey)
 
   def canConnect(urls: Array[String]): Boolean = Try {
     urls.map { url =>

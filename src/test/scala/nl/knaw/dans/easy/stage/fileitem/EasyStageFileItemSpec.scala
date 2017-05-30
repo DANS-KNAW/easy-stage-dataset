@@ -97,19 +97,23 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
       visibleTo = FileAccessRights.ANONYMOUS
     ))
 
-    // comparing with sample output
-
-    // TODO sdoDir "newSub" should have been "original_newSub" to avoid potential conflicts !!!
     val actualSdoSet = Path("target/testSDO/easy-dataset_1")
     val expectedSdoSet = Path("src/test/resources/expectedFileItemSDOsWithMultiDeposit")
-    getRelativeFiles(actualSdoSet) shouldBe getRelativeFiles(expectedSdoSet)
+    getRelativeFiles(actualSdoSet) should contain only (
+      "newSub/EASY_ITEM_CONTAINER_MD",
+      "newSub/cfg.json",
+      "original_newSub_file_mpeg/fo.xml",
+      "newSub/fo.xml",
+      "original_newSub_file_mpeg/EASY_FILE_METADATA",
+      "original_newSub_file_mpeg/cfg.json"
+    )
     actualSdoSet.walk.toSeq.map(_.path).sortBy(s => s).zip(
       expectedSdoSet.walk.toSeq.map(_.path).sortBy(s => s)
     ).foreach {
       case (actual, expected) if actual.endsWith("cfg.json") =>
-        readCfgJson(expected) shouldBe readCfgJson(actual)
+        readCfgJson(actual) shouldBe readCfgJson(expected)
       case (actual, expected) if actual.endsWith("fo.xml") =>
-        readDatastreamFoxml(actual) shouldBe readDatastreamFoxml(expected)
+        readDatastreamFoxml(expected) shouldBe readDatastreamFoxml(actual)
       case (actual, expected) => // metadata of a file or folder
         readFlatXml(actual) shouldBe readFlatXml(expected)
     }
@@ -204,18 +208,18 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
 
   it should "not overwrite files with same names in root and sub folder" in {
 
-    write(testDir.resolve("to-be-staged/data/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/da/ta/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
-         |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/data/some.txt"
+         |easy-dataset:1,8521,text/plain,"da/ta/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/da/ta/some.txt"
          |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
-      "easy-dataset:1 data/some.txt" -> Success("data", "easy-folder:1"),
+      "easy-dataset:1 da/ta/some.txt" -> Success("da/ta", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "data_some_txt", "data")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "da_ta_some_txt")
   }
 
   it should "not overwrite files with same names in sibling folders" in {

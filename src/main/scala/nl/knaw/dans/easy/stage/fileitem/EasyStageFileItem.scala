@@ -74,20 +74,23 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       datasetId        <- getValidDatasetId(s)
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
-      (parentId, parentPath, newElements)  <- getPathElements()
+      existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(s.pathInDataset.get, s.datasetId.get)
+      (parentId,
+      parentPath,
+      newElements)     <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
       _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
-      _                <- items.last match {case (sdo, _, parentRelation) => createFileSdo(sdo, parentRelation) }
+      _                <- createFileSdoForExistingDataset(datasetSdoSetDir, existingAncestor)
     } yield ()
   }
 
-  def relPath(parentPath: String, path: String): String = {
+  private def relPath(parentPath: String, path: String): String = {
     trace(parentPath, path)
     if (parentPath.isEmpty) new File(path).toString // prevent a leading slash
     else new File(parentPath, path).toString
   }
 
-  def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
+  private def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
     s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
       .map { case (parentPath, parentId) =>
@@ -118,21 +121,35 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     })
   }
 
-  def getPaths(path: Seq[String]): Seq[String] = {
+  private def getPaths(path: Seq[String]): Seq[String] = {
     trace(path)
     if(path.isEmpty) Seq()
     else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
   }
 
+  private def createFileSdoForExistingDataset(datasetSdoSetDir: File,
+                                              existingAncestor: ExistingAncestor
+                                             )(implicit s: FileItemSettings): Try[Unit] = {
+    val parentPath = Option(s.pathInDataset.get.getParent).getOrElse("")
+    val ancestor = existingAncestor match {
+      case ((`parentPath`, fedoraId)) =>
+        fedoraId
+      case _ =>
+        toSdoName(parentPath)
+    }
+    val sdoDir = new File(datasetSdoSetDir, toSdoName(s.pathInDataset.get.toString))
+    val ancestorType = if (ancestor.startsWith("info:fedora")) "object"else "objectSDO"
+    createFileSdo(sdoDir, ancestorType -> ancestor)
+  }
 
-  def createFileSdo(sdoDir: File, parent: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
-    trace(sdoDir, parent)
+  def createFileSdo(sdoDir: File, parentRelation: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
+    trace(sdoDir, parentRelation)
     require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
     log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
       mime         <- Try { s.format.get }
-      cfgContent   <- Try { JSON.createFileCfg(mime, parent, s.subordinate) }
+      cfgContent   <- Try { JSON.createFileCfg(mime, parentRelation, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
       foxmlContent  = getFileFOXML(title, s.ownerId.get, mime)
