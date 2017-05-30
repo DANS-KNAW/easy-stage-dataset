@@ -27,6 +27,16 @@ package object stage {
 
   val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
 
+  type ObjectType = String
+
+  type ObjectKey = String
+
+  /**
+   * ObjectKey is a SDO folder name if ObjectType == "objectSDO"
+   * ObjectKey is a URI (info:fedora/easy-f...:...) if ObjectType == "object"
+   */
+  type RelationObject = (ObjectType, ObjectKey)
+
   def canConnect(urls: Array[String]): Boolean = Try {
     urls.map { url =>
       new URL(url).openConnection match {

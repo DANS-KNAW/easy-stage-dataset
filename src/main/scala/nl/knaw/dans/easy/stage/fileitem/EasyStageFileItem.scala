@@ -19,16 +19,16 @@ import java.io.File
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
-import nl.knaw.dans.easy.stage.lib.FOXML.{getDirFOXML, getFileFOXML}
+import nl.knaw.dans.easy.stage.lib.FOXML.{ getDirFOXML, getFileFOXML }
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.easy.stage.lib._
+import nl.knaw.dans.easy.stage._
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
-object EasyStageFileItem {
-  val log: Logger = LoggerFactory.getLogger(getClass)
+object EasyStageFileItem extends DebugEnhancedLogging {
 
   def main(args: Array[String]) {
     val props = if (args(0) != "--help") {
@@ -69,22 +69,23 @@ object EasyStageFileItem {
     }
 
   def run(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"executing: $s")
+    trace(s)
     for {
       datasetId        <- getValidDatasetId(s)
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
       (parentId, parentPath, newElements)  <- getPathElements()
       items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
-      _                = log.debug(s"Items to stage: $items")
       _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
       _                <- items.last match {case (sdo, _, parentRelation) => createFileSdo(sdo, parentRelation) }
     } yield ()
   }
 
-  def relPath(parentPath: String, path: String): String =
+  def relPath(parentPath: String, path: String): String = {
+    trace(parentPath, path)
     if (parentPath.isEmpty) new File(path).toString // prevent a leading slash
     else new File(parentPath, path).toString
+  }
 
   def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
     val file = s.pathInDataset.get
@@ -99,9 +100,10 @@ object EasyStageFileItem {
   def getItemsToStage(pathElements: Seq[String],
                       datasetSdoSet: File,
                       existingFolderId: String
-                     ): Seq[(File, String, (String, String))] = {
+                     ): Seq[(File, String, RelationObject)] = {
+    trace(pathElements, datasetSdoSet, existingFolderId)
     getPaths(pathElements)
-    .foldLeft(Seq[(File, String, (String, String))]())((items, path) => {
+    .foldLeft(Seq[(File, String, RelationObject)]())((items, path) => {
       items match {
         case s@Seq() =>
           val sdoDir = new File(datasetSdoSet, toSdoName(path))
@@ -116,12 +118,15 @@ object EasyStageFileItem {
     })
   }
 
-  def getPaths(path: Seq[String]): Seq[String] =
+  def getPaths(path: Seq[String]): Seq[String] = {
+    trace(path)
     if(path.isEmpty) Seq()
     else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
+  }
 
 
-  def createFileSdo(sdoDir: File, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
+  def createFileSdo(sdoDir: File, parent: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
+    trace(sdoDir, parent)
     require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
     log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
@@ -138,8 +143,8 @@ object EasyStageFileItem {
     } yield ()
   }
 
-  def createFolderSdo(sdoDir: File, path: String, parent: (String,String))(implicit s: FileItemSettings): Try[Unit] = {
-    log.debug(s"Creating folder SDO: $path")
+  def createFolderSdo(sdoDir: File, path: String, parent: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
+    trace(sdoDir, path, parent)
     sdoDir.mkdir()
     for {
       _ <- writeJsonCfg(sdoDir,JSON.createDirCfg(parent, s.subordinate))
@@ -156,6 +161,8 @@ object EasyStageFileItem {
     else
       Success(s.datasetId.get)
 
-  def toSdoName(path: String): String =
+  def toSdoName(path: String): String = {
+    trace(path)
     path.replaceAll("[/.]", "_").replaceAll("^_", "")
+  }
 }

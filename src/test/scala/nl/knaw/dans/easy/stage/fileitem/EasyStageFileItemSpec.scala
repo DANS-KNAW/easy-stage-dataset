@@ -19,6 +19,7 @@ import java.io.File
 import java.net.URL
 import java.nio.file.Paths
 
+import nl.knaw.dans.easy.stage.RelationObject
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.fileitem.SdoFiles._
 import nl.knaw.dans.easy.stage.lib.Fedora
@@ -186,16 +187,16 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
     )).get should have message "easy-dataset:1 does not exist in repository"
   }
 
-  it should "not overwrite files" in {
-    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
-    write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "")
+  it should "not overwrite files with same names if folders don't yet exist" in {
+    write(testDir.resolve("to-be-staged/data/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
-         |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
-         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir2/some.txt"""".stripMargin)
+         |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/data/some.txt"
+         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
-      "easy-dataset:1 data/some.txt" -> Success("original", "easy-folder:1"),
+      "easy-dataset:1 data/some.txt" -> Success("", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
     testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "data_some_txt", "data")
@@ -203,18 +204,18 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
 
   it should "not overwrite files with same names in root and sub folder" in {
 
-    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/data/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
-         |easy-dataset:1,8521,text/plain,"dir1/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
+         |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/data/some.txt"
          |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
-      "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),
+      "easy-dataset:1 data/some.txt" -> Success("data", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "dir1_some_txt", "data")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "data_some_txt", "data")
   }
 
   it should "not overwrite files with same names in sibling folders" in {
@@ -300,9 +301,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "uuid-as-file-name"
   }
 
-  def mockEasyFilesAndFolders(expectations: Map[String,Try[(String,String)]]): EasyFilesAndFolders =
+  def mockEasyFilesAndFolders(expectations: Map[String,Try[RelationObject]]): EasyFilesAndFolders =
     new EasyFilesAndFolders {
-      override def getExistingAncestor(file: File, datasetId: String): Try[(String, String)] =
+      override def getExistingAncestor(file: File, datasetId: String): Try[RelationObject] =
         expectations(s"$datasetId $file")
     }
 

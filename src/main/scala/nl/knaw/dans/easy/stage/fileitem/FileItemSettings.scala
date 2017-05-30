@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
+import nl.knaw.dans.easy.stage.RelationObject
 import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Fedora
@@ -40,7 +41,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
-                             subordinate: (String, String) = "objectSDO" -> "dataset") {
+                             subordinate: RelationObject = "objectSDO" -> "dataset") {
   require(FileItemSettings.creatorRoles.contains(creatorRole), s"illegal value for creatorRole, got $creatorRole")
 }
 

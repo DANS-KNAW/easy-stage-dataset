@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import nl.knaw.dans.easy.stage.Settings
+import nl.knaw.dans.easy.stage.{ RelationObject, Settings }
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
@@ -75,8 +75,9 @@ object JSON {
   }
 
   def createFileCfg(mimeType: String,
-                    parent: (String,String),
-                    subordinate: (String,String))(implicit settings: FileItemSettings): String = {
+                    parent: RelationObject,
+                    subordinate: RelationObject
+                   )(implicit settings: FileItemSettings): String = {
     def createJSON(dataJSON: JValue) = {
       ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
@@ -118,8 +119,9 @@ object JSON {
     pretty(render(json))
   }
 
-  def createDirCfg(parent: (String,String),
-                   dataset: (String,String)): String = {
+  def createDirCfg(parent: RelationObject,
+                   dataset: RelationObject
+                  ): String = {
       val json = ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
