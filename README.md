@@ -44,6 +44,8 @@ ARGUMENTS for easy-stage-dataset
                                         in this file must contain a mapping. The path is separated from the URI
                                         by one ore more whitespaces. If more groups of whitespaces are
                                         encountered, they are considered part of the path.
+    -s, --state  <arg>                  The state of the dataset to be created. This must be one of DRAFT,
+                                        SUBMITTED or PUBLISHED. (default = DRAFT)                                      
     -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
     -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
         --help                          Show help message

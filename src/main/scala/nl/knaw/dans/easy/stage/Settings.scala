@@ -33,6 +33,7 @@ case class Settings(ownerId: String,
                     doi: Option[String] = None,
                     otherAccessDoi: Boolean = false,
                     fileUris: Map[Path, URI] = Map(),
+                    state: String,
                     disciplines: Map[String, String]) {
 
   val licenses: Map[String, File] = Licenses.getLicenses
@@ -49,6 +50,7 @@ object Settings {
             doi: Option[String],
             otherAccessDoi: Boolean,
             fileUris: Map[Path, URI],
+            state: String,
             credentials: FedoraCredentials
            ): Settings = {
     Fedora.setFedoraConnectionSettings(
@@ -65,6 +67,7 @@ object Settings {
       doi = doi,
       otherAccessDoi = otherAccessDoi,
       fileUris = fileUris,
+      state = state,
       disciplines = Fedora.disciplines)
   }
 
@@ -82,6 +85,7 @@ object Settings {
       doi = conf.doi.toOption,
       otherAccessDoi = conf.otherAccessDOI(),
       fileUris = conf.getDsLocationMappings,
+      state = conf.state(),
       disciplines = Fedora.disciplines)
   }
 

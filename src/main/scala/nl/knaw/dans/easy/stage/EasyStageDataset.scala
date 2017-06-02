@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{File, FileNotFoundException}
-import java.net.URLEncoder
 import java.nio.file.{Path, Paths}
 
 import gov.loc.repository.bagit.BagFactory
@@ -70,12 +69,16 @@ object EasyStageDataset {
     }
   }
 
+  def checkValidState(state: String): Try[Unit] = {
+    if(Seq("DRAFT", "SUBMITTED", "PUBLISHED").contains(state)) Success(())else Failure(new IllegalArgumentException(s"Not a valid state: $state"))
+  }
+
   def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       log.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
@@ -95,6 +98,7 @@ object EasyStageDataset {
 
     log.debug(s"Settings = $s")
     for {
+      _ <- checkValidState(s.state)
       _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)

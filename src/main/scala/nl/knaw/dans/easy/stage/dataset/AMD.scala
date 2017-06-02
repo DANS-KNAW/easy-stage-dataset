@@ -22,23 +22,29 @@ import scala.xml.Elem
 object AMD {
   type AdministrativeMetadata = Elem
 
-  def apply(depositorId: String, submissionTimestamp: DateTime, draft: Boolean): AdministrativeMetadata = {
-
-    val lastState = {if (draft) "DRAFT" else "SUBMITTED"}
-
+  def apply(depositorId: String, submissionTimestamp: DateTime, state: String): AdministrativeMetadata = {
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
-      <datasetState>{lastState}</datasetState>
-      <previousState>DRAFT</previousState>
-      <lastStateChange>{submissionTimestamp}</lastStateChange>
+      <datasetState>{state}</datasetState>{
+        if (state != "DRAFT") {
+          <previousState>DRAFT</previousState>
+          <lastStateChange>{submissionTimestamp}</lastStateChange>
+        }
+      }
       <depositorId>{depositorId}</depositorId>
-      <stateChangeDates>
-        <damd:stateChangeDate>
-          <fromState>DRAFT</fromState>
-          <toState>{lastState}</toState>
-          <changeDate>{submissionTimestamp}</changeDate>
-        </damd:stateChangeDate>
-      </stateChangeDates>
-      <groupIds></groupIds>
+      {
+        if (state == "DRAFT") {
+          <stateChangeDates />
+        } else {
+          <stateChangeDates>
+            <damd:stateChangeDate>
+              <fromState>DRAFT</fromState>
+              <toState>{ state }</toState>
+              <changeDate>{ submissionTimestamp }</changeDate>
+            </damd:stateChangeDate>
+          </stateChangeDates>
+        }
+      }
+      <groupIds />
       <damd:workflowData version="0.1">
         <assigneeId>NOT_ASSIGNED</assigneeId>
         <wfs:workflow xmlns:wfs="http://easy.dans.knaw.nl/easy/workflow/">
