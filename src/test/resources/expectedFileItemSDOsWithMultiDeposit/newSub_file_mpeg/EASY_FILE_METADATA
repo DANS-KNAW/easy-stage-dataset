@@ -1,9 +1,0 @@
-<fimd:file-item-md version="0.1" xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/">
-        <name>file.mpeg</name>
-        <path>original/newSub/file.mpeg</path>
-        <mimeType>video/mpeg</mimeType>
-        <size>1</size>
-        <creatorRole>DEPOSITOR</creatorRole>
-        <visibleTo>ANONYMOUS</visibleTo>
-        <accessibleTo>NONE</accessibleTo>
-      </fimd:file-item-md>

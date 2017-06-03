@@ -26,6 +26,7 @@ import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 
+import scala.annotation.tailrec
 import scala.util.{ Failure, Success, Try }
 
 object EasyStageFileItem extends DebugEnhancedLogging {
@@ -74,30 +75,10 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       datasetId        <- getValidDatasetId(s)
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
-      existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(s.pathInDataset.get, s.datasetId.get)
-      (parentId,
-      parentPath,
-      newElements)     <- getPathElements()
-      items            <- Try { getItemsToStage(newElements, datasetSdoSetDir, parentId) }
-      _                <- Try{items.init.foreach { case (sdo, path, parentRelation) => createFolderSdo(sdo, relPath(parentPath, path), parentRelation) }}
+      existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(s.pathInDataset.get, datasetId)
+      _                = createFolderSdos(existingAncestor, s.pathInDataset.get, datasetSdoSetDir)
       _                <- createFileSdoForExistingDataset(datasetSdoSetDir, existingAncestor)
     } yield ()
-  }
-
-  private def relPath(parentPath: String, path: String): String = {
-    trace(parentPath, path)
-    if (parentPath.isEmpty) new File(path).toString // prevent a leading slash
-    else new File(parentPath, path).toString
-  }
-
-  private def getPathElements()(implicit s: FileItemSettings): Try[(String, String, Seq[String])] = {
-    val file = s.pathInDataset.get
-    s.easyFilesAndFolders.getExistingAncestor(file, s.datasetId.get)
-      .map { case (parentPath, parentId) =>
-        val newItems = file.toString.replaceFirst(s"^$parentPath/", "").split("/")
-        log.debug(s"Parent in repository: file=$file id=$parentId path=$parentPath items=[${newItems.mkString(",")}]")
-        (parentId, parentPath, newItems.toSeq)
-      }
   }
 
   def getItemsToStage(pathElements: Seq[String],
@@ -125,6 +106,26 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     trace(path)
     if(path.isEmpty) Seq()
     else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
+  }
+
+  private def createFolderSdos(existingAncestor: ExistingAncestor,
+                               file: File,
+                               datasetSdoSetDir: File
+                              )(implicit s: FileItemSettings) = {
+    val (existingPath, _) = existingAncestor
+
+    @tailrec
+    def createParent(child: File): Unit = {
+      if (child != null) {
+        val parent = child.getParentFile
+        if (parent != null && parent.toString != existingPath) {
+          val sdoDir = new File(datasetSdoSetDir, toSdoName(parent.toString))
+          createFolderSdo(sdoDir, parent.getName, "objectSDO" -> toSdoName(parent.toString))
+          createParent(child.getParentFile)
+        }
+      }
+    }
+    createParent(file)
   }
 
   private def createFileSdoForExistingDataset(datasetSdoSetDir: File,
@@ -156,7 +157,9 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       _            <- writeFoxml(sdoDir, foxmlContent)
       fmd          <- EasyFileMetadata(s)
       _            <- writeFileMetadata(sdoDir, fmd)
-      _            <- s.file.flatMap(_ => s.file.map(copyFile(sdoDir, _))).getOrElse(Success(Unit))
+      _            <- s.file.flatMap(_ => s.file.map(f =>
+        copyFile(sdoDir, f)
+        )).getOrElse(Success(Unit))
     } yield ()
   }
 
