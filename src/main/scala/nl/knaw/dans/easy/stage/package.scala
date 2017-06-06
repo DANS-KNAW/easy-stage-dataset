@@ -27,6 +27,12 @@ package object stage {
 
   val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
 
+  type FedoraID = String
+
+  type PathInDataset = String
+
+  type ExistingAncestor = (PathInDataset, FedoraID)
+
   def canConnect(urls: Array[String]): Boolean = Try {
     urls.map { url =>
       new URL(url).openConnection match {

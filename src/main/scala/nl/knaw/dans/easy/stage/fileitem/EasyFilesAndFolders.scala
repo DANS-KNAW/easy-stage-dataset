@@ -16,27 +16,28 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.sql.{DriverManager, PreparedStatement}
+import java.sql.{ Connection, DriverManager, PreparedStatement }
 
+import nl.knaw.dans.easy.stage.ExistingAncestor
 import nl.knaw.dans.easy.stage.lib.Props.props
 
 import scala.annotation.tailrec
 import scala.util.Try
 
 trait EasyFilesAndFolders {
-  def getExistingAncestor(file: File, datasetId: String): Try[(String,String)]
+  def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor]
 }
 
 object EasyFilesAndFolders extends EasyFilesAndFolders{
-  lazy val conn = DriverManager.getConnection(props.getString("db-connection-url"))
+  lazy val conn: Connection = DriverManager.getConnection(props.getString("db-connection-url"))
 
-  def getExistingAncestor(file: File, datasetId: String): Try[(String,String)] = {
+  def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor] = {
     val query: PreparedStatement = conn.prepareStatement(
       s"SELECT pid FROM easy_folders WHERE (path = ? or path = ? || '/') and dataset_sid = '$datasetId'"
     )
 
     @tailrec
-    def get(file: File): (String,String) =
+    def get(file: File): ExistingAncestor =
       if(file==null)
         ("",datasetId)
       else {

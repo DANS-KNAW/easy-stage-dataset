@@ -75,8 +75,9 @@ object JSON {
   }
 
   def createFileCfg(mimeType: String,
-                    parent: (String,String),
-                    subordinate: (String,String))(implicit settings: FileItemSettings): String = {
+                    parent: RelationObject,
+                    subordinate: RelationObject
+                   )(implicit settings: FileItemSettings): String = {
     def createJSON(dataJSON: JValue) = {
       ("namespace" -> "easy-file") ~
         ("datastreams" -> List(
@@ -86,8 +87,8 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
+          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate.tupled,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
     }
@@ -118,8 +119,9 @@ object JSON {
     pretty(render(json))
   }
 
-  def createDirCfg(parent: (String,String),
-                   dataset: (String,String)): String = {
+  def createDirCfg(parent: RelationObject,
+                   dataset: RelationObject
+                  ): String = {
       val json = ("namespace" -> "easy-folder") ~
         ("datastreams" -> List(
           ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
@@ -127,8 +129,8 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset,
+          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset.tupled,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))

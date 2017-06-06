@@ -15,39 +15,39 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{File, FileNotFoundException}
-import java.nio.file.{Path, Paths}
+import java.io.{ File, FileNotFoundException }
+import java.nio.file.{ Path, Paths }
 
 import gov.loc.repository.bagit.BagFactory
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
 import nl.knaw.dans.easy.stage.dataset._
-import nl.knaw.dans.easy.stage.fileitem.{EasyStageFileItem, FileAccessRights, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem.{ EasyStageFileItem, FileAccessRights, FileItemSettings }
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
-import nl.knaw.dans.easy.stage.lib.JSON
+import nl.knaw.dans.easy.stage.lib.{ JSON, SdoRelationObject }
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.lib.error._
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
 import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 import scala.xml.NodeSeq
 
-object EasyStageDataset {
-  val log: Logger = LoggerFactory.getLogger(getClass)
+object EasyStageDataset extends DebugEnhancedLogging {
   private val bagFactory = new BagFactory
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
     implicit val s = Settings(new Conf(args), props)
     run match {
-      case Success(_) => log.info("Staging SUCCESS")
-      case Failure(t) => log.error("Staging FAIL", t)
+      case Success(_) => logger.info("Staging SUCCESS")
+      case Failure(t) => logger.error("Staging FAIL", t)
     }
   }
 
@@ -75,7 +75,7 @@ object EasyStageDataset {
 
   def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
-      log.info("Creating dataset SDO")
+      logger.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
         amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
@@ -96,14 +96,14 @@ object EasyStageDataset {
         .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
     }
 
-    log.debug(s"Settings = $s")
+    logger.debug(s"Settings = $s")
     for {
       _ <- checkValidState(s.state)
       _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()
-      _ = log.info("Creating file and folder SDOs")
+      _ = logger.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
     } yield (emdContent, amdContent)
   }
@@ -121,7 +121,7 @@ object EasyStageDataset {
     }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
 
     def createFileAndFolderSdos(dir: File, parentSDO: String): Try[Unit] = {
-      log.debug(s"Creating file and folder SDOs for directory: $dir")
+      logger.debug(s"Creating file and folder SDOs for directory: $dir")
       def visit(child: File): Try[Unit] =
         if (child.isFile)
           createFileSdo(child, parentSDO)
@@ -135,7 +135,7 @@ object EasyStageDataset {
     def getBagRelativePath(path: Path): Path = s.bagitDir.toPath.relativize(path)
 
     def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
-      log.debug(s"Creating file SDO for $file")
+      logger.debug(s"Creating file SDO for $file")
       val datasetRelativePath = getDatasetRelativePath(file)
       for {
         sdoDir <- mkdirSafe(getSDODir(file))
@@ -158,7 +158,7 @@ object EasyStageDataset {
           accessibleTo = fileAccessRights,
           visibleTo = FileAccessRights.visibleTo(datasetRights)
         )
-        _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
+        _ <- EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(fis)
       } yield ()
     }
 
@@ -171,12 +171,12 @@ object EasyStageDataset {
     }
 
     def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {
-      log.debug(s"Creating folder SDO for $folder")
+      logger.debug(s"Creating folder SDO for $folder")
       val relativePath= getDatasetRelativePath(folder).toString
       for {
         sdoDir <- mkdirSafe(getSDODir(folder))
         fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile)
-        _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
+        _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, SdoRelationObject(new File(parentSDO)))(fis)
       } yield ()
     }
 
