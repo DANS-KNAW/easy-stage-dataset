@@ -82,31 +82,6 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     } yield ()
   }
 
-  def getItemsToStage(pathElements: Seq[String],
-                      datasetSdoSet: File,
-                      existingFolderId: String
-                     ): Seq[(File, String, RelationObject)] = {
-    trace(pathElements, datasetSdoSet, existingFolderId)
-    getPaths(pathElements)
-    .foldLeft(Seq[(File, String, RelationObject)]())((items, path) => {
-      val sdoDir = new File(datasetSdoSet, toSdoName(path))
-      debug(s"$sdoDir $path")
-      items match {
-        case s@Seq() =>
-          s :+ (sdoDir, path, FedoraRelationObject(existingFolderId))
-        case seq =>
-          val (parentFolderSdo, _, _) = seq.last
-          seq :+ (sdoDir, path, SdoRelationObject(parentFolderSdo))
-      }
-    })
-  }
-
-  private def getPaths(path: Seq[String]): Seq[String] = {
-    trace(path)
-    if(path.isEmpty) Seq()
-    else path.tail.scanLeft(path.head)((acc, next) => s"$acc/$next")
-  }
-
   private def createFolderSdos(existingAncestor: ExistingAncestor,
                                file: File,
                                datasetSdoSetDir: File
@@ -141,14 +116,14 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     createFileSdo(sdoDir, ancestor)
   }
 
-  def createFileSdo(sdoDir: File, parentRelation: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
-    trace(sdoDir, parentRelation)
+  def createFileSdo(sdoDir: File, ancestor: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
+    trace(sdoDir, ancestor)
     require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
     debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
       mime         <- Try { s.format.get }
-      cfgContent   <- Try { JSON.createFileCfg(mime, parentRelation, s.subordinate) }
+      cfgContent   <- Try { JSON.createFileCfg(mime, ancestor, s.subordinate) }
       _            <- writeJsonCfg(sdoDir, cfgContent)
       title        <- Try {s.title.getOrElse(s.pathInDataset.get.getName)}
       foxmlContent  = getFileFOXML(title, s.ownerId.get, mime)
