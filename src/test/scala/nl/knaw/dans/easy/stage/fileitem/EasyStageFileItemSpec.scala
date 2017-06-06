@@ -25,15 +25,16 @@ import nl.knaw.dans.easy.stage.fileitem.SdoFiles.readDatastreamFoxml
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 import org.apache.commons.io.FileUtils.{ deleteQuietly, readFileToString, write }
-import org.scalatest.{ FlatSpec, Matchers, OneInstancePerTest }
+import org.scalatest._
 
 import scala.collection.immutable.HashMap
 import scala.util.{ Failure, Success, Try }
 
-class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTest {
+class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEach {
 
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
-  deleteQuietly(testDir.toFile)
+
+  override def beforeEach(): Unit = deleteQuietly(testDir.toFile)
 
   "getItemsToStage" should "return list of SDO with parent relations that are internally consistent" in {
     getItemsToStage(Seq("path", "to", "new", "file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe

@@ -17,14 +17,13 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConversions._
 import scala.collection.mutable
 
-object Licenses {
-  val log = LoggerFactory.getLogger(getClass)
+object Licenses extends DebugEnhancedLogging {
   def getLicenses: Map[String, File] = {
     val licDir = new File(System.getProperty("app.home"), "lic")
     val licenses = new PropertiesConfiguration(new File(licDir, "licenses.properties"))
@@ -34,7 +33,7 @@ object Licenses {
         m
       }
     ).toMap
-    log.debug(map.toString)
+    logger.debug(map.toString)
     map
   }
 }

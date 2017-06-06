@@ -33,7 +33,7 @@ object EasyStageFileItem extends DebugEnhancedLogging {
 
   def main(args: Array[String]) {
     val props = if (args(0) != "--help") {
-      log.debug(s"app.home = ${System.getProperty("app.home")}")
+      debug(s"app.home = ${System.getProperty("app.home")}")
       val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
       //props.save(System.out)
       Fedora.setFedoraConnectionSettings(props.getString("fcrepo.url"), props.getString("fcrepo.user"), props.getString("fcrepo.password"))
@@ -43,13 +43,13 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     getSettingsRows(conf).map {
       _.foreach { settings =>
         run(settings)
-          .map(_ => log.info(s"Staging SUCCESS of $settings"))
+          .map(_ => logger.info(s"Staging SUCCESS of $settings"))
           .recover { case t: Throwable =>
-            log.error(s"Staging FAIL of $settings", t)
+            logger.error(s"Staging FAIL of $settings", t)
             if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
           }
       }
-    }.recover { case t: Throwable => log.error(s"Staging FAIL of $conf with repo url ${props.getString("fcrepo.url")}", t) }
+    }.recover { case t: Throwable => logger.error(s"Staging FAIL of $conf with repo url ${props.getString("fcrepo.url")}", t) }
   }
 
   def getSettingsRows(conf: FileItemConf): Try[Seq[FileItemSettings]] =
@@ -59,11 +59,11 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       val trailArgs = Seq(conf.sdoSetDir.apply().toString)
       CSV(conf.csvFile.apply(), conf.longOptionNames).map {
         case (csv, warning) =>
-          warning.foreach(log.warn)
+          warning.foreach(msg => logger.warn(msg))
           val rows = csv.getRows
-          if (rows.isEmpty) log.warn(s"Empty CSV file")
+          if (rows.isEmpty) logger.warn(s"Empty CSV file")
           rows.map(options => {
-            log.info("Options: "+options.mkString(" "))
+            logger.info("Options: "+options.mkString(" "))
             FileItemSettings(new FileItemConf(options ++ trailArgs))
           })
       }
@@ -75,8 +75,9 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       datasetId        <- getValidDatasetId(s)
       sdoSetDir        <- mkdirSafe(s.sdoSetDir)
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
-      existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(s.pathInDataset.get, datasetId)
-      _                = createFolderSdos(existingAncestor, s.pathInDataset.get, datasetSdoSetDir)
+      pathInDataset    <- Try { s.pathInDataset.get }
+      existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(pathInDataset, datasetId)
+      _                = createFolderSdos(existingAncestor, pathInDataset, datasetSdoSetDir)
       _                <- createFileSdoForExistingDataset(datasetSdoSetDir, existingAncestor)
     } yield ()
   }
@@ -88,15 +89,13 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     trace(pathElements, datasetSdoSet, existingFolderId)
     getPaths(pathElements)
     .foldLeft(Seq[(File, String, RelationObject)]())((items, path) => {
+      val sdoDir = new File(datasetSdoSet, toSdoName(path))
+      debug(s"$sdoDir $path")
       items match {
         case s@Seq() =>
-          val sdoDir = new File(datasetSdoSet, toSdoName(path))
-          log.debug(s"$sdoDir $path")
           s :+ (sdoDir, path, "object" -> s"info:fedora/$existingFolderId")
         case seq =>
           val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          val sdoDir = new File(datasetSdoSet, toSdoName(path))
-          log.debug(s"$sdoDir $path")
           seq :+ (sdoDir, path, "objectSDO" -> parentFolderSdoName)
       }
     })
@@ -146,7 +145,7 @@ object EasyStageFileItem extends DebugEnhancedLogging {
   def createFileSdo(sdoDir: File, parentRelation: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {
     trace(sdoDir, parentRelation)
     require(s.datastreamLocation.isDefined != s.file.isDefined, s"Exactly one of datastreamLocation and file must be defined (datastreamLocation = ${s.datastreamLocation}, file = ${s.file})")
-    log.debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
+    debug(s"Creating file SDO: ${s.pathInDataset.getOrElse("<no path in dataset?>")}")
     sdoDir.mkdir()
     for {
       mime         <- Try { s.format.get }

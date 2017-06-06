@@ -120,36 +120,6 @@ Steps:
         cd easy-stage-dataset
         mvn install
 
-TEST NOTES
-----------
-
-No tests are available that mock fedora or the database for files and folders.
-So run integration tests to check for regression.
-
-Run `./stageFileItem.sh src/test/resources/example.csv out/file-sdos`
-to cover the logic that checks existence of datasets and folders in the repository or folder-SDO's on the file system.
-Reading a CSV is also covered with a unit-test, creation of file/folder SDO's is covered by stageDataset.
-
-
-Steps for a regression test:
-
-* Create `apphome.sh` in the project root to override the var `APPHOME`
-  or create a `home` folder in the root of the project.
-  See also [installation and configuration](#installation-and-configuration).
-* Remove the content of the directory `out` (ignored by git like apphome.sh and home)
-* use maven to compile a version of the code without the changes under test
-* Process any example-bag you may find, for example:
-  * `./stageDataset.sh -t2015 -uURN -dDOI src/test/resources/example-bag out/local-sdo`
-  * `./stageDataset.sh -t2015 -uURN -dDOI ../easy-sword2/src/test/resources/simple/example-bag out/simple-sdo`
-* Move the created `out` to another location, say `~/old`.
-* Make your changes to the code and repeat until OK:
-  * compile the new code with maven
-  * Clear the folders in `out`.
-  * Process the same bags.
-  * Compare the results: `diff -r ~/old target/test-out` and check for changes you did not intend
-
-
-[dans-parent]: https://github.com/DANS-KNAW/dans-parent#dans-parent
 [easy-sword2]: https://github.com/DANS-KNAW/easy-sword2#easy-sword2
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
 [export-import]: https://github.com/DANS-KNAW/easy-export-dataset/wiki#the-export-import-cycle

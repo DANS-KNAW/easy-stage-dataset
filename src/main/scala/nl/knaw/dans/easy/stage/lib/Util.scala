@@ -15,17 +15,15 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import java.io.{File, FileInputStream, InputStreamReader}
+import java.io.{ File, FileInputStream, InputStreamReader }
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.io.FileUtils
-import org.slf4j.{Logger, LoggerFactory}
 
-import scala.util.{Failure, Try}
-import scala.xml.{Elem, XML}
+import scala.util.{ Failure, Try }
+import scala.xml.{ Elem, XML }
 
-object Util {
-  val log: Logger = LoggerFactory.getLogger(getClass)
-
+object Util extends DebugEnhancedLogging {
   def loadXML(metadataFile: File): Elem =
     XML.load(new InputStreamReader(new FileInputStream(metadataFile), "UTF-8"))
 
@@ -66,7 +64,7 @@ object Util {
     writeToFile(new File(sdoDir, "EASY_ITEM_CONTAINER_MD"), content)
 
   def mkdirSafe(f: File): Try[File] = Try {
-    log.debug(s"Creating dir $f")
+    logger.debug(s"Creating dir $f")
     f.mkdirs()
     f
   }
@@ -74,7 +72,7 @@ object Util {
   def mkdirSafe(f: Option[File]): Try[File] =
     if (f.isEmpty) Failure(new Exception("no file provided"))
     else Try {
-      log.debug(s"Creating dir ${f.get}")
+      logger.debug(s"Creating dir ${f.get}")
       f.get.mkdirs()
       f.get
     }

@@ -23,10 +23,8 @@ import nl.knaw.dans.easy.stage.fileitem.FileItemConf._
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.Version
 import org.rogach.scallop._
-import org.slf4j.LoggerFactory
 
 class FileItemConf(args: Seq[String]) extends ScallopConf(args) {
-  val log = LoggerFactory.getLogger(getClass)
 
   editBuilder(_.setHelpWidth(110))
   appendDefaultToDescription = true
