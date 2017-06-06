@@ -173,13 +173,13 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with OneInstancePerTe
     testDir.resolve("SDO/easy-dataset_1/child_some_txt").toFile.list() should contain only (
       "cfg.json",
       "fo.xml",
-      "EASY_FILE"
+      "EASY_FILE",
+      "EASY_FILE_METADATA"
     )
     testDir.resolve("SDO/easy-dataset_1/child").toFile.list() should contain only (
       "cfg.json",
       "fo.xml",
-      "EASY_FILE",
-      "EASY_FILE_METADATA"
+      "EASY_ITEM_CONTAINER_MD"
     )
     readFileToString(testDir.resolve("SDO/easy-dataset_1/child_some_txt/EASY_FILE").toFile,"UTF-8") shouldBe "hello"
     readDatastreamFoxml(testDir.resolve("SDO/easy-dataset_1/child/fo.xml").toString) should contain only(
