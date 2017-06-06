@@ -18,10 +18,9 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 import java.net.URL
 
-import nl.knaw.dans.easy.stage.RelationObject
 import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
-import nl.knaw.dans.easy.stage.lib.Fedora
+import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject, RelationObject, SdoRelationObject }
 
 case class FileItemSettings (sdoSetDir: Option[File],
                              file: Option[File] = None,
@@ -41,7 +40,7 @@ case class FileItemSettings (sdoSetDir: Option[File],
                              fedora: Fedora = Fedora,
                              easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
 
-                             subordinate: RelationObject = "objectSDO" -> "dataset") {
+                             subordinate: RelationObject = SdoRelationObject(new File("dataset"))) {
   require(FileItemSettings.creatorRoles.contains(creatorRole), s"illegal value for creatorRole, got $creatorRole")
 }
 
@@ -106,7 +105,7 @@ object FileItemSettings {
       datasetId = conf.datasetId.toOption,
       pathInDataset = conf.pathInDataset.toOption,
       format = conf.format.toOption,
-      subordinate = "object" -> s"info:fedora/${conf.datasetId()}"
+      subordinate = FedoraRelationObject(conf.datasetId())
     ) {
       override def toString: String = conf.toString
     }

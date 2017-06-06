@@ -26,7 +26,7 @@ import nl.knaw.dans.easy.stage.dataset._
 import nl.knaw.dans.easy.stage.fileitem.{ EasyStageFileItem, FileAccessRights, FileItemSettings }
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
-import nl.knaw.dans.easy.stage.lib.JSON
+import nl.knaw.dans.easy.stage.lib.{ JSON, SdoRelationObject }
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -152,7 +152,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
           accessibleTo = fileAccessRights,
           visibleTo = FileAccessRights.visibleTo(datasetRights)
         )
-        _ <- EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> parentSDO)(fis)
+        _ <- EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(fis)
       } yield ()
     }
 
@@ -170,7 +170,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
       for {
         sdoDir <- mkdirSafe(getSDODir(folder))
         fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile)
-        _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, "objectSDO" -> parentSDO)(fis)
+        _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, SdoRelationObject(new File(parentSDO)))(fis)
       } yield ()
     }
 

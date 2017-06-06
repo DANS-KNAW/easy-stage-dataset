@@ -93,10 +93,10 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       debug(s"$sdoDir $path")
       items match {
         case s@Seq() =>
-          s :+ (sdoDir, path, "object" -> s"info:fedora/$existingFolderId")
+          s :+ (sdoDir, path, FedoraRelationObject(existingFolderId))
         case seq =>
-          val parentFolderSdoName = seq.last match { case (sdo, _,  _) => sdo.getName}
-          seq :+ (sdoDir, path, "objectSDO" -> parentFolderSdoName)
+          val (parentFolderSdo, _, _) = seq.last
+          seq :+ (sdoDir, path, SdoRelationObject(parentFolderSdo))
       }
     })
   }
@@ -119,7 +119,7 @@ object EasyStageFileItem extends DebugEnhancedLogging {
         val parent = child.getParentFile
         if (parent != null && parent.toString != existingPath) {
           val sdoDir = new File(datasetSdoSetDir, toSdoName(parent.toString))
-          createFolderSdo(sdoDir, parent.getName, "objectSDO" -> toSdoName(parent.toString))
+          createFolderSdo(sdoDir, parent.getName, SdoRelationObject(parent))
           createParent(child.getParentFile)
         }
       }
@@ -133,13 +133,12 @@ object EasyStageFileItem extends DebugEnhancedLogging {
     val parentPath = Option(s.pathInDataset.get.getParent).getOrElse("")
     val ancestor = existingAncestor match {
       case ((`parentPath`, fedoraId)) =>
-        fedoraId
+        FedoraRelationObject(fedoraId)
       case _ =>
-        toSdoName(parentPath)
+        SdoRelationObject(new File(toSdoName(parentPath)))
     }
     val sdoDir = new File(datasetSdoSetDir, toSdoName(s.pathInDataset.get.toString))
-    val ancestorType = if (ancestor.startsWith("info:fedora")) "object"else "objectSDO"
-    createFileSdo(sdoDir, ancestorType -> ancestor)
+    createFileSdo(sdoDir, ancestor)
   }
 
   def createFileSdo(sdoDir: File, parentRelation: RelationObject)(implicit s: FileItemSettings): Try[Unit] = {

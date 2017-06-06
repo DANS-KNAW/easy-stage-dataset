@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
-import nl.knaw.dans.easy.stage.{ RelationObject, Settings }
+import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
@@ -87,8 +87,8 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate,
+          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate.tupled,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
     }
@@ -129,8 +129,8 @@ object JSON {
             ("controlGroup" -> "X") ~
             ("mimeType" -> "text/xml"))) ~
         ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset,
+          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset.tupled,
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
           ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
         ))

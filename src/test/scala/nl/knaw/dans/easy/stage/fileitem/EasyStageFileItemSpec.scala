@@ -19,10 +19,10 @@ import java.io.File
 import java.net.URL
 import java.nio.file.Paths
 
-import nl.knaw.dans.easy.stage.RelationObject
+import nl.knaw.dans.easy.stage.ExistingAncestor
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.fileitem.SdoFiles.readDatastreamFoxml
-import nl.knaw.dans.easy.stage.lib.Fedora
+import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject, SdoRelationObject }
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 import org.apache.commons.io.FileUtils.{ deleteQuietly, readFileToString, write }
 import org.scalatest._
@@ -38,10 +38,12 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
 
   "getItemsToStage" should "return list of SDO with parent relations that are internally consistent" in {
     getItemsToStage(Seq("path", "to", "new", "file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe
-    Seq((new File("dataset-sdo-set/path"), "path", "object" -> "info:fedora/easy-folder:123"),
-      (new File("dataset-sdo-set/path_to"), "path/to", "objectSDO" -> "path"),
-      (new File("dataset-sdo-set/path_to_new"), "path/to/new", "objectSDO" -> "path_to"),
-      (new File("dataset-sdo-set/path_to_new_file_txt"), "path/to/new/file.txt", "objectSDO" -> "path_to_new"))
+    Seq(
+      (new File("dataset-sdo-set/path"), "path", FedoraRelationObject("easy-folder:123")),
+      (new File("dataset-sdo-set/path_to"), "path/to", SdoRelationObject(new File("dataset-sdo-set/path"))),
+      (new File("dataset-sdo-set/path_to_new"), "path/to/new", SdoRelationObject(new File("dataset-sdo-set/path_to"))),
+      (new File("dataset-sdo-set/path_to_new_file_txt"), "path/to/new/file.txt", SdoRelationObject(new File("dataset-sdo-set/path_to_new")))
+    )
   }
 
   it should "return an empty Seq when given one" in {
@@ -49,7 +51,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
   }
 
   it should "return only a file item if path contains one element" in {
-    getItemsToStage(Seq("file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((new File("dataset-sdo-set/file_txt"), "file.txt", "object" -> "info:fedora/easy-folder:123"))
+    getItemsToStage(Seq("file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((new File("dataset-sdo-set/file_txt"), "file.txt", FedoraRelationObject("easy-folder:123")))
   }
 
   "getSettingsRows" should "create a single row from dummy conf" in {
@@ -84,7 +86,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = None,
-      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      subordinate = FedoraRelationObject("easy-dataset:1"),
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
         "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
       )),
@@ -105,7 +107,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
-      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      subordinate = FedoraRelationObject("easy-dataset:1"),
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
         "easy-dataset:1 original/newSub/file.mpeg" -> Failure(new Exception("mocked error"))
       )),
@@ -124,7 +126,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       datasetId = Some("easy-dataset:1"),
       pathInDataset = Some(new File("original/newSub/file.mpeg")),
       format = Some("video/mpeg"),
-      subordinate = "object" -> s"info:fedora/easy-dataset:1",
+      subordinate = FedoraRelationObject("easy-dataset:1"),
       easyFilesAndFolders = mockEasyFilesAndFolders(HashMap(
         "easy-dataset:1 original/newSub/file.mpeg" -> Success("original", "easy-folder:1")
       )),
@@ -264,7 +266,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       title = Some("A nice title"),
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS)
-    EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
+    EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))
 
     val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "A nice title"
@@ -289,7 +291,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       title = None,
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS)
-    EasyStageFileItem.createFileSdo(sdoDir, "objectSDO" -> "ficticiousParentSdo")
+    EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))
 
     val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "uuid-as-file-name"
@@ -298,9 +300,9 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "uuid-as-file-name"
   }
 
-  def mockEasyFilesAndFolders(expectations: Map[String,Try[RelationObject]]): EasyFilesAndFolders =
+  def mockEasyFilesAndFolders(expectations: Map[String,Try[ExistingAncestor]]): EasyFilesAndFolders =
     new EasyFilesAndFolders {
-      override def getExistingAncestor(file: File, datasetId: String): Try[RelationObject] =
+      override def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor] =
         expectations(s"$datasetId $file")
     }
 
