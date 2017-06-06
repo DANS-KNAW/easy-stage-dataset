@@ -72,6 +72,10 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
             "file must contain a mapping. The path is separated from the URI by one ore more " +
             "whitespaces. If more groups of whitespaces are encountered, they are considered " +
             "part of the path.")
+  val state: ScallopOption[String] = opt[String](
+    name = "state",
+    descr = "The state of the dataset to be created. This must be one of DRAFT, SUBMITTED or PUBLISHED.",
+    default = Option("DRAFT"))
   val deposit: ScallopOption[File] = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",

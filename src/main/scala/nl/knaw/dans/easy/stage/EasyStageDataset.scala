@@ -33,6 +33,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
+import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
@@ -68,12 +69,16 @@ object EasyStageDataset extends DebugEnhancedLogging {
     }
   }
 
+  def checkValidState(state: String): Try[Unit] = {
+    if(Seq("DRAFT", "SUBMITTED", "PUBLISHED").contains(state)) Success(())else Failure(new IllegalArgumentException(s"Not a valid state: $state"))
+  }
+
   def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
     def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
       logger.info("Creating dataset SDO")
       for {
         sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.doi.isEmpty)
+        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
         emdContent <- EMD.create(sdoDir)
         foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
         mimeType <- AdditionalLicense.createOptionally(sdoDir)
@@ -93,6 +98,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
 
     logger.debug(s"Settings = $s")
     for {
+      _ <- checkValidState(s.state)
       _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
