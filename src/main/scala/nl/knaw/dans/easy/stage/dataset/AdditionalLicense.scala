@@ -71,7 +71,7 @@ object AdditionalLicense {
     def withScheme(uri: URI, scheme: String) = new URI(scheme, uri.getUserInfo, uri.getHost, uri.getPort, uri.getPath, uri.getQuery, uri.getFragment)
 
     val httpUri =
-      if (uri.getScheme == "https") withScheme(uri, "https")
+      if (uri.getScheme == "https") withScheme(uri, "http")
       else uri
 
     licenses.get(httpUri.toASCIIString).orElse {
