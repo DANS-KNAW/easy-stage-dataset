@@ -17,6 +17,8 @@ package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
 
+import nl.knaw.dans.easy.stage.FedoraID
+
 sealed abstract class RelationObject(val relationObjectType: RelationObjectType) {
   def tupled: (String, String)
 }
@@ -25,7 +27,7 @@ case class SdoRelationObject(folder: File) extends RelationObject(SdoRelationObj
   override def tupled: (String, String) = (relationObjectType.name, folder.toString)
 }
 
-case class FedoraRelationObject(fedoraId: String) extends RelationObject(FedoraRelationObjectType) {
+case class FedoraRelationObject(fedoraId: FedoraID) extends RelationObject(FedoraRelationObjectType) {
   override def tupled: (String, String) = (relationObjectType.name, s"info:fedora/$fedoraId")
 }
 

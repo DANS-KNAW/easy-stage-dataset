@@ -36,24 +36,6 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
 
   override def beforeEach(): Unit = deleteQuietly(testDir.toFile)
 
-  "getItemsToStage" should "return list of SDO with parent relations that are internally consistent" in {
-    getItemsToStage(Seq("path", "to", "new", "file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe
-    Seq(
-      (new File("dataset-sdo-set/path"), "path", FedoraRelationObject("easy-folder:123")),
-      (new File("dataset-sdo-set/path_to"), "path/to", SdoRelationObject(new File("dataset-sdo-set/path"))),
-      (new File("dataset-sdo-set/path_to_new"), "path/to/new", SdoRelationObject(new File("dataset-sdo-set/path_to"))),
-      (new File("dataset-sdo-set/path_to_new_file_txt"), "path/to/new/file.txt", SdoRelationObject(new File("dataset-sdo-set/path_to_new")))
-    )
-  }
-
-  it should "return an empty Seq when given one" in {
-    getItemsToStage(Seq(), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq()
-  }
-
-  it should "return only a file item if path contains one element" in {
-    getItemsToStage(Seq("file.txt"), new File("dataset-sdo-set"), "easy-folder:123") shouldBe Seq((new File("dataset-sdo-set/file_txt"), "file.txt", FedoraRelationObject("easy-folder:123")))
-  }
-
   "getSettingsRows" should "create a single row from dummy conf" in {
     // requires a FileItemConf instance with verified arguments
     getSettingsRows(FileItemConf.dummy).get.size shouldBe 1
