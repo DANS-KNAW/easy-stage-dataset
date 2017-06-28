@@ -22,7 +22,7 @@ import scala.util.Try
 object EasyFileMetadata {
   def apply(s: FileItemSettings): Try[String] = Try {
       val parentPath = s.pathInDataset.get.getParentFile
-      val fileName = s.title.getOrElse(s.pathInDataset.get.getName)
+      val fileName = s.pathInDataset.get.getName
 
       <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
         <name>{fileName}</name>

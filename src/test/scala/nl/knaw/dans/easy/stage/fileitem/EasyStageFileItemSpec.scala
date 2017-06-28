@@ -232,7 +232,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
     } EasyStageFileItem.run(fileItemSettings) shouldBe a[Success[_]]
   }
 
-  "createFileSdo" should "use title (if exactly one provided) instead of file name" in {
+  "createFileSdo" should "use file name even if a title is provided" in {
     val sdoSetDir = new File("target/testSdoSet")
     val sdoDir = new File(sdoSetDir, "path_to_uuid-as-file-name")
     sdoSetDir.mkdirs()
@@ -251,8 +251,8 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
     EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))
 
     val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
-    (efmd \ "name").text shouldBe "A nice title"
-    (efmd \ "path").text shouldBe "path/to/A nice title"
+    (efmd \ "name").text shouldBe "uuid-as-file-name"
+    (efmd \ "path").text shouldBe "path/to/uuid-as-file-name"
     val foxml = loadXML(new File(sdoDir, "fo.xml"))
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "A nice title"
   }
