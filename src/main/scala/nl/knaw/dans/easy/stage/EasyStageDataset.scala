@@ -16,9 +16,9 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{ File, FileNotFoundException }
-import java.nio.file.{ Path, Paths }
+import java.nio.file.Path
 
-import gov.loc.repository.bagit.BagFactory
+import gov.loc.repository.bagit.reader.BagReader
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import nl.knaw.dans.easy.stage.dataset.Util._
@@ -26,21 +26,20 @@ import nl.knaw.dans.easy.stage.dataset._
 import nl.knaw.dans.easy.stage.fileitem.{ EasyStageFileItem, FileAccessRights, FileItemSettings }
 import nl.knaw.dans.easy.stage.lib.Constants._
 import nl.knaw.dans.easy.stage.lib.FOXML._
-import nl.knaw.dans.easy.stage.lib.{ JSON, SdoRelationObject }
 import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.easy.stage.lib.{ JSON, SdoRelationObject }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
-import org.slf4j.{Logger, LoggerFactory}
 
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
 import scala.xml.NodeSeq
 
 object EasyStageDataset extends DebugEnhancedLogging {
-  private val bagFactory = new BagFactory
+  private val bagReader = new BagReader()
 
   def main(args: Array[String]) {
     val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
@@ -60,13 +59,12 @@ object EasyStageDataset extends DebugEnhancedLogging {
    * @return Success if all files were part, otherwise Failure
    */
   def checkFilesInBag(files: Set[Path], bagDir: Path): Try[Unit] = {
-    resource.managed(bagFactory.createBag(bagDir.toFile, BagFactory.Version.V0_97, BagFactory.LoadOption.BY_MANIFESTS)).acquireAndGet {
-      b =>
-        val filesInBag = b.getPayloadManifests.asScala.map(_.keySet.asScala).reduce(_ ++ _).map(Paths.get(_))
-        val filesNotInBag = files.diff(filesInBag)
-        if (filesNotInBag.isEmpty) Success(())
-        else Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $filesNotInBag"))
-    }
+    val bag = bagReader.read(bagDir)
+    val paths = bag.getPayLoadManifests.asScala.map(_.getFileToChecksumMap.keySet.asScala)
+    val filesInBag = paths.reduce(_ ++ _).map(bagDir.relativize)
+    val filesNotInBag = files.diff(filesInBag)
+    if (filesNotInBag.isEmpty) Success(())
+    else Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $filesNotInBag"))
   }
 
   def checkValidState(state: String): Try[Unit] = {
@@ -118,7 +116,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
           case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
           case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${array.mkString(" ")}")
         }.toMap
-    }.recoverWith { case e: FileNotFoundException => Success(Map[String, String]()) }
+    }.recoverWith { case _: FileNotFoundException => Success(Map[String, String]()) }
 
     def createFileAndFolderSdos(dir: File, parentSDO: String): Try[Unit] = {
       logger.debug(s"Creating file and folder SDOs for directory: $dir")
