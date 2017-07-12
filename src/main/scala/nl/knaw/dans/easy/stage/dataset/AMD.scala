@@ -15,14 +15,16 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.joda.time.DateTime
 
 import scala.xml.Elem
 
-object AMD {
+object AMD extends DebugEnhancedLogging {
   type AdministrativeMetadata = Elem
 
   def apply(depositorId: String, submissionTimestamp: DateTime, state: String): AdministrativeMetadata = {
+    trace(depositorId, submissionTimestamp, state)
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>{state}</datasetState>{
         if (state != "DRAFT") {

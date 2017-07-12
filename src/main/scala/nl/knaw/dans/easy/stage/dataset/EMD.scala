@@ -20,16 +20,18 @@ import java.net.URI
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Util._
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
-import nl.knaw.dans.pf.language.emd.types.{BasicIdentifier, EmdConstants}
+import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, EmdConstants }
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
-object EMD {
+object EMD extends DebugEnhancedLogging {
 
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
+    trace(sdoDir)
     val ddm = new File(s.bagitDir, "metadata/dataset.xml")
     if (!ddm.exists()) {
       return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
@@ -50,19 +52,23 @@ object EMD {
     } yield emd
   }
 
-  def getEasyMetadata(ddm: File): Try[EasyMetadata] =
+  def getEasyMetadata(ddm: File): Try[EasyMetadata] = {
+    trace(ddm)
     try {
       val crosswalk = new Ddm2EmdCrosswalk()
       val emd = crosswalk.createFrom(ddm)
       if (emd == null)
-        Failure(new RuntimeException(s"${crosswalk.getXmlErrorHandler.getMessages}"))
+        Failure(new RuntimeException(s"${ crosswalk.getXmlErrorHandler.getMessages }"))
       else
         Success(emd)
     } catch {
-      case t: Throwable => Failure(t)
+      case t: Throwable =>
+          Failure(t)
     }
+  }
 
   def wrapUrn(urn: String): BasicIdentifier = {
+    trace(urn)
     val basicId = new BasicIdentifier(urn)
     basicId.setScheme(EmdConstants.SCHEME_PID)
     basicId.setIdentificationSystem(new URI("http://www.persistent-identifier.nl"))
@@ -70,6 +76,7 @@ object EMD {
   }
 
   def wrapDoi(doi: String, otherAccessDOI: Boolean): BasicIdentifier = {
+    trace(doi, otherAccessDOI)
     val basicId = new BasicIdentifier(doi)
     basicId.setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
     basicId.setIdentificationSystem(new URI(EmdConstants.DOI_RESOLVER))
@@ -77,6 +84,7 @@ object EMD {
   }
 
   def createDmoIdWithPlaceholder(): BasicIdentifier = {
+    trace(())
     val placeholder = "$sdo-id"
     val basicId = new BasicIdentifier(placeholder)
     basicId.setScheme(EmdConstants.SCHEME_DMO_ID)

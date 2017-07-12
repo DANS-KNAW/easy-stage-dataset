@@ -15,13 +15,15 @@
  */
 package nl.knaw.dans.easy.stage.lib
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 
-import scala.xml.{Elem, NodeSeq, XML}
+import scala.xml.{ Elem, NodeSeq, XML }
 
-object FOXML {
+object FOXML extends DebugEnhancedLogging {
 
   def getDatasetFOXML(ownerId: String, emd: EasyMetadata): String = {
+    trace(ownerId)
     /*
      * NOTE: DO NOT USE THE asXMLString method. It uses the platform's default charset, which can lead to unexpected
      * problems with the output.
