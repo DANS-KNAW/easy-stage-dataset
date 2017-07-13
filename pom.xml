@@ -33,7 +33,7 @@
     <inceptionYear>2015-2016</inceptionYear>
     <properties>
         <main-class>nl.knaw.dans.easy.stage.EasyStageDataset</main-class>
-        <easy.ddm.version>3.2</easy.ddm.version>
+        <easy.ddm.version>3.3</easy.ddm.version>
     </properties>
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
@@ -89,6 +89,16 @@
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
             <version>1.6.1</version>
+            <exclusions>
+                <!--
+                Without this exclusion we get java.lang.NoClassDefFoundError: org/w3c/dom/ElementTraversal
+                when using Xerces (which is used by yourmediashelf's fedora-client).
+                -->
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.yourmediashelf.fedora.client</groupId>
