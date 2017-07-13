@@ -32,7 +32,7 @@
     <inceptionYear>2015-2016</inceptionYear>
     <properties>
         <main-class>nl.knaw.dans.easy.stage.EasyStageDataset</main-class>
-        <easy.ddm.version>3.2</easy.ddm.version>
+        <easy.ddm.version>3.3</easy.ddm.version>
     </properties>
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
