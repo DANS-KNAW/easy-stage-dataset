@@ -17,13 +17,14 @@ package nl.knaw.dans.easy.stage.lib
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
 import scala.util.Try
 
-object JSON {
+object JSON extends DebugEnhancedLogging {
   val HAS_DOI = "http://dans.knaw.nl/ontologies/relations#hasDoi"
   val HAS_PID = "http://dans.knaw.nl/ontologies/relations#hasPid"
   val HAS_MODEL = "info:fedora/fedora-system:def/model#hasModel"
@@ -31,6 +32,7 @@ object JSON {
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
 
   def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String]= Try {
+    trace(mimeType, audiences)
     def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
     checkProvided("DOI", s.doi)
     checkProvided("URN", s.urn)

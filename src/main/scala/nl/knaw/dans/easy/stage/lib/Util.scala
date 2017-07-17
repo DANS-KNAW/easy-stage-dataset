@@ -36,7 +36,10 @@ object Util extends DebugEnhancedLogging {
      *
      * See: https://drivenbydata.atlassian.net/browse/EASY-984
      */
-    Try { FileUtils.write(f, s, "UTF-8")}
+    Try {
+      trace(f, s)
+      FileUtils.write(f, s, "UTF-8")
+    }
 
   def writeJsonCfg(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "cfg.json"), content)

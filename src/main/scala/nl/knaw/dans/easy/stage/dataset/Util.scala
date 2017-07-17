@@ -18,13 +18,14 @@ package nl.knaw.dans.easy.stage.dataset
 import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
-import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
+import nl.knaw.dans.easy.stage.{ RejectedDepositException, Settings }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.sys.error
 import scala.util.Try
-import scala.xml.{Elem, NodeSeq}
+import scala.xml.{ Elem, NodeSeq }
 
-object Util {
+object Util extends DebugEnhancedLogging {
 
   class CompositeException(throwables: Seq[Throwable])
     extends RuntimeException(throwables.foldLeft("Multiple failures:")((msg, t) => s"$msg\n${t.getClass}: ${t.getMessage}, ${getFirstDansFrame(t)}"))
@@ -75,6 +76,7 @@ object Util {
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
+    trace(())
     for {
       audience <- loadBagXML("metadata/dataset.xml") \\ "DDM" \ "profile" \ "audience"
     } yield audience.text

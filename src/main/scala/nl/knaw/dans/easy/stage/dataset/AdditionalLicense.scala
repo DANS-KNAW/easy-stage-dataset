@@ -20,20 +20,23 @@ import java.net.URI
 
 import nl.knaw.dans.easy.stage.dataset.Util.loadBagXML
 import nl.knaw.dans.easy.stage.lib.Constants
-import nl.knaw.dans.easy.stage.{RejectedDepositException, Settings}
+import nl.knaw.dans.easy.stage.{ RejectedDepositException, Settings }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.io.FileUtils
 import org.joda.time.DateTime
 
-import scala.util.{Success, Try}
-import scala.xml.{Node, NodeSeq}
+import scala.util.{ Success, Try }
+import scala.xml.{ Node, NodeSeq }
 
-object AdditionalLicense {
+object AdditionalLicense extends DebugEnhancedLogging {
   type MimeType = String
   private val ddmFileName = "metadata/dataset.xml"
 
-  def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] =
-   if((loadBagXML(ddmFileName) \\ "DDM" \ "dcmiMetadata" \ "license").isEmpty) Success(None)
-   else create(sdo).map(m => Some(m))
+  def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] = {
+    trace(sdo)
+    if ((loadBagXML(ddmFileName) \\ "DDM" \ "dcmiMetadata" \ "license").isEmpty) Success(None)
+    else create(sdo).map(m => Some(m))
+  }
 
   def create(sdo: File)(implicit s: Settings): Try[MimeType] =
     for {
