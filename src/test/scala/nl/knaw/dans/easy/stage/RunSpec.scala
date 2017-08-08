@@ -86,6 +86,7 @@ class RunSpec extends FlatSpec with Matchers {
       urn = Some("someUrn"),
       doi = Some("doei"),
       state = "DRAFT",
+      archive = "EASY",
       disciplines = Map[String, String](
         "D10000" -> "easy-discipline:57",
         "D30000" -> "easy-discipline:1",
