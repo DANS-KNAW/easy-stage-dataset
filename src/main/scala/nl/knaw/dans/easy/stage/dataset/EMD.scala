@@ -24,7 +24,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
-import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, EmdConstants }
+import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, EmdArchive, EmdConstants }
 
 import scala.util.{ Failure, Success, Try }
 
@@ -41,6 +41,7 @@ object EMD extends DebugEnhancedLogging {
       _   = s.urn.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
       _   = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
       _   = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
+      _   = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -89,5 +90,12 @@ object EMD extends DebugEnhancedLogging {
     val basicId = new BasicIdentifier(placeholder)
     basicId.setScheme(EmdConstants.SCHEME_DMO_ID)
     basicId
+  }
+
+  def createEmdArchive(archive: String): EmdArchive = {
+    trace(archive)
+    val emdArchive = new EmdArchive();
+    emdArchive.setLocation(EmdArchive.Location.valueOf(archive));
+    emdArchive
   }
 }
