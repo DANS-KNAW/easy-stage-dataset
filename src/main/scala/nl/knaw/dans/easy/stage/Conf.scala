@@ -39,7 +39,7 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
   val synopsis: String =
-    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] \\
+    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
        |  ${_________}    <EASY-deposit> <staged-digital-object-set>""".stripMargin
   banner(s"""
            |  $description
@@ -76,6 +76,12 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
     name = "state",
     descr = "The state of the dataset to be created. This must be one of DRAFT, SUBMITTED or PUBLISHED.",
     default = Option("DRAFT"))
+  val archive: ScallopOption[String] = opt[String](
+    name = "archive",
+    descr = "The way the dataset is archived. This must be either EASY or DATAVAULT. " +
+            "EASY: Data and metadata are archived in EASY. " +
+            "DATAVAULT: Data and metadata are archived in the DATAVAULT. There may be dissemination copies in EASY.",
+    default = Option("EASY"))
   val deposit: ScallopOption[File] = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
