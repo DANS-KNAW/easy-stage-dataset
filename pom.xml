@@ -16,28 +16,35 @@
     limitations under the License.
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-scala-prototype</artifactId>
-        <version>1.43</version>
+        <version>1.53</version>
     </parent>
+
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset</artifactId>
+    <version>1.6.0-SNAPSHOT</version>
+
     <name>EASY Stage Dataset</name>
-    <version>1.x-SNAPSHOT</version>
     <url>https://github.com/DANS-KNAW/easy-stage-dataset</url>
     <description>Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.</description>
-    <inceptionYear>2015-2016</inceptionYear>
+    <inceptionYear>2015</inceptionYear>
+
     <properties>
         <main-class>nl.knaw.dans.easy.stage.EasyStageDataset</main-class>
         <easy.ddm.version>3.4</easy.ddm.version>
     </properties>
+
     <scm>
         <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
         <tag>HEAD</tag>
     </scm>
+
     <dependencies>
         <dependency>
             <groupId>commons-configuration</groupId>
@@ -149,6 +156,7 @@
             <version>5.0.2</version>
         </dependency>
     </dependencies>
+
     <repositories>
         <repository>
             <id>DANS</id>
@@ -158,6 +166,7 @@
             <url>http://maven.dans.knaw.nl/</url>
         </repository>
     </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>DANS</id>
@@ -167,6 +176,7 @@
             <url>http://maven.dans.knaw.nl/</url>
         </pluginRepository>
     </pluginRepositories>
+
     <build>
         <plugins>
             <plugin>
@@ -196,6 +206,7 @@
             </plugin>
         </plugins>
     </build>
+
     <profiles>
         <profile>
             <id>stageDataset</id>
@@ -226,6 +237,31 @@
                         <configuration>
                             <mainClass>nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem</mainClass>
                         </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>rpm</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+                <file>
+                    <exists>/usr/local/bin/rpm</exists>
+                </file>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.codehaus.mojo</groupId>
+                        <artifactId>rpm-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-rpm</id>
+                                <goals>
+                                    <goal>attached-rpm</goal>
+                                </goals>
+                            </execution>
+                        </executions>
                     </plugin>
                 </plugins>
             </build>
