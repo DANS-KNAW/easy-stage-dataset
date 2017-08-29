@@ -37,7 +37,15 @@ case class Settings(ownerId: String,
                     databaseUrl: String,
                     databaseUser: String,
                     databasePassword: String,
-                    licenses: Map[String, File])
+                    licenses: Map[String, File]) {
+  override def toString: String = {
+    s"Stage-Dataset.Settings(ownerId = $ownerId, submissionTimestamp = $submissionTimestamp, " +
+      s"bagitDir = $bagitDir, sdoSetDir = $sdoSetDir, urn = ${ urn.getOrElse("<not defined>") }, " +
+      s"doi = ${ doi.getOrElse("<not defined>") }, otherAccessDoi = $otherAccessDoi, " +
+      s"fileUris = $fileUris, state = $state, archive = $archive, " +
+      s"Database($databaseUrl, $databaseUser, ****))"
+  }
+}
 
 object Settings {
 

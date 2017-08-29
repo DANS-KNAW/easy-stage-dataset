@@ -71,8 +71,8 @@ object EasyStageDataset extends DebugEnhancedLogging {
   }
 
   def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
-    logger.debug(s"Settings = $s")
-    for {
+    debug(s"Settings = $s")
+    val result = for {
       _ <- checkValidState(s.state)
       _ <- checkFilesInBag(s.fileUris.keySet, s.bagitDir.toPath)
       dataDir <- getDataDir
@@ -81,6 +81,10 @@ object EasyStageDataset extends DebugEnhancedLogging {
       _ = logger.info("Creating file and folder SDOs")
       _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
     } yield (emdContent, amdContent)
+
+    result
+      .doIfSuccess(_ => logger.info("dataset staged"))
+      .doIfFailure { case e => logger.error(s"staging failed: ${ e.getMessage }", e) }
   }
 
   private def createDatasetSdo()(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
