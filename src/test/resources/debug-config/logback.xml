@@ -1,15 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <appender name="FILE"
-              class="ch.qos.logback.core.FileAppender">
-        <file>data/easy-stage-dataset.log</file>
-        <encoder>
-            <pattern>[%thread] %-5level %logger{10} - %msg%n</pattern>
-        </encoder>
-    </appender>
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>[%-5level] %logger{15} - %msg %n</pattern>
+            <Pattern>[%date{ISO8601}] %-5level %msg %n</Pattern>
+        </encoder>
+    </appender>
+
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>data/easy-stage-dataset.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>data/easy-stage-dataset.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>[%date{ISO8601}] %-5level %msg%n</pattern>
         </encoder>
     </appender>
     <root level="warn">
