@@ -15,11 +15,22 @@
 # limitations under the License.
 #
 
-
-ARGS=$@
 APPHOME=home
 
-mvn exec:java \
-  -Dapp.home=$APPHOME \
-  -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
-  -Dexec.args="$ARGS"
+if [ -z $LOGBACK_OPTS ]; then
+    LOGBACK_OPTS=""
+fi
+
+if [ -z $LOGBACK_CONFIG ]; then
+    LOGBACK_CONFIG=$APPHOME/cfg/logback.xml
+fi
+
+for a in "$@"
+do
+  ARGS="$ARGS'$a' "
+done
+
+LC_ALL=en_US.UTF-8 \
+mvn exec:java -Dapp.home=$APPHOME \
+              -Dlogback.configurationFile=$LOGBACK_CONFIG \
+              -Dexec.args="$ARGS" $LOGBACK_OPTS
