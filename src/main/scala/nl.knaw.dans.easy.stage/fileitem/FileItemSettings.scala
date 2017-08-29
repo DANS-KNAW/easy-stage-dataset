@@ -21,32 +21,33 @@ import java.net.URL
 import nl.knaw.dans.easy.stage.fileitem.FileAccessRights.UserCategory
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings._
 import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject, RelationObject, SdoRelationObject }
+import resource.{ ManagedResource, _ }
 
-case class FileItemSettings (sdoSetDir: Option[File],
-                             file: Option[File] = None,
-                             datasetId: Option[String],
-                             datastreamLocation: Option[URL] = None,
-                             size: Option[Long] = None,
-                             ownerId: Option[String] = None,
-                             pathInDataset: Option[File],
-                             title:  Option[String] = None,
-                             format: Option[String] = None,
-                             sha1: Option[String] = None,
+case class FileItemSettings(sdoSetDir: Option[File],
+                            file: Option[File] = None,
+                            datasetId: Option[String],
+                            datastreamLocation: Option[URL] = None,
+                            size: Option[Long] = None,
+                            ownerId: Option[String] = None,
+                            pathInDataset: Option[File],
+                            title: Option[String] = None,
+                            format: Option[String] = None,
+                            sha1: Option[String] = None,
 
-                             // as in SDO/*/EASY_FILE_METADATA
-                             creatorRole: String = defaultCreatorRole,
-                             visibleTo: UserCategory = FileAccessRights.NONE,
-                             accessibleTo: UserCategory = FileAccessRights.ANONYMOUS,
-                             fedora: Fedora = Fedora,
-                             easyFilesAndFolders: EasyFilesAndFolders = EasyFilesAndFolders,
+                            // as in SDO/*/EASY_FILE_METADATA
+                            creatorRole: String = defaultCreatorRole,
+                            visibleTo: UserCategory = FileAccessRights.NONE,
+                            accessibleTo: UserCategory = FileAccessRights.ANONYMOUS,
+                            fedora: Fedora = Fedora,
+                            easyFilesAndFolders: EasyFilesAndFolders,
 
-                             subordinate: RelationObject = SdoRelationObject(new File("dataset"))) {
+                            subordinate: RelationObject = SdoRelationObject(new File("dataset"))) {
   require(FileItemSettings.creatorRoles.contains(creatorRole), s"illegal value for creatorRole, got $creatorRole")
 }
 
 object FileItemSettings {
   val defaultCreatorRole = "DEPOSITOR"
-  val creatorRoles =  Array("ARCHIVIST", "DEPOSITOR")
+  val creatorRoles = Array("ARCHIVIST", "DEPOSITOR")
 
   /** new file for a new dataset */
   def apply(sdoSetDir: File,
@@ -59,40 +60,47 @@ object FileItemSettings {
             title: Option[String],
             size: Option[Long],
             visibleTo: UserCategory,
-            accessibleTo: UserCategory
-           ) =
-    // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
-    new FileItemSettings(
-      sdoSetDir = Some(sdoSetDir),
-      file = file,
-      datastreamLocation = datastreamLocation,
-      datasetId = None,
-      size = size,
-      ownerId = Some(ownerId),
-      pathInDataset = Some(pathInDataset),
-      format = format,
-      sha1 = sha1,
-      title = title,
-      accessibleTo = accessibleTo,
-      visibleTo = visibleTo
-    )
+            accessibleTo: UserCategory,
+            databaseUrl: String,
+            databaseUser: String,
+            databasePassword: String): ManagedResource[FileItemSettings] = {
+    managed(new EasyFilesAndFoldersImpl(databaseUrl, databaseUser, databasePassword))
+      .map(filesAndFolders => new FileItemSettings(
+        sdoSetDir = Some(sdoSetDir),
+        file = file,
+        datastreamLocation = datastreamLocation,
+        datasetId = None,
+        size = size,
+        ownerId = Some(ownerId),
+        pathInDataset = Some(pathInDataset),
+        format = format,
+        sha1 = sha1,
+        title = title,
+        accessibleTo = accessibleTo,
+        visibleTo = visibleTo,
+        easyFilesAndFolders = filesAndFolders
+      ))
+  }
 
   /** new folder for a new dataset */
   def apply(sdoSetDir: File,
             ownerId: String,
-            pathInDataset: File
-           ) =
-    // no need to catch exceptions thrown by the constructor as the defaults take care of valid values
-    new FileItemSettings(
-      sdoSetDir = Some(sdoSetDir),
-      datasetId = None,
-      ownerId = Some(ownerId),
-      pathInDataset = Some(pathInDataset)
-    )
+            pathInDataset: File,
+            databaseUrl: String,
+            databaseUser: String,
+            databasePassword: String): ManagedResource[FileItemSettings] = {
+    managed(new EasyFilesAndFoldersImpl(databaseUrl, databaseUser, databasePassword))
+      .map(filesAndFolders => new FileItemSettings(
+        sdoSetDir = Some(sdoSetDir),
+        datasetId = None,
+        ownerId = Some(ownerId),
+        pathInDataset = Some(pathInDataset),
+        easyFilesAndFolders = filesAndFolders
+      ))
+  }
 
   /** new file or folder for an existing dataset */
-  def apply(conf: FileItemConf) =
-    // no need to catch exceptions thrown by the constructor as FileItemConf performs the same checks
+  def apply(conf: FileItemCommandLineOptions, easyFilesAndFolders: EasyFilesAndFolders) =
     new FileItemSettings(
       sdoSetDir = conf.sdoSetDir.toOption,
       file = conf.file.toOption,
@@ -105,8 +113,8 @@ object FileItemSettings {
       datasetId = conf.datasetId.toOption,
       pathInDataset = conf.pathInDataset.toOption,
       format = conf.format.toOption,
-      subordinate = FedoraRelationObject(conf.datasetId())
-    ) {
+      subordinate = FedoraRelationObject(conf.datasetId()),
+      easyFilesAndFolders = easyFilesAndFolders) {
       override def toString: String = conf.toString
     }
 }

@@ -19,49 +19,58 @@ import java.io.File
 import java.net.URL
 import java.nio.file.Paths
 
-import nl.knaw.dans.easy.stage.ExistingAncestor
 import nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem._
 import nl.knaw.dans.easy.stage.fileitem.SdoFiles.readDatastreamFoxml
-import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject, SdoRelationObject }
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
+import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject }
+import nl.knaw.dans.easy.stage.{ Configuration, ExistingAncestor }
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.{ deleteQuietly, readFileToString, write }
 import org.scalatest._
 
 import scala.collection.immutable.HashMap
 import scala.util.{ Failure, Success, Try }
 
-class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEach {
+class EasyStageFileItemSpec extends FlatSpec with Matchers with Inside with BeforeAndAfterEach {
 
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
+
+  private val resourceDirString: String = Paths.get(getClass.getResource("/").toURI).toAbsolutePath.toString
+
+  private val mockedConfiguration = new Configuration("version x.y.z", new PropertiesConfiguration() {
+    setDelimiterParsingDisabled(true)
+    load(Paths.get(resourceDirString + "/debug-config", "application.properties").toFile)
+  }, Map.empty)
+
+  // TODO copied from FileItemConfSpec. make fixture for it
+  private val clo = new FileItemCommandLineOptions("-i i -d http:// -p p -s 0 --format f outdir".split(" "), mockedConfiguration)
 
   override def beforeEach(): Unit = deleteQuietly(testDir.toFile)
 
   "getSettingsRows" should "create a single row from dummy conf" in {
     // requires a FileItemConf instance with verified arguments
-    getSettingsRows(FileItemConf.dummy).get.size shouldBe 1
+    inside(getSettingsRows(clo, mockedConfiguration)) {
+      case Success(result) => result should have size 1
+    }
   }
 
   it should "create multiple rows from example.csv" in {
     val args = "--csv-file src/test/resources/example.csv outdir".split(" ")
-    val rows = getSettingsRows(new FileItemConf(args)).get
-    rows.size shouldBe 5
+    inside(getSettingsRows(new FileItemCommandLineOptions(args, mockedConfiguration), mockedConfiguration)) {
+      case Success(result) => result should have size 5
+    }
   }
 
   "FileItemConf" should "accept correct options" in {
     val args = "--csv-file src/test/resources/file_properties-test.csv outdir".split(" ")
-    val rows = getSettingsRows(new FileItemConf(args)).get
-    rows.size shouldBe 1
-  }
-
-  "main" should "report a configuration problem" in {
-    System.setProperty("app.home", "src/main/assembly/dist")
-    val args = "src/test/resources/example.csv target/testSDO".split(" ")
-    the[Exception] thrownBy EasyStageFileItem.main(args) should
-      have message "no protocol: {{ easy_stage_dataset_fcrepo_service_url }}"
+    val rows = getSettingsRows(new FileItemCommandLineOptions(args, mockedConfiguration), mockedConfiguration)
+    inside(rows) {
+      case Success(result) => result should have size 1
+    }
   }
 
   "run" should "report a missing size" in {
-    the[NoSuchElementException] thrownBy EasyStageFileItem.run(new FileItemSettings(
+    val result = EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
       datastreamLocation = Some(new URL("http://x.nl/l/d")),
       size = None,
@@ -77,13 +86,17 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       )),
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS
-    )).get should have message "None.get"
+    ))
+
+    inside(result) {
+      case Failure(e: NoSuchElementException) => e should have message "None.get"
+    }
     // the message is vague, a proper FileItemConf/EasyStageDataset
     // should take care of something clearer for the end user
   }
 
   it should "report a fedora error" in {
-    the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
+    val result = EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
@@ -98,11 +111,15 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       )),
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS
-    )).get should have message "mocked error"
+    ))
+
+    inside(result) {
+      case Failure(e) => e should have message "mocked error"
+    }
   }
 
   it should "report the dataset does not exist" in {
-    the[Exception] thrownBy EasyStageFileItem.run(new FileItemSettings(
+    val result = EasyStageFileItem.run(new FileItemSettings(
       sdoSetDir = Some(new File("target/testSDO")),
       size = Some(1),
       datasetId = Some("easy-dataset:1"),
@@ -117,7 +134,11 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       )),
       accessibleTo = FileAccessRights.NONE,
       visibleTo = FileAccessRights.ANONYMOUS
-    )).get should have message "easy-dataset:1 does not exist in repository"
+    ))
+
+    inside(result) {
+      case Failure(e) => e should have message "easy-dataset:1 does not exist in repository"
+    }
   }
 
   it should "not overwrite files with same names if folders don't yet exist" in {
@@ -132,7 +153,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       "easy-dataset:1 data/some.txt" -> Success("", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "data_some_txt", "data")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("some_txt", "data_some_txt", "data")
   }
 
   it should "not overwrite folders with same names if the parents don't yet exist" in {
@@ -150,23 +171,28 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       "easy-dataset:1 child" -> Success("", "easy-dataset:1"),
       "easy-dataset:1 child/some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should
-      contain only ("child", "child_some_txt", "parent", "parent_child", "parent_child_some_txt")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only(
+      "child",
+      "child_some_txt",
+      "parent",
+      "parent_child",
+      "parent_child_some_txt"
+    )
 
     // verifying just a sample of the generated content
 
-    testDir.resolve("SDO/easy-dataset_1/child_some_txt").toFile.list() should contain only (
+    testDir.resolve("SDO/easy-dataset_1/child_some_txt").toFile.list() should contain only(
       "cfg.json",
       "fo.xml",
       "EASY_FILE",
       "EASY_FILE_METADATA"
     )
-    testDir.resolve("SDO/easy-dataset_1/child").toFile.list() should contain only (
+    testDir.resolve("SDO/easy-dataset_1/child").toFile.list() should contain only(
       "cfg.json",
       "fo.xml",
       "EASY_ITEM_CONTAINER_MD"
     )
-    readFileToString(testDir.resolve("SDO/easy-dataset_1/child_some_txt/EASY_FILE").toFile,"UTF-8") shouldBe "hello"
+    readFileToString(testDir.resolve("SDO/easy-dataset_1/child_some_txt/EASY_FILE").toFile, "UTF-8") shouldBe "hello"
     readDatastreamFoxml(testDir.resolve("SDO/easy-dataset_1/child/fo.xml").toString) should contain only(
       "dc_title" -> "child",
       "prop_state" -> "Active",
@@ -183,7 +209,6 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
   }
 
   it should "not overwrite files with same names in root and sub folder" in {
-
     write(testDir.resolve("to-be-staged/da/ta/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.csv").toFile,
@@ -195,11 +220,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       "easy-dataset:1 da/ta/some.txt" -> Success("da/ta", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("some_txt", "da_ta_some_txt")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("some_txt", "da_ta_some_txt")
   }
 
   it should "not overwrite files with same names in sibling folders" in {
-
     write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "")
     write(testDir.resolve("to-be-staged/some.csv").toFile,
@@ -211,32 +235,26 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),
       "easy-dataset:1 dir2/some.txt" -> Success("dir2", "easy-folder:2")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only ("dir1_some_txt", "dir2_some_txt")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("dir1_some_txt", "dir2_some_txt")
   }
 
   private def runForEachCsvRow(filesAndFolders: EasyFilesAndFolders,
-                               fedora: Fedora = mockFedora(HashMap(
-                                 "pid~easy-dataset:1" -> Seq("easy-dataset:1")
-                               )),
+                               fedora: Fedora = mockFedora(HashMap("pid~easy-dataset:1" -> Seq("easy-dataset:1"))),
                                args: Array[String] = Array(
                                  "--csv-file",
                                  s"$testDir/to-be-staged/some.csv",
                                  s"$testDir/SDO"
-                               )
-                              ) = {
-    for {
-      fileItemSettings <- getSettingsRows(new FileItemConf(args)).get.map(_.copy(
-        fedora = fedora,
-        easyFilesAndFolders = filesAndFolders
-      ))
-    } EasyStageFileItem.run(fileItemSettings) shouldBe a[Success[_]]
+                               )): Unit = {
+    getSettingsRows(new FileItemCommandLineOptions(args, mockedConfiguration), mockedConfiguration)
+      .map(_.map(_.map(_.copy(fedora = fedora, easyFilesAndFolders = filesAndFolders))))
+      .map(_.foreach(_.map(EasyStageFileItem.run(_)).tried.flatten shouldBe a[Success[_]]))
   }
 
   "createFileSdo" should "use file name even if a title is provided" in {
     val sdoSetDir = new File("target/testSdoSet")
     val sdoDir = new File(sdoSetDir, "path_to_uuid-as-file-name")
     sdoSetDir.mkdirs()
-    implicit val s = FileItemSettings(
+    val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
       file = Some(new File("path/to/uuid-as-file-name")),
       datastreamLocation = None,
@@ -247,10 +265,13 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       sha1 = None,
       title = Some("A nice title"),
       accessibleTo = FileAccessRights.NONE,
-      visibleTo = FileAccessRights.ANONYMOUS)
-    EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))
+      visibleTo = FileAccessRights.ANONYMOUS,
+      databaseUrl = "",
+      databaseUser = "",
+      databasePassword = "")
+    s.foreach(EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))(_))
 
-    val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
+    val efmd = loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "uuid-as-file-name"
     (efmd \ "path").text shouldBe "path/to/uuid-as-file-name"
     val foxml = loadXML(new File(sdoDir, "fo.xml"))
@@ -261,7 +282,7 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
     val sdoSetDir = new File("target/testSdoSet")
     val sdoDir = new File(sdoSetDir, "path_to_uuid-as-file-name")
     sdoSetDir.mkdirs()
-    implicit val s = FileItemSettings(
+    val s = FileItemSettings(
       sdoSetDir = sdoSetDir,
       file = Some(new File("path/to/uuid-as-file-name")),
       datastreamLocation = None,
@@ -272,25 +293,30 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with BeforeAndAfterEa
       sha1 = None,
       title = None,
       accessibleTo = FileAccessRights.NONE,
-      visibleTo = FileAccessRights.ANONYMOUS)
-    EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))
+      visibleTo = FileAccessRights.ANONYMOUS,
+      databaseUrl = "",
+      databaseUser = "",
+      databasePassword = "")
+    s.foreach(EasyStageFileItem.createFileSdo(sdoDir, FedoraRelationObject("ficticiousParentSdo"))(_))
 
-    val efmd =  loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
+    val efmd = loadXML(new File(sdoDir, "EASY_FILE_METADATA"))
     (efmd \ "name").text shouldBe "uuid-as-file-name"
     (efmd \ "path").text shouldBe "path/to/uuid-as-file-name"
     val foxml = loadXML(new File(sdoDir, "fo.xml"))
     (foxml \ "datastream" \ "datastreamVersion" \ "xmlContent" \ "dc" \ "title").text shouldBe "uuid-as-file-name"
   }
 
-  def mockEasyFilesAndFolders(expectations: Map[String,Try[ExistingAncestor]]): EasyFilesAndFolders =
+  def mockEasyFilesAndFolders(expectations: Map[String, Try[ExistingAncestor]]): EasyFilesAndFolders = {
     new EasyFilesAndFolders {
       override def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor] =
         expectations(s"$datasetId $file")
     }
+  }
 
-  def mockFedora(expectations: Map[String,Seq[String]]): Fedora =
+  def mockFedora(expectations: Map[String, Seq[String]]): Fedora = {
     new Fedora {
       override def findObjects(query: String, acc: Seq[String], token: Option[String]): Seq[String] =
         expectations(query)
     }
+  }
 }

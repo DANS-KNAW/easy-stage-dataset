@@ -18,8 +18,8 @@ package nl.knaw.dans.easy.stage.dataset
 object PRSQL {
 
   def create(): String = {
-      <psl:permissionSequenceList xmlns:psl="http://easy.dans.knaw.nl/easy/permission-sequence-list/">
-        <sequences></sequences>
-      </psl:permissionSequenceList>.toString()
+    <psl:permissionSequenceList xmlns:psl="http://easy.dans.knaw.nl/easy/permission-sequence-list/">
+      <sequences/>
+    </psl:permissionSequenceList>.toString()
   }
 }

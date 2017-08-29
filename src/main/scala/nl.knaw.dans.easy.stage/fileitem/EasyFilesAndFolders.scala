@@ -16,46 +16,49 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
-import java.sql.{ Connection, DriverManager, PreparedStatement }
+import java.sql.{ Connection, DriverManager }
+import java.util.concurrent.atomic.AtomicBoolean
 
 import nl.knaw.dans.easy.stage.ExistingAncestor
-import nl.knaw.dans.easy.stage.lib.Props.props
+import resource._
 
-import scala.annotation.tailrec
-import scala.util.Try
+import scala.util.{ Success, Try }
 
 trait EasyFilesAndFolders {
   def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor]
 }
 
-object EasyFilesAndFolders extends EasyFilesAndFolders{
-  lazy val conn: Connection = DriverManager.getConnection(props.getString("db-connection-url"))
+class EasyFilesAndFoldersImpl(databaseUrl: String,
+                              databaseUser: String,
+                              databasePassword: String) extends EasyFilesAndFolders with AutoCloseable {
+  val connCreated = new AtomicBoolean(false)
+  lazy val conn: Connection = {
+    val conn = DriverManager.getConnection(databaseUrl, databaseUser, databasePassword)
+    connCreated.compareAndSet(false, true)
+    conn
+  }
+
+  override def close(): Unit = if (connCreated.compareAndSet(true, false)) conn.close()
 
   def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor] = {
-    val query: PreparedStatement = conn.prepareStatement(
-      s"SELECT pid FROM easy_folders WHERE (path = ? or path = ? || '/') and dataset_sid = '$datasetId'"
-    )
+    Option(file)
+      .map(file => {
+        val query = s"SELECT pid FROM easy_folders WHERE (path = ? or path = ? || '/') and dataset_sid = ?"
+        val resultSet = for {
+          prepStatement <- managed(conn.prepareStatement(query))
+          _ = prepStatement.setString(1, file.getParent)
+          _ = prepStatement.setString(2, file.getParent)
+          _ = prepStatement.setString(3, datasetId)
+          resultSet <- managed(prepStatement.executeQuery())
+        } yield resultSet
 
-    @tailrec
-    def get(file: File): ExistingAncestor =
-      if(file==null)
-        ("",datasetId)
-      else {
-        query.setString(1, file.getParent)
-        query.setString(2, file.getParent)
-        val resultSet = query.executeQuery()
-        if (resultSet.next())
-          (file.getParent, resultSet.getString("pid"))
-        else get(file.getParentFile)
-      }
-
-    Try {
-      try {
-        get(file)
-      }
-      finally {
-        query.close()
-      }
-    }
+        resultSet.map(rs => {
+          if (rs.next())
+            Try { (file.getParent, rs.getString("pid")) }
+          else
+            getExistingAncestor(file.getParentFile, datasetId)
+        }).tried.flatten
+      })
+      .getOrElse(Success("", datasetId))
   }
 }

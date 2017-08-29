@@ -32,70 +32,64 @@ object EMD extends DebugEnhancedLogging {
 
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
     trace(sdoDir)
-    val ddm = new File(s.bagitDir, "metadata/dataset.xml")
-    if (!ddm.exists()) {
-      return Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
-    }
-    for {
-      emd <- getEasyMetadata(ddm)
-      _   = s.urn.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
-      _   = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
-      _   = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
-      _   = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
+    new File(s.bagitDir, "metadata/dataset.xml") match {
+      case file if file.exists() =>
+        for {
+          emd <- getEasyMetadata(file)
+          _ = s.urn.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
+          _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
+          _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
+          _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
            *
            * See https://drivenbydata.atlassian.net/browse/EASY-984
            */
-      _   <- writeEMD(sdoDir, new String(new EmdMarshaller(emd).getXmlByteArray, "UTF-8"))
-
-    } yield emd
+          _ <- writeEMD(sdoDir, new String(new EmdMarshaller(emd).getXmlByteArray, "UTF-8"))
+        } yield emd
+      case _ => Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
+    }
   }
 
   def getEasyMetadata(ddm: File): Try[EasyMetadata] = {
     trace(ddm)
-    try {
+    Try {
       val crosswalk = new Ddm2EmdCrosswalk()
-      val emd = crosswalk.createFrom(ddm)
-      if (emd == null)
-        Failure(new RuntimeException(s"${ crosswalk.getXmlErrorHandler.getMessages }"))
-      else
-        Success(emd)
-    } catch {
-      case t: Throwable =>
-          Failure(t)
-    }
+      Option(crosswalk.createFrom(ddm))
+        .map(Success(_))
+        .getOrElse(Failure(new RuntimeException(s"${ crosswalk.getXmlErrorHandler.getMessages }")))
+    }.flatten
   }
 
   def wrapUrn(urn: String): BasicIdentifier = {
     trace(urn)
-    val basicId = new BasicIdentifier(urn)
-    basicId.setScheme(EmdConstants.SCHEME_PID)
-    basicId.setIdentificationSystem(new URI("http://www.persistent-identifier.nl"))
-    basicId
+    new BasicIdentifier(urn) {
+      setScheme(EmdConstants.SCHEME_PID)
+      setIdentificationSystem(new URI("http://www.persistent-identifier.nl"))
+    }
   }
 
   def wrapDoi(doi: String, otherAccessDOI: Boolean): BasicIdentifier = {
     trace(doi, otherAccessDOI)
-    val basicId = new BasicIdentifier(doi)
-    basicId.setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS else EmdConstants.SCHEME_DOI)
-    basicId.setIdentificationSystem(new URI(EmdConstants.DOI_RESOLVER))
-    basicId
+    new BasicIdentifier(doi) {
+      setScheme(if (otherAccessDOI) EmdConstants.SCHEME_DOI_OTHER_ACCESS
+                else EmdConstants.SCHEME_DOI)
+      setIdentificationSystem(new URI(EmdConstants.DOI_RESOLVER))
+    }
   }
 
   def createDmoIdWithPlaceholder(): BasicIdentifier = {
     trace(())
-    val placeholder = "$sdo-id"
-    val basicId = new BasicIdentifier(placeholder)
-    basicId.setScheme(EmdConstants.SCHEME_DMO_ID)
-    basicId
+    new BasicIdentifier("$sdo-id") {
+      setScheme(EmdConstants.SCHEME_DMO_ID)
+    }
   }
 
   def createEmdArchive(archive: String): EmdArchive = {
     trace(archive)
-    val emdArchive = new EmdArchive();
-    emdArchive.setLocation(EmdArchive.Location.valueOf(archive));
-    emdArchive
+    new EmdArchive() {
+      setLocation(EmdArchive.Location.valueOf(archive))
+    }
   }
 }

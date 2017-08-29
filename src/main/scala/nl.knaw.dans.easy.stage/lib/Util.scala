@@ -27,19 +27,18 @@ object Util extends DebugEnhancedLogging {
   def loadXML(metadataFile: File): Elem =
     XML.load(new InputStreamReader(new FileInputStream(metadataFile), "UTF-8"))
 
-  def writeToFile(f: File, s: String): Try[Unit] =
-    /*
-     * DO NOT USE THE SCALA File CLASS TO WRITE THE XML.
-     * It does not have a Charset parameter, so it will try to write in the
-     * platform's default Charset, resulting in question marks for characters that
-     * are not in that Charset.
-     *
-     * See: https://drivenbydata.atlassian.net/browse/EASY-984
-     */
-    Try {
-      trace(f, s)
-      FileUtils.write(f, s, "UTF-8")
-    }
+  /*
+   * DO NOT USE THE SCALA File CLASS TO WRITE THE XML.
+   * It does not have a Charset parameter, so it will try to write in the
+   * platform's default Charset, resulting in question marks for characters that
+   * are not in that Charset.
+   *
+   * See: https://drivenbydata.atlassian.net/browse/EASY-984
+   */
+  def writeToFile(f: File, s: String): Try[Unit] = Try {
+    trace(f, s)
+    FileUtils.write(f, s, "UTF-8")
+  }
 
   def writeJsonCfg(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "cfg.json"), content)
@@ -72,11 +71,7 @@ object Util extends DebugEnhancedLogging {
     f
   }
 
-  def mkdirSafe(f: Option[File]): Try[File] =
-    if (f.isEmpty) Failure(new Exception("no file provided"))
-    else Try {
-      logger.debug(s"Creating dir ${f.get}")
-      f.get.mkdirs()
-      f.get
-    }
+  def mkdirSafe(f: Option[File]): Try[File] = {
+    f.map(mkdirSafe).getOrElse(Failure(new Exception("no file provided")))
+  }
 }

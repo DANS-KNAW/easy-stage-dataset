@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage.lib
 
 import com.yourmediashelf.fedora.client.request.FedoraRequest
-import com.yourmediashelf.fedora.client.{FedoraClient, FedoraCredentials}
+import com.yourmediashelf.fedora.client.{ FedoraClient, FedoraCredentials }
 
 import scala.annotation.tailrec
 import scala.collection.JavaConversions._
@@ -34,7 +34,7 @@ object Fedora extends Fedora {
     FedoraRequest.setDefaultClient(new FedoraClient(credentials))
   }
 
-  lazy val disciplines: Map[String,String] =
+  lazy val disciplines: Map[String, String] =
     findObjects("pid~easy-discipline:*")
       .map(pid => (FedoraClient.getRelationships(pid).execute().getEntity(classOf[String]), pid))
       .map { case (xml, pid) => ((XML.loadString(xml) \\ "Description" \ "setSpec").text, pid) }
@@ -42,9 +42,9 @@ object Fedora extends Fedora {
       .toMap
 
   @tailrec
-  def findObjects(query: String, acc: Seq[String] = Nil, token: Option[String] = None): Seq[String] = {
+  override def findObjects(query: String, acc: Seq[String] = Nil, token: Option[String] = None): Seq[String] = {
     val objectsQuery = FedoraClient.findObjects().maxResults(findObjectsBatchSize).pid().query(query)
-    val objectsResponse = token.map(t => objectsQuery.sessionToken(t).execute).getOrElse(objectsQuery.execute)
+    val objectsResponse = token.map(objectsQuery.sessionToken(_).execute).getOrElse(objectsQuery.execute)
 
     if (objectsResponse.hasNext)
       findObjects(query, acc ++ objectsResponse.getPids, Some(objectsResponse.getToken))

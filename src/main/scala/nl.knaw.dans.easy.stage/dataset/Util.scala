@@ -27,20 +27,6 @@ import scala.xml.{ Elem, NodeSeq }
 
 object Util extends DebugEnhancedLogging {
 
-  class CompositeException(throwables: Seq[Throwable])
-    extends RuntimeException(throwables.foldLeft("Multiple failures:")((msg, t) => s"$msg\n${t.getClass}: ${t.getMessage}, ${getFirstDansFrame(t)}"))
-
-  private def getFirstDansFrame(t: Throwable): String = {
-    if(t.getStackTrace.length > 0) {
-      val st = t.getStackTrace
-      st.find(_.getClassName.contains("nl.knaw.dans")) match {
-        case Some(el) => s"${el.getClassName}.${el.getMethodName} (${el.getFileName}, ${el.getLineNumber})"
-        case None => "<No DANS code in stacktrace ?>"
-      }
-    }
-    else "<Unknown error location>"
-  }
-
   /**
    * Load file metadata XML file and extract the metadata for the specified file.
    * Use this as input for further processing and extraction of sub-elements like title and mime type.
@@ -58,35 +44,35 @@ object Util extends DebugEnhancedLogging {
 
   def readMimeType(fileMetadata: NodeSeq)(implicit s: Settings): Try[String] = Try {
     val mimes =  fileMetadata \ "format"
-    if (mimes.size != 1)
-      throw RejectedDepositException(s"format element doesn't exist for the file, or isn't unique.")
-    mimes.head.text
+    mimes match {
+      case Seq(mime) => mime.text
+      case _ => throw RejectedDepositException(s"format element doesn't exist for the file, or isn't unique.")
+    }
   }
 
   def readTitle(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
-    val titles = fileMetadata \ "title"
-    if(titles.size == 1) Option(titles.head.text)
-    else None
+    fileMetadata \ "title" match {
+      case Seq(title) => Option(title.text)
+      case _ => None
+    }
   }
 
   def readAccessRights(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
-    val rights = fileMetadata \ "accessRights"
-    if(rights.size == 1) Option(rights.head.text)
-    else None
+    fileMetadata \ "accessRights" match {
+      case Seq(right) => Option(right.text)
+      case _ => None
+    }
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
     trace(())
-    for {
-      audience <- loadBagXML("metadata/dataset.xml") \\ "DDM" \ "profile" \ "audience"
-    } yield audience.text
+    (loadBagXML("metadata/dataset.xml") \\ "DDM" \ "profile" \ "audience").map(_.text)
   }
 
   def loadBagXML(fileName: String)(implicit s: Settings): Elem = {
-    val metadataFile = new File(s.bagitDir, fileName)
-    if (!metadataFile.exists) {
-      error(s"Unable to find `$fileName` in bag.")
+    new File(s.bagitDir, fileName) match {
+      case file if file.exists() => loadXML(file)
+      case _ => error(s"Unable to find `$fileName` in bag.")
     }
-    loadXML(metadataFile)
   }
 }

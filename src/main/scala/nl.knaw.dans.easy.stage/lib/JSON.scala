@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage.lib
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import org.json4s.JsonAST
 import org.json4s.JsonAST.JValue
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
@@ -31,37 +32,43 @@ object JSON extends DebugEnhancedLogging {
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
 
-  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String]= Try {
+  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String] = Try {
     trace(mimeType, audiences)
-    def checkProvided(name: String, v: Option[String]) = if(v.isEmpty) throw new IllegalStateException(s"$name must be provided")
+
     checkProvided("DOI", s.doi)
     checkProvided("URN", s.urn)
 
-    val datastreams =
+    val datastreams: List[JsonAST.JObject] =
       List(
         ("contentFile" -> "AMD") ~
-        ("dsID" -> "AMD") ~
-        ("label" -> "Administrative metadata for this dataset") ~
-        ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")
-        ,
+          ("dsID" -> "AMD") ~
+          ("label" -> "Administrative metadata for this dataset") ~
+          ("controlGroup" -> "X") ~
+          ("mimeType" -> "text/xml"),
         ("contentFile" -> "EMD") ~
-        ("dsID" -> "EMD") ~
-        ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml"),
+          ("dsID" -> "EMD") ~
+          ("controlGroup" -> "X") ~
+          ("mimeType" -> "text/xml"),
 
         ("contentFile" -> "PRSQL") ~
-        ("dsID" -> "PRSQL") ~
-        ("controlGroup" -> "X") ~
-        ("mimeType" -> "text/xml")) ++ // N.B. an empty line after this will cause a compilation failure
-        mimeType.toList.map(_ =>
+          ("dsID" -> "PRSQL") ~
+          ("controlGroup" -> "X") ~
+          ("mimeType" -> "text/xml")
+      ) ++ mimeType.toList.map(_ =>
         ("contentFile" -> "ADDITIONAL_LICENSE") ~
-        ("dsID" -> "ADDITIONAL_LICENSE") ~
-        ("controlGroup" -> "M") ~
-        ("mimeType" -> mimeType.get))
+          ("dsID" -> "ADDITIONAL_LICENSE") ~
+          ("controlGroup" -> "M") ~
+          ("mimeType" -> mimeType.get))
 
-    def sdoCfg(audiences: Seq[String]) =
-      ("namespace" -> "easy-dataset") ~
+    pretty(render(sdoCfg(audiences, datastreams)))
+  }
+
+  private def checkProvided(name: String, v: Option[String]): Unit = {
+    if (v.isEmpty) throw new IllegalStateException(s"$name must be provided")
+  }
+
+  private def sdoCfg(audiences: Seq[String], datastreams: Seq[JsonAST.JObject])(implicit s: Settings): JsonAST.JObject =
+    ("namespace" -> "easy-dataset") ~
       ("datastreams" -> datastreams) ~
       ("relations" -> (List(
         ("predicate" -> HAS_DOI) ~ ("object" -> s.doi) ~ ("isLiteral" -> true),
@@ -69,73 +76,68 @@ object JSON extends DebugEnhancedLogging {
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1")
-        ) ++ audiences.map(audience =>
-          ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${s.disciplines(audience)}"))
-      ))
+      ) ++ audiences.map(audience =>
+        ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }"))))
 
-    pretty(render(sdoCfg(audiences)))
-  }
-
-  def createFileCfg(mimeType: String,
-                    parent: RelationObject,
-                    subordinate: RelationObject
-                   )(implicit settings: FileItemSettings): String = {
-    def createJSON(dataJSON: JValue) = {
-      ("namespace" -> "easy-file") ~
-        ("datastreams" -> List(
-          dataJSON,
-          ("contentFile" -> "EASY_FILE_METADATA") ~
-            ("dsID" -> "EASY_FILE_METADATA") ~
-            ("controlGroup" -> "X") ~
-            ("mimeType" -> "text/xml"))) ~
-        ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate.tupled,
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
-    }
-
-    def redirectFileDatastreamJson = {
-      createJSON(
-        ("dsLocation" -> settings.datastreamLocation.get.toURI.toASCIIString) ~
-          ("dsID" -> "EASY_FILE") ~
-          ("controlGroup" -> "R") ~
-          ("mimeType" -> mimeType)
-      )
-    }
-
-    def managedFileDatastreamJson = {
-      createJSON(
-        ("contentFile" -> "EASY_FILE") ~
-          ("dsID" -> "EASY_FILE") ~
-          ("controlGroup" -> "M") ~
-          ("mimeType" -> mimeType) ~
-          ("checksumType" -> "SHA-1") ~
-          ("checksum" -> settings.sha1)
-      )
-    }
-
+  def createFileCfg(mimeType: String, parent: RelationObject, subordinate: RelationObject)(implicit settings: FileItemSettings): String = {
     val json = settings.file
-      .map(_ => managedFileDatastreamJson)
-      .getOrElse(redirectFileDatastreamJson)
-    pretty(render(json))
+      .map(_ => managedFileDatastreamJson _)
+      .getOrElse(redirectFileDatastreamJson _)
+    (pretty _ compose render compose json.tupled).apply(mimeType, parent, subordinate)
   }
 
-  def createDirCfg(parent: RelationObject,
-                   dataset: RelationObject
-                  ): String = {
-      val json = ("namespace" -> "easy-folder") ~
-        ("datastreams" -> List(
-          ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
-            ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
-            ("controlGroup" -> "X") ~
-            ("mimeType" -> "text/xml"))) ~
-        ("relations" -> List(
-          ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
-          ("predicate" -> IS_SUBORDINATE_TO) ~ dataset.tupled,
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
-          ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
-        ))
+  private def createJSON(dataJSON: JValue, parent: RelationObject, subordinate: RelationObject) = {
+    ("namespace" -> "easy-file") ~
+      ("datastreams" -> List(
+        dataJSON,
+        ("contentFile" -> "EASY_FILE_METADATA") ~
+          ("dsID" -> "EASY_FILE_METADATA") ~
+          ("controlGroup" -> "X") ~
+          ("mimeType" -> "text/xml"))) ~
+      ("relations" -> List(
+        ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+        ("predicate" -> IS_SUBORDINATE_TO) ~ subordinate.tupled,
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FILE"),
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")))
+  }
+
+  private def redirectFileDatastreamJson(mimeType: String, parent: RelationObject, subordinate: RelationObject)(implicit settings: FileItemSettings) = {
+    createJSON(
+      ("dsLocation" -> settings.datastreamLocation.get.toURI.toASCIIString) ~
+        ("dsID" -> "EASY_FILE") ~
+        ("controlGroup" -> "R") ~
+        ("mimeType" -> mimeType),
+      parent,
+      subordinate
+    )
+  }
+
+  private def managedFileDatastreamJson(mimeType: String, parent: RelationObject, subordinate: RelationObject)(implicit settings: FileItemSettings) = {
+    createJSON(
+      ("contentFile" -> "EASY_FILE") ~
+        ("dsID" -> "EASY_FILE") ~
+        ("controlGroup" -> "M") ~
+        ("mimeType" -> mimeType) ~
+        ("checksumType" -> "SHA-1") ~
+        ("checksum" -> settings.sha1),
+      parent,
+      subordinate
+    )
+  }
+
+  def createDirCfg(parent: RelationObject, dataset: RelationObject): String = {
+    val json = ("namespace" -> "easy-folder") ~
+      ("datastreams" -> List(
+        ("contentFile" -> "EASY_ITEM_CONTAINER_MD") ~
+          ("dsID" -> "EASY_ITEM_CONTAINER_MD") ~
+          ("controlGroup" -> "X") ~
+          ("mimeType" -> "text/xml"))) ~
+      ("relations" -> List(
+        ("predicate" -> IS_MEMBER_OF) ~ parent.tupled,
+        ("predicate" -> IS_SUBORDINATE_TO) ~ dataset.tupled,
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1FOLDER"),
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-container-item-v1")
+      ))
     pretty(render(json))
   }
 }

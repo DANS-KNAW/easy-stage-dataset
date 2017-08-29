@@ -20,38 +20,37 @@ import java.net.URI
 import java.nio.file.{ Path, Paths }
 import java.util.regex.Pattern
 
-import nl.knaw.dans.easy.stage.lib.Version
 import org.joda.time.DateTime
 import org.rogach.scallop.{ ScallopConf, ScallopOption, ValueConverter, singleArgConverter }
+import resource._
 
 import scala.io.Source
 import scala.util.Try
 
-class Conf(args: Seq[String]) extends ScallopConf(args) {
+class CommandLineOptions(args: Seq[String], configuration: Configuration) extends ScallopConf(args) {
 
-  editBuilder(sc => sc.setHelpWidth(110))
   appendDefaultToDescription = true
+  editBuilder(sc => sc.setHelpWidth(110))
 
   printedName = "easy-stage-dataset"
-  version(s"$printedName v${Version()}")
-
-  private val _________ = printedName.map(_ => " ").mkString("")
-
-  val description = """Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."""
+  version(s"$printedName v${ configuration.version }")
+  private val _________ = " " * printedName.length
+  val description = "Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."
   val synopsis: String =
-    s"""  $printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
-       |  ${_________}    <EASY-deposit> <staged-digital-object-set>""".stripMargin
-  banner(s"""
-           |  $description
-           |
-           |Usage:
-           |
-           |$synopsis
-           |
-           |Options:
-           |""".stripMargin)
+    s"""$printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
+       |${ _________ } <EASY-deposit> <staged-digital-object-set>""".stripMargin
+  banner(
+    s"""
+       |$description
+       |
+       |Usage:
+       |
+       |$synopsis
+       |
+       |Options:
+       |""".stripMargin)
 
-  implicit val dateTimeConv = singleArgConverter[DateTime](conv = DateTime.parse)
+  private implicit val dateTimeConv: ValueConverter[DateTime] = singleArgConverter[DateTime](conv = DateTime.parse)
 
   val submissionTimestamp: ScallopOption[DateTime] = opt[DateTime](
     name = "submission-timestamp", short = 't',
@@ -69,9 +68,9 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val dsLocationMappings: ScallopOption[File] = opt[File](
     name = "external-file-uris", short = 'f',
     descr = "File with mappings from bag local path to external file URI. Each line in this " +
-            "file must contain a mapping. The path is separated from the URI by one ore more " +
-            "whitespaces. If more groups of whitespaces are encountered, they are considered " +
-            "part of the path.")
+      "file must contain a mapping. The path is separated from the URI by one ore more " +
+      "whitespaces. If more groups of whitespaces are encountered, they are considered " +
+      "part of the path.")
   val state: ScallopOption[String] = opt[String](
     name = "state",
     descr = "The state of the dataset to be created. This must be one of DRAFT, SUBMITTED or PUBLISHED.",
@@ -79,8 +78,8 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
   val archive: ScallopOption[String] = opt[String](
     name = "archive",
     descr = "The way the dataset is archived. This must be either EASY or DATAVAULT. " +
-            "EASY: Data and metadata are archived in EASY. " +
-            "DATAVAULT: Data and metadata are archived in the DATAVAULT. There may be dissemination copies in EASY.",
+      "EASY: Data and metadata are archived in EASY. " +
+      "DATAVAULT: Data and metadata are archived in the DATAVAULT. There may be dissemination copies in EASY.",
     default = Option("EASY"))
   val deposit: ScallopOption[File] = trailArg[File](
     name = "EASY-deposit",
@@ -100,13 +99,16 @@ class Conf(args: Seq[String]) extends ScallopConf(args) {
 
   private val dsLocationsFileLinePattern = Pattern.compile("""^(.*)\s+(.*)$""")
 
-  private def readDsLocationMappings(file: File) = Try {
-    resource.managed(Source.fromFile(file, "UTF-8")).acquireAndGet (
-      _.getLines().collect {
-        case line if line.nonEmpty =>
-          val m = dsLocationsFileLinePattern.matcher(line)
-          if (m.find()) (Paths.get(m.group(1).trim), new URI(m.group(2).trim))
-          else throw new IllegalArgumentException(s"Invalid line in input: '$line'")
-      }.toMap)
+  private def readDsLocationMappings(file: File): Try[Map[Path, URI]] = {
+    managed(Source.fromFile(file, "UTF-8"))
+      .map(_.getLines()
+        .collect {
+          case line if line.nonEmpty =>
+            val m = dsLocationsFileLinePattern.matcher(line)
+            if (m.find()) (Paths.get(m.group(1).trim), new URI(m.group(2).trim))
+            else throw new IllegalArgumentException(s"Invalid line in input: '$line'")
+        }
+        .toMap)
+      .tried
   }
 }

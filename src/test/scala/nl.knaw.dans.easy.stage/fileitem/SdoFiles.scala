@@ -18,50 +18,22 @@ package nl.knaw.dans.easy.stage.fileitem
 import java.io.File
 
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
-import org.apache.commons.io.FileUtils.readFileToString
-import org.json4s.native._
-
-import scala.reflect.io.Path
 
 /**
-  * Gets filenames of and SDO set or essential contents of SDO files
-  * with as little knowledge as possible yet insensitive to
-  * varying whitespace, order of elements and namespace prefixes.
-  */
+ * Gets filenames of and SDO set or essential contents of SDO files
+ * with as little knowledge as possible yet insensitive to
+ * varying whitespace, order of elements and namespace prefixes.
+ */
 object SdoFiles {
 
-  def getRelativeFiles(dir: Path): Set[String] =
-    dir.walk.map(_.toString.replaceAll(dir.toString() + "/", "")).toSet
-
-  /** Gets (label,text) of elements in the root of the document */
-  def readFlatXml(file: String): Set[(String, String)] =
-    (loadXML(new File(file)) \ "_")
-      .map(n => n.label -> n.text)
-      .toSet
-
   /** Gets (label,text) of dc elements and (name,value)-attributes of object properties,
-    * labels are prefixed with "dc_" and names are prefixed with "prop_". */
+   * labels are prefixed with "dc_" and names are prefixed with "prop_". */
   def readDatastreamFoxml(file: String): Set[(String, String)] = {
     val xml = loadXML(new File(file))
     (xml \\ "dc" \ "_")
-      .map(node => "dc_" + node.label -> node.text)
+      .map(node => s"dc_${ node.label }" -> node.text)
       .toSet ++
       (xml \\ "property")
-        .map(node =>
-          "prop_" + (node \ "@NAME").toString().replaceAll(".*#", "")
-            -> (node \ "@VALUE").toString()
-        ).toSet
-  }
-
-  type S2S = Map[String, String]
-  type S2A = Map[String, Any]
-
-  def readCfgJson(file: String): (Option[String], Option[Set[S2S]], Option[Set[S2S]]) = {
-    val content = readFileToString(new File(file),"UTF-8")
-    val map = parseJson(content).values.asInstanceOf[S2A]
-    val namespace = map.get("namespace").map(_.asInstanceOf[String])
-    val datastreams = map.get("datastreams").map(_.asInstanceOf[List[S2S]].toSet[S2S])
-    val relations = map.get("relations").map(_.asInstanceOf[List[S2S]].toSet[S2S])
-    (namespace, datastreams, relations)
+        .map(node => s"prop_${ (node \ "@NAME").toString().replaceAll(".*#", "") }" -> (node \ "@VALUE").toString()).toSet
   }
 }

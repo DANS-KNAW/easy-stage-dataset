@@ -17,21 +17,25 @@ package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
 
-import scala.util.Try
+import scala.util.{ Failure, Try }
 
 object EasyFileMetadata {
-  def apply(s: FileItemSettings): Try[String] = Try {
-      val parentPath = s.pathInDataset.get.getParentFile
-      val fileName = s.pathInDataset.get.getName
+  def apply(s: FileItemSettings): Try[String] = {
+    s.pathInDataset
+      .map(path => Try {
+        val parentPath = path.getParentFile
+        val fileName = path.getName
 
-      <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
-        <name>{fileName}</name>
-        <path>{new File(parentPath, fileName)}</path>
-        <mimeType>{s.format.get}</mimeType>
-        <size>{s.size.get}</size>
-        <creatorRole>{s.creatorRole}</creatorRole>
-        <visibleTo>{s.visibleTo}</visibleTo>
-        <accessibleTo>{s.accessibleTo}</accessibleTo>
-      </fimd:file-item-md>.toString()
+        <fimd:file-item-md xmlns:fimd="http://easy.dans.knaw.nl/easy/file-item-md/" version="0.1" >
+          <name>{fileName}</name>
+          <path>{new File(parentPath, fileName)}</path>
+          <mimeType>{s.format.get}</mimeType>
+          <size>{s.size.get}</size>
+          <creatorRole>{s.creatorRole}</creatorRole>
+          <visibleTo>{s.visibleTo}</visibleTo>
+          <accessibleTo>{s.accessibleTo}</accessibleTo>
+        </fimd:file-item-md>.toString()
+      })
+      .getOrElse(Failure(new Exception("No path-in-dataset defined")))
   }
 }

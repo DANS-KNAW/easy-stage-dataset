@@ -36,7 +36,8 @@ object AMD extends DebugEnhancedLogging {
       {
         if (state == "DRAFT") {
           <stateChangeDates />
-        } else {
+        }
+        else {
           <stateChangeDates>
             <damd:stateChangeDate>
               <fromState>DRAFT</fromState>

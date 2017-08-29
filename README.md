@@ -77,22 +77,32 @@ ARGUMENTS for easy-stage-fileItem
     -f, --format  <arg>                dcterms property format, the mime type of the file
   
     -a, --accessible-to  <arg>         specifies the accessibility of the file item; one of: ANONYMOUS, KNOWN,
-                                       RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = NONE)
+                                     RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = NONE)
     -c, --creator-role  <arg>          specifies the role of the file item creator; one of: ARCHIVIST, DEPOSITOR
-                                       (default = DEPOSITOR)
-        --csv-file  <arg>              a comma separated file with one column for each option (additional
-                                       columns are ignored) and one set of options per line
+                                     (default = DEPOSITOR)
+      --csv-file  <arg>              a comma separated file with one column for each option (additional
+                                     columns are ignored) and one set of options per line
+    -i, --dataset-id  <arg>            id of the dataset in Fedora that should receive the file to stage
+                                     (requires file-path). If omitted the trailing argument csv-file is
+                                     required
+    -d, --datastream-location  <arg>   http URL to redirect to (if specified, file-location MUST NOT be
+                                     specified)
     -l, --file-location  <arg>         The file to be staged (if specified, --datastream-location is ignored)
-        --owner-id  <arg>              specifies the id of the owner/creator of the file item (defaults to the
-                                       one configured in the application configuration file)
+    -f, --format  <arg>                dcterms property format, the mime type of the file
+      --owner-id  <arg>              specifies the id of the owner/creator of the file item (defaults to the
+                                     one configured in the application configuration file)
+    -p, --path-in-dataset  <arg>       the path that the file should get in the dataset, a staged digital object
+                                     is created for the file and the ancestor folders that don't yet exist in
+                                     the dataset
+    -s, --size  <arg>                  Size in bytes of the file data
     -v, --visible-to  <arg>            specifies the visibility of the file item; one of: ANONYMOUS, KNOWN,
-                                       RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
-        --help                         Show help message
-        --version                      Show version of this program
-  
+                                     RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
+      --help                         Show help message
+      --version                      Show version of this program
+    
     trailing arguments:
-     staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
-                                            dataset (will be created if it does not exist)
+    staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
+                                          dataset (will be created if it does not exist)
 
 INSTALLATION AND CONFIGURATION
 ------------------------------

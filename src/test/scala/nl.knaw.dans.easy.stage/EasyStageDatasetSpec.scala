@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
 import nl.knaw.dans.easy.stage.EasyStageDataset._
@@ -24,9 +24,9 @@ import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.readFileToString
 import org.scalatest.Inside._
-import org.scalatest.{FlatSpec, Matchers, OneInstancePerTest}
+import org.scalatest.{ FlatSpec, Matchers, OneInstancePerTest }
 
-import scala.util.{Failure, Success}
+import scala.util.{ Failure, Success }
 
 class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
@@ -62,11 +62,9 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val sdoSetDir = testDir.resolve("someSDO")
     implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
     Files.createDirectories(dataDir)
-    FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile,"a b c")
+    FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile, "a b c")
 
-    val result = createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS)
-    result shouldBe a[Failure[_]]
-    inside(result) {
+    inside(createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS)) {
       case Failure(e) => e should have message "Invalid line in manifest-sha1.txt: a b c"
     }
 
@@ -84,12 +82,12 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     // Note that files.xml specifies no accessRights for data/quicksort.hs
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>KNOWN</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>KNOWN</accessibleTo>")
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>ANONYMOUS</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>ANONYMOUS</accessibleTo>")
   }
 
   it should "override default dataset rights when rights are explicitly specified for a file" in {
@@ -103,12 +101,12 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     // Note that files.xml specifies NONE for data/path/to/file.txt
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>NONE</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>NONE</accessibleTo>")
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include ("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include ("<accessibleTo>NONE</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>NONE</accessibleTo>")
   }
 
   "checkFilesInBag" should "result in Success if files argument is empty" in {
@@ -116,13 +114,8 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
   }
 
   it should "result in Failure if passed list of one file that is not in the bag" in {
-    val result = checkFilesInBag(Set(Paths.get("data/NOT-README.md")), testBagMedium)
-
-    result shouldBe a[Failure[_]]
-    inside(result) {
-      case Failure(e) =>
-        e shouldBe a[RejectedDepositException]
-        e.getMessage should include("data/NOT-README.md")
+    inside(checkFilesInBag(Set(Paths.get("data/NOT-README.md")), testBagMedium)) {
+      case Failure(RejectedDepositException(msg, _)) => msg should include("data/NOT-README.md")
     }
   }
 
@@ -146,16 +139,9 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
       Paths.get("data/random images/WRONG.jpeg"),
       Paths.get("data/a/deeper/path/With some file.txt"))
 
-    val result = checkFilesInBag(files, testBagMedium)
-    result shouldBe a[Failure[_]]
-
-    inside(result) {
-      case Failure(e) =>
-        e shouldBe a[RejectedDepositException]
-        e.getMessage should include("WRONG.jpeg")
-        e.getMessage shouldNot include("image01")
-        e.getMessage shouldNot include("image02")
-        e.getMessage shouldNot include("image03")
+    inside(checkFilesInBag(files, testBagMedium)) {
+      case Failure(RejectedDepositException(msg, _)) =>
+        msg should (include("WRONG.jpeg") and not include "image01" and not include "image02" and not include "image03")
     }
   }
 
@@ -174,7 +160,11 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
         "D10000" -> "easy-discipline:57",
         "D30000" -> "easy-discipline:1",
         "E10000" -> "easy-discipline:219",
-        "E18000" -> "easy-discipline:226")
+        "E18000" -> "easy-discipline:226"),
+      databaseUrl = "",
+      databaseUser = "",
+      databasePassword = "",
+      licenses = Map.empty
     )
   }
 }

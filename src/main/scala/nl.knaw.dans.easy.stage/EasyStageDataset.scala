@@ -31,7 +31,6 @@ import nl.knaw.dans.easy.stage.lib.{ JSON, SdoRelationObject }
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
-import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.readFileToString
 
 import scala.collection.JavaConverters._
@@ -41,59 +40,37 @@ import scala.xml.NodeSeq
 object EasyStageDataset extends DebugEnhancedLogging {
   private val bagReader = new BagReader()
 
-  def main(args: Array[String]) {
-    val props = new PropertiesConfiguration(new File(System.getProperty("app.home"), "cfg/application.properties"))
-    implicit val s = Settings(new Conf(args), props)
-    run match {
-      case Success(_) => logger.info("Staging SUCCESS")
-      case Failure(t) => logger.error("Staging FAIL", t)
-    }
-  }
-
   // TODO: candidate for a possible dans-bagit-lib
   /**
    * Checks that all paths in `files` are part of the payload of the bag in `bagDir`. This means that they must be in at least one payload manifest.
    *
-   * @param files the files to check
+   * @param files  the files to check
    * @param bagDir the directory containing the bag
    * @return Success if all files were part, otherwise Failure
    */
   def checkFilesInBag(files: Set[Path], bagDir: Path): Try[Unit] = {
-    val bag = bagReader.read(bagDir)
-    val paths = bag.getPayLoadManifests.asScala.map(_.getFileToChecksumMap.keySet.asScala)
-    val filesInBag = paths.reduce(_ ++ _).map(bagDir.relativize)
-    val filesNotInBag = files.diff(filesInBag)
-    if (filesNotInBag.isEmpty) Success(())
-    else Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $filesNotInBag"))
+    for {
+      bag <- Try { bagReader.read(bagDir) }
+      result <- {
+        val filesInBag = for {
+          manifest <- bag.getPayLoadManifests.asScala
+          path <- manifest.getFileToChecksumMap.keySet().asScala
+        } yield bagDir.relativize(path)
+
+        files diff filesInBag match {
+          case fs if fs.isEmpty => Success(())
+          case fs => Failure(RejectedDepositException(s"The fileUris map must reference a subset of all files in the bag. Not found in bag: $fs"))
+        }
+      }
+    } yield result
   }
 
   def checkValidState(state: String): Try[Unit] = {
-    if(Seq("DRAFT", "SUBMITTED", "PUBLISHED").contains(state)) Success(())else Failure(new IllegalArgumentException(s"Not a valid state: $state"))
+    if (Seq("DRAFT", "SUBMITTED", "PUBLISHED").contains(state)) Success(())
+    else Failure(new IllegalArgumentException(s"Not a valid state: $state"))
   }
 
   def run(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
-    def createDatasetSdo(): Try[(EasyMetadata, AdministrativeMetadata)] = {
-      logger.info("Creating dataset SDO")
-      for {
-        sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-        amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
-        emdContent <- EMD.create(sdoDir)
-        foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
-        mimeType <- AdditionalLicense.createOptionally(sdoDir)
-        audiences <- readAudiences()
-        jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
-        _ <- writeAMD(sdoDir, amdContent.toString())
-        _ <- writeFoxml(sdoDir, foxmlContent)
-        _ <- writePrsql(sdoDir, PRSQL.create())
-        _ <- writeJsonCfg(sdoDir, jsonCfgContent)
-      } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
-    }
-
-    def getDataDir = Try {
-      s.bagitDir.listFiles.find(_.getName == "data")
-        .getOrElse(throw new RuntimeException("Bag doesn't contain data directory."))
-    }
-
     logger.debug(s"Settings = $s")
     for {
       _ <- checkValidState(s.state)
@@ -106,92 +83,127 @@ object EasyStageDataset extends DebugEnhancedLogging {
     } yield (emdContent, amdContent)
   }
 
+  private def createDatasetSdo()(implicit s: Settings): Try[(EasyMetadata, AdministrativeMetadata)] = {
+    logger.info("Creating dataset SDO")
+    for {
+      sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
+      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
+      emdContent <- EMD.create(sdoDir)
+      foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
+      mimeType <- AdditionalLicense.createOptionally(sdoDir)
+      audiences <- readAudiences()
+      jsonCfgContent <- JSON.createDatasetCfg(mimeType, audiences)
+      _ <- writeAMD(sdoDir, amdContent.toString())
+      _ <- writeFoxml(sdoDir, foxmlContent)
+      _ <- writePrsql(sdoDir, PRSQL.create())
+      _ <- writeJsonCfg(sdoDir, jsonCfgContent)
+    } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
+  }
+
+  private def getDataDir(implicit s: Settings) = {
+    s.bagitDir.listFiles
+      .collectFirst { case file if file.getName == "data" => Success(file) }
+      .getOrElse(Failure(new RuntimeException("Bag doesn't contain data directory.")))
+  }
+
   def createFileAndFolderSdos(dir: File, parentSDO: String, datasetRights: AccessCategory)(implicit s: Settings): Try[Unit] = {
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
-      readFileToString(new File(s.bagitDir, sha1File),"UTF-8")
+      readFileToString(new File(s.bagitDir, sha1File), "UTF-8")
         .lines.filter(_.nonEmpty)
         .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
-          case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
-          case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${array.mkString(" ")}")
-        }.toMap
-    }.recoverWith { case _: FileNotFoundException => Success(Map[String, String]()) }
-
-    def createFileAndFolderSdos(dir: File, parentSDO: String): Try[Unit] = {
-      logger.debug(s"Creating file and folder SDOs for directory: $dir")
-      def visit(child: File): Try[Unit] =
-        if (child.isFile)
-          createFileSdo(child, parentSDO)
-        else if (child.isDirectory)
-          createFolderSdo(child, parentSDO).flatMap(_ => createFileAndFolderSdos(child, getSDODir(child).getName))
-        else
-          Failure(new RuntimeException(s"Unknown object encountered while traversing ${dir.getName}: ${child.getName}"))
-      Try { dir.listFiles().toList }.flatMap(_.map(visit).collectResults.map(_ => ()))
-    }
-
-    def getBagRelativePath(path: Path): Path = s.bagitDir.toPath.relativize(path)
-
-    def createFileSdo(file: File, parentSDO: String): Try[Unit] = {
-      logger.debug(s"Creating file SDO for $file")
-      val datasetRelativePath = getDatasetRelativePath(file)
-      for {
-        sdoDir <- mkdirSafe(getSDODir(file))
-        bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
-        fileMetadata <- readFileMetadata(bagRelativePath)
-        mime <- readMimeType(fileMetadata)
-        title <- readTitle(fileMetadata)
-        fileAccessRights <- getFileAccessRights(fileMetadata)
-        fis = FileItemSettings(
-          sdoSetDir = s.sdoSetDir,
-          file = if (s.fileUris.get(getBagRelativePath(file.toPath)).isDefined) None
-                 else Some(file),
-          datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
-          ownerId = s.ownerId,
-          pathInDataset = new File(datasetRelativePath.toString),
-          size = Some(file.length),
-          format = Some(mime),
-          sha1 = maybeSha1Map.get.get(bagRelativePath), // first get is checked in advance
-          title = title,
-          accessibleTo = fileAccessRights,
-          visibleTo = FileAccessRights.visibleTo(datasetRights)
-        )
-        _ <- EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(fis)
-      } yield ()
-    }
-
-    def getFileAccessRights(fileMetadata: NodeSeq)(implicit s: Settings): Try[FileAccessRights.Value] = {
-      lazy val defaultRights = FileAccessRights.accessibleTo(datasetRights)
-      readAccessRights(fileMetadata: NodeSeq) map {
-        case Some(fileRightsStr) => FileAccessRights.valueOf(fileRightsStr).getOrElse(defaultRights) // ignore unknown values
-        case None => defaultRights
+        case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
+        case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${ array.mkString(" ") }")
       }
-    }
-
-    def createFolderSdo(folder: File, parentSDO: String): Try[Unit] = {
-      logger.debug(s"Creating folder SDO for $folder")
-      val relativePath= getDatasetRelativePath(folder).toString
-      for {
-        sdoDir <- mkdirSafe(getSDODir(folder))
-        fis     = FileItemSettings(s.sdoSetDir, s.ownerId, getDatasetRelativePath(folder).toFile)
-        _      <- EasyStageFileItem.createFolderSdo(sdoDir, relativePath, SdoRelationObject(new File(parentSDO)))(fis)
-      } yield ()
-    }
-
-    def getSDODir(fileOrDir: File): File = {
-      val sdoName = getDatasetRelativePath(fileOrDir).toString.replace("/", "_").replace(".", "_") match {
-        case name if name.startsWith("_") => name.tail
-        case name => name
-      }
-      new File(s.sdoSetDir.getPath, sdoName)
-    }
-
-    def getDatasetRelativePath(item: File): Path =
-      new File(s.bagitDir, "data").toPath.relativize(item.toPath)
+        .toMap
+    }.recoverWith { case _: FileNotFoundException => Success(Map.empty[String, String]) }
 
     for {
-      _ <- maybeSha1Map
-      _ <- createFileAndFolderSdos(dir, parentSDO)
-    } yield Unit
+      sha1Map <- maybeSha1Map
+      _ <- createFileAndFolderSdos(dir, parentSDO, datasetRights, sha1Map)
+    } yield ()
+  }
+
+  private def createFileAndFolderSdos(dir: File, parentSDO: String, datasetRights: AccessCategory, sha1Map: Map[String, String])(implicit s: Settings): Try[Unit] = {
+    logger.debug(s"Creating file and folder SDOs for directory: $dir")
+
+    for {
+      child <- Try { dir.listFiles().toList }
+      _ <- child.map {
+        case file if file.isFile => createFileSdo(file, parentSDO, datasetRights, sha1Map)
+        case directory if directory.isDirectory => createFolderSdo(directory, parentSDO)
+          .flatMap(_ => createFileAndFolderSdos(directory, getSDODir(directory).getName, datasetRights, sha1Map))
+        case other => Failure(new RuntimeException(s"Unknown object encountered while traversing ${ dir.getName }: ${ other.getName }"))
+      }.collectResults.map(_ => ())
+    } yield ()
+  }
+
+  private def getBagRelativePath(path: Path)(implicit s: Settings): Path = {
+    s.bagitDir.toPath.relativize(path)
+  }
+
+  private def createFileSdo(file: File, parentSDO: String, datasetRights: AccessCategory, sha1Map: Map[String, String])(implicit s: Settings): Try[Unit] = {
+    logger.debug(s"Creating file SDO for $file")
+    val datasetRelativePath = getDatasetRelativePath(file)
+    for {
+      sdoDir <- mkdirSafe(getSDODir(file))
+      bagRelativePath = s.bagitDir.toPath.relativize(file.toPath).toString
+      fileMetadata <- readFileMetadata(bagRelativePath)
+      mime <- readMimeType(fileMetadata)
+      title <- readTitle(fileMetadata)
+      fileAccessRights <- getFileAccessRights(fileMetadata, datasetRights)
+      _ <- FileItemSettings(
+        sdoSetDir = s.sdoSetDir,
+        file = s.fileUris.get(getBagRelativePath(file.toPath)).fold(Option(file))(_ => Option.empty),
+        datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
+        ownerId = s.ownerId,
+        pathInDataset = datasetRelativePath.toFile,
+        size = Some(file.length),
+        format = Some(mime),
+        sha1 = sha1Map.get(bagRelativePath), // first get is checked in advance
+        title = title,
+        accessibleTo = fileAccessRights,
+        visibleTo = FileAccessRights.visibleTo(datasetRights),
+        databaseUrl = s.databaseUrl,
+        databaseUser = s.databaseUser,
+        databasePassword = s.databasePassword)
+        .map(EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(_))
+        .tried
+    } yield ()
+  }
+
+  private def getFileAccessRights(fileMetadata: NodeSeq, datasetRights: AccessCategory)(implicit s: Settings): Try[FileAccessRights.Value] = {
+    lazy val defaultRights = FileAccessRights.accessibleTo(datasetRights)
+    readAccessRights(fileMetadata).map(_.flatMap(FileAccessRights.valueOf).getOrElse(defaultRights))
+  }
+
+  private def createFolderSdo(folder: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
+    logger.debug(s"Creating folder SDO for $folder")
+    lazy val relativePath = getDatasetRelativePath(folder).toString
+    for {
+      sdoDir <- mkdirSafe(getSDODir(folder))
+      _ <- FileItemSettings(
+        s.sdoSetDir,
+        s.ownerId,
+        getDatasetRelativePath(folder).toFile,
+        s.databaseUrl,
+        s.databaseUser,
+        s.databasePassword)
+        .map(EasyStageFileItem.createFolderSdo(sdoDir, relativePath, SdoRelationObject(new File(parentSDO)))(_))
+        .tried
+    } yield ()
+  }
+
+  private def getSDODir(fileOrDir: File)(implicit s: Settings): File = {
+    val sdoName = getDatasetRelativePath(fileOrDir).toString.replace("/", "_").replace(".", "_") match {
+      case name if name startsWith "_" => name.tail
+      case name => name
+    }
+    new File(s.sdoSetDir.getPath, sdoName)
+  }
+
+  private def getDatasetRelativePath(item: File)(implicit s: Settings): Path = {
+    new File(s.bagitDir, "data").toPath.relativize(item.toPath)
   }
 }

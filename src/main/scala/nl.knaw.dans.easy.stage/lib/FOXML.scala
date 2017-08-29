@@ -57,7 +57,6 @@ object FOXML extends DebugEnhancedLogging {
   }
 
   private def getFOXML(label: String, ownerId: String, dcElems: NodeSeq, contentDigest: NodeSeq = NodeSeq.Empty): Elem = {
-    //    <?xml version="1.0" encoding="UTF-8"?>
     <foxml:digitalObject VERSION="1.1"
                          xmlns:foxml="info:fedora/fedora-system:def/foxml#"
                          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"

@@ -16,13 +16,11 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.net.{ URI, URL }
+import java.net.URI
 import java.nio.file.Path
 
 import com.yourmediashelf.fedora.client.FedoraCredentials
-import nl.knaw.dans.easy.stage.dataset.Licenses
 import nl.knaw.dans.easy.stage.lib.Fedora
-import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
 
 case class Settings(ownerId: String,
@@ -35,10 +33,11 @@ case class Settings(ownerId: String,
                     fileUris: Map[Path, URI] = Map(),
                     state: String,
                     archive: String,
-                    disciplines: Map[String, String]) {
-
-  val licenses: Map[String, File] = Licenses.getLicenses
-}
+                    disciplines: Map[String, String],
+                    databaseUrl: String,
+                    databaseUser: String,
+                    databasePassword: String,
+                    licenses: Map[String, File])
 
 object Settings {
 
@@ -53,8 +52,11 @@ object Settings {
             fileUris: Map[Path, URI],
             state: String,
             archive: String,
-            credentials: FedoraCredentials
-           ): Settings = {
+            credentials: FedoraCredentials,
+            databaseUrl: String,
+            databaseUser: String,
+            databasePassword: String,
+            licenses: Map[String, File]): Settings = {
     Fedora.setFedoraConnectionSettings(
       credentials.getBaseUrl.toString,
       credentials.getUsername,
@@ -71,28 +73,10 @@ object Settings {
       fileUris = fileUris,
       state = state,
       archive = archive,
-      disciplines = Fedora.disciplines)
+      disciplines = Fedora.disciplines,
+      databaseUrl = databaseUrl,
+      databaseUser = databaseUser,
+      databasePassword = databasePassword,
+      licenses = licenses)
   }
-
-  def apply(conf: Conf, props: PropertiesConfiguration): Settings = {
-    Fedora.setFedoraConnectionSettings(
-      new URL(props.getString("fcrepo.url")).toString,// detour for early validation
-      props.getString("fcrepo.user"),
-      props.getString("fcrepo.password"))
-    new Settings(
-      ownerId = getUserId(conf.deposit()),
-      submissionTimestamp = if (conf.submissionTimestamp.isSupplied) conf.submissionTimestamp() else new DateTime(),
-      bagitDir = getBagDir(conf.deposit()).get,
-      sdoSetDir = conf.sdoSet(),
-      urn = conf.urn.toOption,
-      doi = conf.doi.toOption,
-      otherAccessDoi = conf.otherAccessDOI(),
-      fileUris = conf.getDsLocationMappings,
-      state = conf.state(),
-      archive = conf.archive(),
-      disciplines = Fedora.disciplines)
-  }
-
-  private def getBagDir(depositDir: File): Option[File] = depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")
-  private def getUserId(depositDir: File) : String = new PropertiesConfiguration(new File(depositDir, "deposit.properties")).getString("depositor.userId")
 }

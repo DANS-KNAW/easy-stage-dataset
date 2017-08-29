@@ -16,15 +16,16 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{ Files, Path, Paths }
 
 import org.apache.commons.io.FileUtils
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
+import resource._
 
 import scala.collection.JavaConverters._
 import scala.util.Success
 
-class RunSpec extends FlatSpec with Matchers {
+class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
   FileUtils.deleteQuietly(testDir.toFile)
   Files.createDirectories(testDir)
@@ -51,7 +52,9 @@ class RunSpec extends FlatSpec with Matchers {
       val sdoSetDir = puddingsDir.resolve(bag.getFileName)
       implicit val settings = createSettings(bag.toFile, sdoSetDir.toFile)
 
-      EasyStageDataset.run(settings) shouldBe a[Success[_]]
+      val res = EasyStageDataset.run(settings)
+      res.recover { case e => e.printStackTrace() }
+      res shouldBe a[Success[_]]
       sdoSetDir.resolve("dataset/EMD").toFile should exist
       sdoSetDir.resolve("dataset/AMD").toFile should exist
       sdoSetDir.resolve("dataset/cfg.json").toFile should exist
@@ -67,7 +70,7 @@ class RunSpec extends FlatSpec with Matchers {
   }
 
   private def numberOfFilesInDir(dir: Path): Int = {
-    resource.managed(Files.list(dir)).acquireAndGet(_.iterator.asScala.size)
+    managed(Files.list(dir)).acquireAndGet(_.iterator.asScala.size)
   }
 
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
@@ -76,6 +79,7 @@ class RunSpec extends FlatSpec with Matchers {
      * available in the dist directory.
      */
     System.setProperty("app.home", "src/main/assembly/dist")
+    val configuration = Configuration()
 
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
@@ -92,7 +96,11 @@ class RunSpec extends FlatSpec with Matchers {
         "D30000" -> "easy-discipline:1",
         "E10000" -> "easy-discipline:219",
         "E18000" -> "easy-discipline:226",
-        "D16300" -> "easy-discipline:12435") // TODO: probably not the value in the actual deasy environment
+        "D16300" -> "easy-discipline:12435"),
+      databaseUrl = "",
+      databaseUser = "",
+      databasePassword = "", // TODO: probably not the value in the actual deasy environment
+      licenses = configuration.licenses
     )
   }
 }

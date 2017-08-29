@@ -15,18 +15,21 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.nio.file.{Files, Paths}
+import java.nio.file.{ Files, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
+import resource._
 
 import scala.collection.JavaConverters._
 
 class DebugConfigSpec extends FlatSpec with Matchers {
 
   "debug-config" should "contain the same files as src/main/assembly/dist/cfg" in {
-    val filesInDebugConfig = resource.managed(Files.list(Paths.get("src/test/resources/debug-config"))).acquireAndGet(_.iterator().asScala.toSet)
-    val filesInDistCfg = resource.managed(Files.list(Paths.get("src/main/assembly/dist/cfg"))).acquireAndGet(_.iterator().asScala.toSet)
+    val filesInDebugConfig = managed(Files.list(Paths.get("src/test/resources/debug-config")))
+      .acquireAndGet(_.iterator().asScala.toSet)
+    val filesInDistCfg = managed(Files.list(Paths.get("src/main/assembly/dist/cfg")))
+      .acquireAndGet(_.iterator().asScala.toSet)
 
     filesInDebugConfig.map(_.getFileName) shouldBe filesInDistCfg.map(_.getFileName)
   }

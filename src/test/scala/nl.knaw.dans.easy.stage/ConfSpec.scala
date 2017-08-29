@@ -16,18 +16,26 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.nio.file.Paths
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
 
 class ConfSpec extends AbstractConfSpec {
+  private def resourceDirString: String = Paths.get(getClass.getResource("/").toURI).toAbsolutePath.toString
 
-  private def clo = new Conf(Array[String]()) {
+  private def mockedConfiguration = new Configuration("version x.y.z", new PropertiesConfiguration() {
+    setDelimiterParsingDisabled(true)
+    load(Paths.get(resourceDirString + "/debug-config", "application.properties").toFile)
+  }, Map.empty)
+
+  private def clo = new CommandLineOptions(Array[String](), mockedConfiguration) {
     // avoids System.exit() in case of invalid arguments or "--help"
     override def verify(): Unit = {}
   }
 
-  override def getConf: ScallopConf = clo
+  override def getCommandLineOptions: ScallopConf = clo
 
   "synopsis in help info" should "be part of README.md" in {
     new File("README.md") should containTrimmed(clo.synopsis)

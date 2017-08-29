@@ -48,30 +48,33 @@ object FileAccessRights extends Enumeration {
   require(AccessCategory.values().toSet == rightsMap.keySet)
 
   /**
-    *
-    * @param s toString value of the desired category
-    * @return
-    */
-  def valueOf(s: String): Option[FileAccessRights.Value] =
-    FileAccessRights.values.find(v => v.toString == s)
+   *
+   * @param s toString value of the desired category
+   * @return
+   */
+  def valueOf(s: String): Option[FileAccessRights.Value] = {
+    FileAccessRights.values.find(_.toString == s)
+  }
 
   /** gets the default category of users that have download permission for files in a new dataset,
-    * an archivist may decide differently
-    *
-    * @param datasetAccesCategory from the EMD of the dataset
-    * @return
-    */
-  def accessibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
+   * an archivist may decide differently
+   *
+   * @param datasetAccesCategory from the EMD of the dataset
+   * @return
+   */
+  def accessibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value = {
     rightsMap(datasetAccesCategory)
+  }
 
   /** gets the default category of users that have visibility permission for files in a new dataset:
-    * all files are visible unless an archivist decides differently
-    *
-    * @param datasetAccesCategory from the EMD of the dataset
-    * @return
-    */
-  def visibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value =
+   * all files are visible unless an archivist decides differently
+   *
+   * @param datasetAccesCategory from the EMD of the dataset
+   * @return
+   */
+  def visibleTo(datasetAccesCategory: AccessCategory): FileAccessRights.Value = {
     // https://github.com/DANS-KNAW/easy-app/blob/1080eff457/lib/easy-business/src/main/java/nl/knaw/dans/easy/business/dataset/DatasetIngester.java#L51
     // https://github.com/DANS-KNAW/easy-app/blob/1080eff457/lib/easy-business/src/main/java/nl/knaw/dans/easy/business/item/ItemIngester.java#L305
     ANONYMOUS
+  }
 }

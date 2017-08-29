@@ -16,9 +16,9 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers, OptionValues }
 
-class FileAccesRightsSpec extends FlatSpec with Matchers {
+class FileAccesRightsSpec extends FlatSpec with Matchers with OptionValues {
   /*
   according to ddm.xsd there are 5 options for the dataset AccessRights
         <xs:enumeration value="OPEN_ACCESS">
@@ -32,16 +32,16 @@ class FileAccesRightsSpec extends FlatSpec with Matchers {
     FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
-  "visibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
+  "visibleTo OPEN_ACCESS_FOR_REGISTERED_USERS" should "properly map" in {
     FileAccessRights.visibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.ANONYMOUS
   }
   "visibleTo GROUP_ACCESS" should "properly map" in {
     FileAccessRights.visibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
-  "visibleTo REQUEST_PERMISSION)" should "properly map" in {
+  "visibleTo REQUEST_PERMISSION" should "properly map" in {
     FileAccessRights.visibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.ANONYMOUS
   }
-  "visibleTo NO_ACCESS)" should "properly map" in {
+  "visibleTo NO_ACCESS" should "properly map" in {
     FileAccessRights.visibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
@@ -49,25 +49,25 @@ class FileAccesRightsSpec extends FlatSpec with Matchers {
     FileAccessRights.accessibleTo(AccessCategory.OPEN_ACCESS) shouldBe FileAccessRights.ANONYMOUS
   }
 
-  "accessibleTo OPEN_ACCESS_FOR_REGISTERED_USERS)" should "properly map" in {
+  "accessibleTo OPEN_ACCESS_FOR_REGISTERED_USERS" should "properly map" in {
     FileAccessRights.accessibleTo(AccessCategory.OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe FileAccessRights.KNOWN
   }
   "accessibleTo GROUP_ACCESS" should "properly map" in {
     FileAccessRights.accessibleTo(AccessCategory.GROUP_ACCESS) shouldBe FileAccessRights.RESTRICTED_GROUP
   }
-  "accessibleTo REQUEST_PERMISSION)" should "properly map" in {
+  "accessibleTo REQUEST_PERMISSION" should "properly map" in {
     FileAccessRights.accessibleTo(AccessCategory.REQUEST_PERMISSION) shouldBe FileAccessRights.RESTRICTED_REQUEST
   }
-  "accessibleTo NO_ACCESS)" should "properly map" in {
+  "accessibleTo NO_ACCESS" should "properly map" in {
     FileAccessRights.accessibleTo(AccessCategory.NO_ACCESS) shouldBe FileAccessRights.NONE
   }
 
   "valueOf" should "succeed with a proper-cased string" in {
     val s = "RESTRICTED_GROUP"
-    FileAccessRights.valueOf(s).get.toString shouldBe s
+    FileAccessRights.valueOf(s).value.toString shouldBe s
   }
 
   it should "fail with a wrong cased string" in {
-    FileAccessRights.valueOf("restricted_group") shouldBe None
+    FileAccessRights.valueOf("restricted_group") shouldBe empty
   }
 }

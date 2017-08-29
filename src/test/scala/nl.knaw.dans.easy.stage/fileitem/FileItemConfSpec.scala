@@ -16,19 +16,33 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.nio.file.Paths
 
-import nl.knaw.dans.easy.stage.AbstractConfSpec
 import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.{ AbstractConfSpec, Configuration }
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
 
 class FileItemConfSpec extends AbstractConfSpec {
 
+  private def resourceDirString: String = Paths.get(getClass.getResource("/").toURI).toAbsolutePath.toString
+
+  private def mockedConfiguration = new Configuration("version x.y.z", new PropertiesConfiguration() {
+    setDelimiterParsingDisabled(true)
+    load(Paths.get(resourceDirString + "/debug-config", "application.properties").toFile)
+  }, Map.empty)
+
+  private def clo = new FileItemCommandLineOptions("-i i -d http:// -p p -s 0 --format f outdir".split(" "), mockedConfiguration) {
+    // avoids System.exit() in case of invalid arguments or "--help"
+    override def verify(): Unit = {}
+  }
+
   // Overriding verify to create an instance without arguments
   // (as done for other README/pom tests) changes the order of the listed options.
   // Another test needs a verified instance, so we keep using the dummy here too.
-  override def getConf: ScallopConf = FileItemConf.dummy
+  override def getCommandLineOptions: ScallopConf = clo
 
   "synopsis in help info" should "be part of README.md" in {
-    new File("README.md") should containTrimmed(FileItemConf.dummy.synopsis)
+    new File("README.md") should containTrimmed(clo.synopsis)
   }
 }

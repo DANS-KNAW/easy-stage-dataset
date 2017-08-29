@@ -15,11 +15,7 @@
  */
 package nl.knaw.dans.easy
 
-import java.net.{HttpURLConnection, URL}
-
 import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
-
-import scala.util.Try
 
 package object stage {
 
@@ -32,18 +28,4 @@ package object stage {
   type PathInDataset = String
 
   type ExistingAncestor = (PathInDataset, FedoraID)
-
-  def canConnect(urls: Array[String]): Boolean = Try {
-    urls.map { url =>
-      new URL(url).openConnection match {
-        case connection: HttpURLConnection =>
-          connection.setConnectTimeout(1000)
-          connection.setReadTimeout(1000)
-          connection.connect()
-          connection.disconnect()
-          true
-        case _ => throw new Exception
-      }
-    }
-  }.isSuccess
 }

@@ -19,16 +19,27 @@ import java.io.File
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
-import org.apache.commons.io.FileUtils.{deleteDirectory, deleteQuietly, write}
-import org.scalatest.{FlatSpec, Matchers}
+import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
+import org.scalatest.{ FlatSpec, Inside, Matchers }
 
-import scala.util.Success
+import scala.util.{ Failure, Success }
 
-class EmdSpec extends FlatSpec with Matchers {
+class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture {
 
   val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+
   def newSettings(bagitDir: File): Settings = {
-    new Settings(ownerId = "", bagitDir = bagitDir, sdoSetDir = sdoSetDir, state = "DRAFT", archive = "EASY", disciplines = Map[String, String]())
+    new Settings(
+      ownerId = "",
+      bagitDir = bagitDir,
+      sdoSetDir = sdoSetDir,
+      state = "DRAFT",
+      archive = "EASY",
+      disciplines = Map.empty,
+      databaseUrl = "",
+      databaseUser = "",
+      databasePassword = "",
+      licenses = Map.empty)
   }
 
   "create" should "succeed for each test bag" in {
@@ -36,7 +47,7 @@ class EmdSpec extends FlatSpec with Matchers {
 
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
-      implicit val s = newSettings(bag)
+      implicit val s: Settings = newSettings(bag)
       EMD.create(sdoSetDir) shouldBe a[Success[_]]
       sdoSetDir.list() shouldBe Array("EMD")
       deleteDirectory(sdoSetDir)
@@ -61,11 +72,14 @@ class EmdSpec extends FlatSpec with Matchers {
     </ddm:DDM>
     val tmpDDM = new File("target/test/EmdSpec/bag/metadata/dataset.xml")
     write(tmpDDM, ddm.toString())
-    implicit val s = newSettings(tmpDDM.getParentFile.getParentFile)
+    implicit val s: Settings = newSettings(tmpDDM.getParentFile.getParentFile)
 
-    EMD.create(sdoSetDir).failed.get.getMessage should
-      include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
-    sdoSetDir.list() shouldBe null
+    inside(EMD.create(sdoSetDir)) {
+      case Failure(e) => e.getMessage should
+        include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
+    }
+
+    Option(sdoSetDir.list()) shouldBe empty
 
     deleteQuietly(tmpDDM)
     deleteDirectory(sdoSetDir)
