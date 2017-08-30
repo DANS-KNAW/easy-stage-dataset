@@ -2,7 +2,18 @@
 
 BINPATH=`readlink -f $0`
 APPHOME=`dirname \`dirname $BINPATH \``
+FHS_CONFIG=/etc/opt/dans.knaw.nl/easy-stage-dataset/
 
-java -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
+if [ -f $HOME/logback.xml ]
+then
+    LOGCONFIG=$HOME/logback.xml
+elif [ -d $FHS_CONFIG ]
+then
+    LOGCONFIG=$FHS_CONFIG/logback.xml
+else
+    LOGCONFIG=$APPHOME/cfg/logback.xml
+fi
+
+java -Dlogback.configurationFile=$LOGCONFIG \
      -Dapp.home=$APPHOME \
      -jar $APPHOME/bin/easy-stage-dataset.jar $@

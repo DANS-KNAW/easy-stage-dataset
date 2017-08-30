@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Copyright (C) 2015-2016 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
+# Copyright (C) 2015 DANS - Data Archiving and Networked Services (info@dans.knaw.nl)
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -15,11 +15,22 @@
 # limitations under the License.
 #
 
-
-ARGS=$@
 APPHOME=home
 
-mvn exec:java \
-  -Dapp.home=$APPHOME \
-  -Dlogback.configurationFile=$APPHOME/cfg/logback.xml \
-  -Dexec.args="$ARGS"
+if [ -z $LOGBACK_OPTS ]; then
+    LOGBACK_OPTS=""
+fi
+
+if [ -z $LOGBACK_CONFIG ]; then
+    LOGBACK_CONFIG=$APPHOME/cfg/logback.xml
+fi
+
+for a in "$@"
+do
+  ARGS="$ARGS'$a' "
+done
+
+LC_ALL=en_US.UTF-8 \
+mvn exec:java -Dapp.home=$APPHOME \
+              -Dlogback.configurationFile=$LOGBACK_CONFIG \
+              -Dexec.args="$ARGS" $LOGBACK_OPTS
