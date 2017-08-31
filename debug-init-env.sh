@@ -21,5 +21,5 @@ DATADIR=data
 echo "Copying test data to $DATADIR..."
 cp -r src/test/resources/deposits $DATADIR/deposits
 
-touch $DATADIR/easy-bag-index.log
+touch $DATADIR/easy-stage-dataset.log
 echo "OK"
