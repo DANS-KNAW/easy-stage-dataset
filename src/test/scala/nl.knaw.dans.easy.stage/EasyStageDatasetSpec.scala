@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.net.URI
 import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
@@ -26,7 +27,9 @@ import org.apache.commons.io.FileUtils.readFileToString
 import org.scalatest.Inside._
 import org.scalatest.{ FlatSpec, Matchers, OneInstancePerTest }
 
+import scala.io.Source
 import scala.util.{ Failure, Success }
+import scala.xml.XML
 
 class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
@@ -39,7 +42,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val bagDir = testDir.resolve("bag")
     val dataDir = bagDir.resolve("data") // Note that this directory is never created, on purpose.
     val sdoSetDir = testDir.resolve("someSDO")
-    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
     Files.createDirectories(bagDir)
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Failure[_]]
@@ -49,7 +52,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val bagDir = testDir.resolve("bag")
     val dataDir = bagDir.resolve("data")
     val sdoSetDir = testDir.resolve("someSDO")
-    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
     Files.createDirectories(dataDir)
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
@@ -60,7 +63,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val bagDir = testDir.resolve("bag")
     val dataDir = bagDir.resolve("data")
     val sdoSetDir = testDir.resolve("someSDO")
-    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
     Files.createDirectories(dataDir)
     FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile, "a b c")
 
@@ -77,7 +80,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val dataDir = bagDir.resolve("data")
     val sdoSetDir = testDir.resolve("SDO-set")
     val fileMetadataFile = sdoSetDir.resolve("quicksort_hs/EASY_FILE_METADATA")
-    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
 
     // Note that files.xml specifies no accessRights for data/quicksort.hs
 
@@ -96,7 +99,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val dataDir = bagDir.resolve("data")
     val sdoSetDir = testDir.resolve("SDO-set")
     val fileMetadataFile = sdoSetDir.resolve("path_to_file_txt/EASY_FILE_METADATA")
-    implicit val s = createSettings(bagDir.toFile, sdoSetDir.toFile)
+    implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
 
     // Note that files.xml specifies NONE for data/path/to/file.txt
 
@@ -107,6 +110,35 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
     readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
     readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>NONE</accessibleTo>")
+  }
+
+  "bag with secret file" should "have the correct visibleTo and accessibleTo keywords" in {
+    val path = Paths.get(getClass.getClassLoader.getResource("dataset-bags/bag-with-secret-file").toURI)
+
+    val result = testDir.resolve("SDO-set")
+    EasyStageDataset.run(createSettings(path.toFile, result.toFile)
+      .copy(licenses = Map("http://creativecommons.org/licenses/by-nc-sa/4.0/" ->
+        Paths.get("src/main/assembly/dist/lic/CC-BY-NC-SA-4.0.html").toFile))
+      .copy(fileUris = Map(Paths.get("data/path/to/file.txt") -> new URI("http://x")))).get
+
+    val secretFile = result.resolve("path_to_file_txt/EASY_FILE_METADATA")
+    secretFile.toFile should exist
+
+    val xml = XML.loadFile(secretFile.toFile)
+    (xml \ "visibleTo").text shouldBe "RESTRICTED_REQUEST"
+    (xml \ "accessibleTo").text shouldBe "NONE"
+
+    result.resolve("path_to_file_txt/EASY_FILE").toFile shouldNot exist
+
+    Source.fromFile(result.resolve("path_to_file_txt/cfg.json").toFile).mkString should include
+      """
+        |"datastreams":[{
+        |    "dsLocation":"http://x",
+        |    "dsID":"EASY_FILE",
+        |    "controlGroup":"R",
+        |    "mimeType":"text/plain"
+        |  }
+      """.stripMargin
   }
 
   "checkFilesInBag" should "result in Success if files argument is empty" in {
