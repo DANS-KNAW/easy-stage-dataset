@@ -16,4 +16,4 @@ fi
 
 java -Dlogback.configurationFile=$LOGCONFIG \
      -Dapp.home=$APPHOME \
-     -jar $APPHOME/bin/easy-stage-dataset.jar $@
+     -jar $APPHOME/bin/easy-stage-dataset*.jar $@
