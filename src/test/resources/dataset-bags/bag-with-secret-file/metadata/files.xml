@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<files xmlns:dcterms="http://purl.org/dc/terms/" xmlns="http://easy.dans.knaw.nl/schemas/bag/metadata/files/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://purl.org/dc/terms/ http://dublincore.org/schemas/xmls/qdc/2008/02/11/dcterms.xsd http://easy.dans.knaw.nl/schemas/bag/metadata/files/ http://easy.dans.knaw.nl/schemas/bag/metadata/files/files.xsd">
+    <file filepath="data/path/to/file.txt">
+        <dcterms:format>text/plain</dcterms:format>
+        <accessibleToRights>NONE</accessibleToRights>
+        <visibleToRights>RESTRICTED_REQUEST</visibleToRights>
+    </file>
+    <file filepath="data/quicksort.hs">
+        <dcterms:format>text/plain</dcterms:format>
+    </file>
+</files>

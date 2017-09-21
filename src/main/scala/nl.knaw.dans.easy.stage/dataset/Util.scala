@@ -22,7 +22,7 @@ import nl.knaw.dans.easy.stage.{ RejectedDepositException, Settings }
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.sys.error
-import scala.util.Try
+import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, NodeSeq }
 
 object Util extends DebugEnhancedLogging {
@@ -32,7 +32,6 @@ object Util extends DebugEnhancedLogging {
    * Use this as input for further processing and extraction of sub-elements like title and mime type.
    *
    * @param filePath Path to the file, relative to the bag
-   * @param s Settings
    * @return File metadata (XML Nodes) for the specified file
    */
   def readFileMetadata(filePath: String)(implicit s: Settings): Try[NodeSeq] = Try {
@@ -42,26 +41,29 @@ object Util extends DebugEnhancedLogging {
     } yield file
   }
 
-  def readMimeType(fileMetadata: NodeSeq)(implicit s: Settings): Try[String] = Try {
-    val mimes =  fileMetadata \ "format"
-    mimes match {
-      case Seq(mime) => mime.text
-      case _ => throw RejectedDepositException(s"format element doesn't exist for the file, or isn't unique.")
-    }
-  }
-
-  def readTitle(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
-    fileMetadata \ "title" match {
-      case Seq(title) => Option(title.text)
+  private def getText(fileMetadata: NodeSeq, label: String): Option[String] = {
+    fileMetadata \ label match {
+      case Seq(l) => Option(l.text)
       case _ => None
     }
   }
 
-  def readAccessRights(fileMetadata: NodeSeq)(implicit s: Settings): Try[Option[String]] = Try {
-    fileMetadata \ "accessRights" match {
-      case Seq(right) => Option(right.text)
-      case _ => None
-    }
+  def readMimeType(fileMetadata: NodeSeq): Try[String] = {
+    getText(fileMetadata, "format")
+      .map(Success(_))
+      .getOrElse(Failure(RejectedDepositException(s"format element doesn't exist for the file, or isn't unique.")))
+  }
+
+  def readTitle(fileMetadata: NodeSeq): Try[Option[String]] = Try {
+    getText(fileMetadata, "title")
+  }
+
+  def readAccessRights(fileMetadata: NodeSeq): Try[Option[String]] = Try {
+    getText(fileMetadata, "accessRights") orElse getText(fileMetadata, "accessibleToRights")
+  }
+
+  def readVisibleToRights(fileMetadata: NodeSeq): Try[Option[String]] = Try {
+    getText(fileMetadata, "visibleToRights")
   }
 
   def readAudiences()(implicit s: Settings): Try[Seq[String]] = Try {
