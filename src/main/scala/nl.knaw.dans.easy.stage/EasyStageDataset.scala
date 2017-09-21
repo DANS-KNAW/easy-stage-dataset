@@ -157,6 +157,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
       mime <- readMimeType(fileMetadata)
       title <- readTitle(fileMetadata)
       fileAccessRights <- getFileAccessRights(fileMetadata, datasetRights)
+      fileVisibleToRights <- getFileVisibleToRights(fileMetadata, datasetRights)
       _ <- FileItemSettings(
         sdoSetDir = s.sdoSetDir,
         file = s.fileUris.get(getBagRelativePath(file.toPath)).fold(Option(file))(_ => Option.empty),
@@ -168,7 +169,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
         sha1 = sha1Map.get(bagRelativePath), // first get is checked in advance
         title = title,
         accessibleTo = fileAccessRights,
-        visibleTo = FileAccessRights.visibleTo(datasetRights),
+        visibleTo = fileVisibleToRights,
         databaseUrl = s.databaseUrl,
         databaseUser = s.databaseUser,
         databasePassword = s.databasePassword)
@@ -178,8 +179,11 @@ object EasyStageDataset extends DebugEnhancedLogging {
   }
 
   private def getFileAccessRights(fileMetadata: NodeSeq, datasetRights: AccessCategory)(implicit s: Settings): Try[FileAccessRights.Value] = {
-    lazy val defaultRights = FileAccessRights.accessibleTo(datasetRights)
-    readAccessRights(fileMetadata).map(_.flatMap(FileAccessRights.valueOf).getOrElse(defaultRights))
+    readAccessRights(fileMetadata).map(_.flatMap(FileAccessRights.valueOf).getOrElse(FileAccessRights.accessibleTo(datasetRights)))
+  }
+
+  private def getFileVisibleToRights(fileMetadata: NodeSeq, datasetRights: AccessCategory): Try[FileAccessRights.Value] = {
+    readVisibleToRights(fileMetadata).map(_.flatMap(FileAccessRights.valueOf).getOrElse(FileAccessRights.visibleTo(datasetRights)))
   }
 
   private def createFolderSdo(folder: File, parentSDO: String)(implicit s: Settings): Try[Unit] = {
