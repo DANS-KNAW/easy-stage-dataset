@@ -58,8 +58,9 @@ object AdditionalLicense extends DebugEnhancedLogging {
           uri <- Try { new URI(license.text) }
           licenseTemplateFile <- getMatchingLicense(uri, s.licenses).map(Success(_))
             .getOrElse(Failure(RejectedDepositException(s"Not a valid license URI: ${ license.text }")))
-          mimetype <- getLicenseMimeType(licenseTemplateFile.getName)
-        } yield (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), licenseTemplateFile.getName, mimetype)
+          name = licenseTemplateFile.getName
+          mimetype <- getLicenseMimeType(name)
+        } yield (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), name, mimetype)
       case Seq(license) => Success(license.text, "additional_license.txt", "text/plain")
       case lics => Failure(RejectedDepositException(s"Found ${ lics.size } dcterms:license elements. There should be exactly one"))
     }
