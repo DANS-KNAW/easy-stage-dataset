@@ -32,8 +32,8 @@ object JSON extends DebugEnhancedLogging {
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
 
-  def createDatasetCfg(mimeType: Option[String], audiences: Seq[String])(implicit s: Settings): Try[String] = Try {
-    trace(mimeType, audiences)
+  def createDatasetCfg(additionalLicenseFilenameAndMimetype: Option[(String, String)], audiences: Seq[String])(implicit s: Settings): Try[String] = Try {
+    trace(additionalLicenseFilenameAndMimetype, audiences)
 
     checkProvided("DOI", s.doi)
     checkProvided("URN", s.urn)
@@ -54,11 +54,12 @@ object JSON extends DebugEnhancedLogging {
           ("dsID" -> "PRSQL") ~
           ("controlGroup" -> "X") ~
           ("mimeType" -> "text/xml")
-      ) ++ mimeType.toList.map(_ =>
+      ) ++ additionalLicenseFilenameAndMimetype.toList.map { case (name, mimetype) =>
         ("contentFile" -> "ADDITIONAL_LICENSE") ~
           ("dsID" -> "ADDITIONAL_LICENSE") ~
+          ("label" -> name) ~
           ("controlGroup" -> "M") ~
-          ("mimeType" -> mimeType.get))
+          ("mimeType" -> mimetype) }
 
     pretty(render(sdoCfg(audiences, datastreams)))
   }
