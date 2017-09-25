@@ -30,9 +30,10 @@ import scala.xml.{ Node, NodeSeq }
 
 object AdditionalLicense extends DebugEnhancedLogging {
   type MimeType = String
+  type FileName = String
   private val ddmFileName = "metadata/dataset.xml"
 
-  def createOptionally(sdo: File)(implicit s: Settings): Try[Option[MimeType]] = {
+  def createOptionally(sdo: File)(implicit s: Settings): Try[Option[(FileName, MimeType)]] = {
     trace(sdo)
     loadBagXML(ddmFileName) \\ "DDM" \ "dcmiMetadata" \ "license" match {
       case Seq() => Success(Option.empty)
@@ -40,26 +41,27 @@ object AdditionalLicense extends DebugEnhancedLogging {
     }
   }
 
-  def create(sdo: File)(implicit s: Settings): Try[MimeType] = {
+  def create(sdo: File)(implicit s: Settings): Try[(FileName, MimeType)] = {
     for {
       ddm <- Try { loadBagXML(ddmFileName) }
-      (template, mime) <- getAdditionalLicenseTemplate(ddm)
+      (template, fileName, mime) <- getAdditionalLicenseTemplate(ddm)
       rightsHolder <- getRightsHolder(ddm)
       year <- getYear(ddm)
       _ <- copyAdditionalLicense(template, rightsHolder, year, sdo)
-    } yield mime
+    } yield (fileName, mime)
   }
 
-  def getAdditionalLicenseTemplate(ddm: NodeSeq)(implicit s: Settings): Try[(String, MimeType)] = {
+  def getAdditionalLicenseTemplate(ddm: NodeSeq)(implicit s: Settings): Try[(String, FileName, MimeType)] = {
     ddm \\ "DDM" \ "dcmiMetadata" \ "license" match {
       case Seq(license) if hasXsiType(license, "http://purl.org/dc/terms/", "URI") =>
         for {
           uri <- Try { new URI(license.text) }
           licenseTemplateFile <- getMatchingLicense(uri, s.licenses).map(Success(_))
             .getOrElse(Failure(RejectedDepositException(s"Not a valid license URI: ${ license.text }")))
-          mimetype <- getLicenseMimeType(licenseTemplateFile.getName)
-        } yield (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), mimetype)
-      case Seq(license) => Success(license.text, "text/plain")
+          name = licenseTemplateFile.getName
+          mimetype <- getLicenseMimeType(name)
+        } yield (FileUtils.readFileToString(licenseTemplateFile, "UTF-8"), name, mimetype)
+      case Seq(license) => Success(license.text, "additional_license.txt", "text/plain")
       case lics => Failure(RejectedDepositException(s"Found ${ lics.size } dcterms:license elements. There should be exactly one"))
     }
   }
