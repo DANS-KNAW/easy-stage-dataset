@@ -29,6 +29,7 @@ object JSON extends DebugEnhancedLogging {
   val HAS_DOI = "http://dans.knaw.nl/ontologies/relations#hasDoi"
   val HAS_PID = "http://dans.knaw.nl/ontologies/relations#hasPid"
   val HAS_MODEL = "info:fedora/fedora-system:def/model#hasModel"
+  val ITEM_ID = "http://www.openarchives.org/OAI/2.0/itemID"
   val IS_MEMBER_OF = "http://dans.knaw.nl/ontologies/relations#isMemberOf"
   val IS_SUBORDINATE_TO = "http://dans.knaw.nl/ontologies/relations#isSubordinateTo"
 
@@ -76,7 +77,8 @@ object JSON extends DebugEnhancedLogging {
         ("predicate" -> HAS_PID) ~ ("object" -> s.urn) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
-        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1")
+        ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
+        ("predicate" -> ITEM_ID) ~ ("object" -> "oai:easy.dans.knaw.nl:$sdo-id") ~ ("isLiteral" -> true)
       ) ++ audiences.map(audience =>
         ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }"))))
 
