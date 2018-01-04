@@ -78,8 +78,7 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
      * Not the ideal solution, but we need to get the licenses list for this test to work, and it is
      * available in the dist directory.
      */
-    System.setProperty("app.home", "src/main/assembly/dist")
-    val configuration = Configuration()
+    val configuration = Configuration(Paths.get("src/main/assembly/dist"))
 
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
