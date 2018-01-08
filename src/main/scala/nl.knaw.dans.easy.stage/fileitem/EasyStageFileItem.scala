@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import java.io.File
+import java.nio.file.Paths
 import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
@@ -32,7 +33,7 @@ import scala.util.{ Failure, Success, Try }
 object EasyStageFileItem extends DebugEnhancedLogging {
 
   def main(args: Array[String]) {
-    val configuration = Configuration()
+    val configuration = Configuration(Paths.get(System.getProperty("app.home")))
     val clo = new FileItemCommandLineOptions(args, configuration)
     Fedora.setFedoraConnectionSettings(
       configuration.properties.getString("fcrepo.url"),

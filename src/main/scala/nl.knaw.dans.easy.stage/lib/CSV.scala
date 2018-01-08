@@ -20,7 +20,7 @@ import java.io.{ File, FileInputStream, InputStream }
 import org.apache.commons.csv.CSVFormat
 import org.apache.commons.csv.CSVParser.parse
 
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.io.Source.fromInputStream
 import scala.util.{ Failure, Success, Try }
 
@@ -75,6 +75,6 @@ object CSV {
   }
 
   private def getContent(in: InputStream): Try[Seq[Seq[String]]] = Try {
-    parse(fromInputStream(in).mkString, CSVFormat.RFC4180).getRecords.map(_.toList)
+    parse(fromInputStream(in).mkString, CSVFormat.RFC4180).getRecords.asScala.map(_.asScala.toSeq)
   }
 }

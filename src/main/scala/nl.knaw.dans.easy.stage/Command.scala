@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.File
+import java.nio.file.Paths
 
 import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.lib.error._
@@ -24,7 +25,7 @@ import org.joda.time.DateTime
 
 object Command extends App {
 
-  val configuration = Configuration()
+  val configuration = Configuration(Paths.get(System.getProperty("app.home")))
   val clo = new CommandLineOptions(args, configuration)
   Fedora.setFedoraConnectionSettings(
     configuration.properties.getString("fcrepo.url"),

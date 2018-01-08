@@ -19,7 +19,7 @@ import com.yourmediashelf.fedora.client.request.FedoraRequest
 import com.yourmediashelf.fedora.client.{ FedoraClient, FedoraCredentials }
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions._
+import scala.collection.JavaConverters._
 import scala.xml.XML
 
 trait Fedora {
@@ -47,8 +47,8 @@ object Fedora extends Fedora {
     val objectsResponse = token.map(objectsQuery.sessionToken(_).execute).getOrElse(objectsQuery.execute)
 
     if (objectsResponse.hasNext)
-      findObjects(query, acc ++ objectsResponse.getPids, Some(objectsResponse.getToken))
+      findObjects(query, acc ++ objectsResponse.getPids.asScala, Some(objectsResponse.getToken))
     else
-      acc ++ objectsResponse.getPids
+      acc ++ objectsResponse.getPids.asScala
   }
 }
