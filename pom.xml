@@ -36,7 +36,7 @@
 
     <properties>
         <main-class>nl.knaw.dans.easy.stage.Command</main-class>
-        <easy.ddm.version>3.6.2</easy.ddm.version>
+        <easy.ddm.version>3.6.3</easy.ddm.version>
     </properties>
 
     <scm>
