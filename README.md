@@ -52,8 +52,8 @@ ARGUMENTS for easy-stage-dataset
                                         SUBMITTED or PUBLISHED. (default = DRAFT)                                      
     -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
     -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
-        --help                          Show help message
-        --version                       Show version of this program
+    -h, --help                          Show help message
+    -v, --version                       Show version of this program
 
    trailing arguments:
     EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
@@ -97,8 +97,8 @@ ARGUMENTS for easy-stage-fileItem
     -s, --size  <arg>                  Size in bytes of the file data
     -v, --visible-to  <arg>            specifies the visibility of the file item; one of: ANONYMOUS, KNOWN,
                                      RESTRICTED_REQUEST, RESTRICTED_GROUP, NONE (default = ANONYMOUS)
-      --help                         Show help message
-      --version                      Show version of this program
+    -h, --help                         Show help message
+        --version                      Show version of this program
     
     trailing arguments:
     staged-digital-object-sets (required)   The resulting directory with Staged Digital Object directories per
