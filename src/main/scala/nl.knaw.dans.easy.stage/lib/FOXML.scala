@@ -64,7 +64,7 @@ object FOXML extends DebugEnhancedLogging {
                          xsi:schemaLocation="info:fedora/fedora-system:def/foxml# http://www.fedora.info/definitions/1/0/foxml1-1.xsd">
       <foxml:objectProperties>
         <foxml:property NAME="info:fedora/fedora-system:def/model#state" VALUE="Active" />
-        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE={label.substring(0, Math.min(label.length, MAX_LABEL_LENGTH))} />
+        <foxml:property NAME="info:fedora/fedora-system:def/model#label" VALUE={label.substring(0, label.length min MAX_LABEL_LENGTH)} />
         <foxml:property NAME="info:fedora/fedora-system:def/model#ownerId" VALUE={ownerId} />
       </foxml:objectProperties>
       <foxml:datastream ID="DC" STATE="A" CONTROL_GROUP="X" VERSIONABLE="true">
