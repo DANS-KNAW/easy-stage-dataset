@@ -24,8 +24,9 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
-import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, EmdArchive, EmdConstants }
+import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, BasicRemark, EmdArchive, EmdConstants }
 
+import scala.io.Source
 import scala.util.{ Failure, Success, Try }
 
 object EMD extends DebugEnhancedLogging {
@@ -40,6 +41,7 @@ object EMD extends DebugEnhancedLogging {
           _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
+          _ = addAgreementFields(AgreementData(), emd)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -49,6 +51,20 @@ object EMD extends DebugEnhancedLogging {
           _ <- writeEMD(sdoDir, new String(new EmdMarshaller(emd).getXmlByteArray, "UTF-8"))
         } yield emd
       case _ => Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
+    }
+  }
+
+  def addAgreementFields(agreement: AgreementData, emd: EasyMetadata)(implicit s: Settings): Unit = { //TODO think of a better name
+    if (agreement.isDepositAgreementAccepted) emd.getEmdRights.setAcceptedLicense(true)
+    if (agreement.isPersonalData) addMessageForDataManager(emd)
+  }
+
+  def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
+    new File(s.bagitDir, "metadata/message-for-the-datamanager.txt") match {
+      case file if file.exists =>
+        val content = Source.fromFile(file).mkString
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
+      case _ => logger.warn("") //TODO should this wok like this?
     }
   }
 
