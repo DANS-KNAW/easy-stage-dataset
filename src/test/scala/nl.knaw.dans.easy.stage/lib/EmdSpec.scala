@@ -16,9 +16,13 @@
 package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
+import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
+import nl.knaw.dans.pf.language.emd.EasyMetadata
+import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
@@ -26,6 +30,7 @@ import scala.util.{ Failure, Success }
 
 class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture {
 
+  private val testDir = Paths.get("target/test", getClass.getSimpleName)
   val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
 
   def newSettings(bagitDir: File): Settings = {
@@ -51,6 +56,41 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       EMD.create(sdoSetDir) shouldBe a[Success[_]]
       sdoSetDir.list() shouldBe Array("EMD")
       deleteDirectory(sdoSetDir)
+    }
+  }
+
+
+  it should "set license and remark for the data manager id nodes containsPrivacySensitiveData and depositAgreementAccepted are true" in {
+    assume(canConnect(xsds))
+    sdoSetDir.mkdirs()
+    val mediumDir = testDir.resolve("medium").toFile
+    mediumDir.mkdirs()
+    FileUtils.copyDirectory( new File("src/test/resources/dataset-bags/medium"), mediumDir)
+
+    val agreementXml =
+      <agreements>
+        <depositAgreement>
+          <depositorId>user001</depositorId>
+          <dcterms:dateAccepted>2019-04-15T16:48:15.640+02:00</dcterms:dateAccepted>
+          <depositAgreementAccepted>true</depositAgreementAccepted>
+        </depositAgreement>
+        <personalDataStatement>
+          <signerId>user001</signerId>
+          <dateSigned>2019-04-15T16:48:15.640+02:00</dateSigned>
+          <containsPrivacySensitiveData>true</containsPrivacySensitiveData>
+      </personalDataStatement>
+    </agreements>
+    val msg4ForDataManager = "Beware!!! Very personal data!!!"
+    Files.write(mediumDir.toPath.resolve("metadata/agreements.xml"), agreementXml.toString.getBytes)
+    Files.write(mediumDir.toPath.resolve("metadata/message-for-the-datamanager.txt"), msg4ForDataManager.getBytes)
+    val bag = testDir.resolve("medium").toFile
+    implicit val s: Settings = newSettings(bag)
+    inside(EMD.create(sdoSetDir)) {
+      case Success(emd: EasyMetadata) =>
+        val acceptBS = new BasicString("accept")
+        acceptBS.setScheme("Easy2 version 1")
+        emd.getEmdRights.getTermsLicense should contain(acceptBS)
+        emd.getEmdOther.getEasRemarks should contain(new BasicRemark("Beware!!! Very personal data!!!"))
     }
   }
 

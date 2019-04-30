@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 import java.net.URI
+import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Util._
@@ -25,9 +26,11 @@ import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
 import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, BasicRemark, EmdArchive, EmdConstants }
+import org.apache.commons.lang.BooleanUtils
 
 import scala.io.Source
 import scala.util.{ Failure, Success, Try }
+import scala.xml.XML
 
 object EMD extends DebugEnhancedLogging {
 
@@ -41,7 +44,7 @@ object EMD extends DebugEnhancedLogging {
           _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
-          _ = addAgreementFields(AgreementData(), emd)
+          _ = addAgreementFields(emd)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -54,17 +57,29 @@ object EMD extends DebugEnhancedLogging {
     }
   }
 
-  def addAgreementFields(agreement: AgreementData, emd: EasyMetadata)(implicit s: Settings): Unit = { //TODO think of a better name
-    if (agreement.isDepositAgreementAccepted) emd.getEmdRights.setAcceptedLicense(true)
-    if (agreement.isPersonalData) addMessageForDataManager(emd)
+  def addAgreementFields(emd: EasyMetadata)(implicit s: Settings): Unit = {
+    val agreementPath = s.bagitDir.toPath.resolve(Paths.get("metadata/agreements.xml"))
+    if (Files.exists(agreementPath)) {
+      val agreementsXml = XML.loadFile(agreementPath.toFile)
+      println(agreementsXml)
+      if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
+        emd.getEmdRights.setAcceptedLicense(true)
+      }
+      if (BooleanUtils.toBoolean((agreementsXml \\ "containsPrivacySensitiveData").text)) {
+        addMessageForDataManager(emd)
+      }
+    }
+    else {
+      logger.info("agreements.xml not found, not setting agreement data")
+    }
   }
 
-  def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
+  private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
     new File(s.bagitDir, "metadata/message-for-the-datamanager.txt") match {
       case file if file.exists =>
         val content = Source.fromFile(file).mkString
         emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
-      case _ => logger.warn("") //TODO should this wok like this?
+      case _ => logger.warn("could not find message for message-for-the-datamanager.txt") //TODO should this wok like this?
     }
   }
 
