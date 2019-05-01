@@ -59,13 +59,12 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     }
   }
 
-
-  it should "set license and remark for the data manager id nodes containsPrivacySensitiveData and depositAgreementAccepted are true" in {
+  it should "set license, containsPrivacySensitiveData and remark for the data manager" in { //TODO clean up test
     assume(canConnect(xsds))
     sdoSetDir.mkdirs()
     val mediumDir = testDir.resolve("medium").toFile
     mediumDir.mkdirs()
-    FileUtils.copyDirectory( new File("src/test/resources/dataset-bags/medium"), mediumDir)
+    FileUtils.copyDirectory(new File("src/test/resources/dataset-bags/medium"), mediumDir)
 
     val agreementXml =
       <agreements>
@@ -90,8 +89,9 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
         emd.getEmdRights.getTermsLicense should contain(acceptBS)
-        emd.getEmdOther.getEasRemarks should contain(new BasicRemark("Beware!!! Very personal data!!!"))
+        emd.getEmdOther.getEasRemarks should contain allOf(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
     }
+    FileUtils.deleteDirectory(sdoSetDir)
   }
 
   it should "produce an error containing possible values" in {

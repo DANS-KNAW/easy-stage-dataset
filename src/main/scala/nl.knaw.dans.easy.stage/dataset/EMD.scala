@@ -45,6 +45,7 @@ object EMD extends DebugEnhancedLogging {
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
           _ = addAgreementFields(emd)
+          _ = addMessageForDataManager(emd)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -61,12 +62,11 @@ object EMD extends DebugEnhancedLogging {
     val agreementPath = s.bagitDir.toPath.resolve(Paths.get("metadata/agreements.xml"))
     if (Files.exists(agreementPath)) {
       val agreementsXml = XML.loadFile(agreementPath.toFile)
-      println(agreementsXml)
       if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
         emd.getEmdRights.setAcceptedLicense(true)
       }
       if (BooleanUtils.toBoolean((agreementsXml \\ "containsPrivacySensitiveData").text)) {
-        addMessageForDataManager(emd)
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark("containsPrivacySensitiveData"))
       }
     }
     else {
@@ -75,11 +75,13 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    new File(s.bagitDir, "metadata/message-for-the-datamanager.txt") match {
-      case file if file.exists =>
-        val content = Source.fromFile(file).mkString
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
-      case _ => logger.warn("could not find message for message-for-the-datamanager.txt") //TODO should this wok like this?
+    val msgForDataManager = new File(s.bagitDir, "metadata/message-for-the-datamanager.txt")
+    if (msgForDataManager.exists) {
+      val content = Source.fromFile(msgForDataManager).mkString
+      emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
+    }
+    else {
+      debug("could not find message for message-for-the-datamanager.txt")
     }
   }
 
