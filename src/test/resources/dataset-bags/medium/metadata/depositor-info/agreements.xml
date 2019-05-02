@@ -1,0 +1,12 @@
+<agreements>
+    <depositAgreement>
+        <depositorId>user001</depositorId>
+        <dcterms:dateAccepted>2019-04-15T16:48:15.640+02:00</dcterms:dateAccepted>
+        <depositAgreementAccepted>true</depositAgreementAccepted>
+    </depositAgreement>
+    <personalDataStatement>
+        <signerId>user001</signerId>
+        <dateSigned>2019-04-15T16:48:15.640+02:00</dateSigned>
+        <containsPrivacySensitiveData>true</containsPrivacySensitiveData>
+    </personalDataStatement>
+</agreements>

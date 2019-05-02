@@ -30,7 +30,6 @@ import scala.util.{ Failure, Success }
 
 class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
 
-  private val testDir = Paths.get("target/test", getClass.getSimpleName)
   private val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
 
   def newSettings(bagitDir: File): Settings = {
@@ -65,31 +64,11 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     }
   }
 
-  it should "set license, containsPrivacySensitiveData and remark for the data manager" in { //TODO clean up test
+  it should "set license, containsPrivacySensitiveData and remark for the data manager" in {
     assume(canConnect(xsds))
     sdoSetDir.mkdirs()
-    val mediumDir = testDir.resolve("medium").toFile
-    mediumDir.mkdirs()
-    FileUtils.copyDirectory(new File("src/test/resources/dataset-bags/medium"), mediumDir)
-
-    val agreementXml =
-      <agreements>
-        <depositAgreement>
-          <depositorId>user001</depositorId>
-          <dcterms:dateAccepted>2019-04-15T16:48:15.640+02:00</dcterms:dateAccepted>
-          <depositAgreementAccepted>true</depositAgreementAccepted>
-        </depositAgreement>
-        <personalDataStatement>
-          <signerId>user001</signerId>
-          <dateSigned>2019-04-15T16:48:15.640+02:00</dateSigned>
-          <containsPrivacySensitiveData>true</containsPrivacySensitiveData>
-      </personalDataStatement>
-    </agreements>
-    val msg4ForDataManager = "Beware!!! Very personal data!!!"
-    Files.write(mediumDir.toPath.resolve("metadata/agreements.xml"), agreementXml.toString.getBytes)
-    Files.write(mediumDir.toPath.resolve("metadata/message-from-depositor.txt"), msg4ForDataManager.getBytes)
-    val bag = testDir.resolve("medium").toFile
-    implicit val s: Settings = newSettings(bag)
+    val mediumDir = new File("src/test/resources/dataset-bags/medium")
+    implicit val s: Settings = newSettings(mediumDir)
     inside(EMD.create(sdoSetDir)) {
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")

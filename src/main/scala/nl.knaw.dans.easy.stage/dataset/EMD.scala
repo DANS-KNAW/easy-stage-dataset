@@ -34,6 +34,8 @@ import scala.xml.XML
 
 object EMD extends DebugEnhancedLogging {
 
+  private val depositorInfoDir = Paths.get("metadata/depositor-info")
+
   def create(sdoDir: File)(implicit s: Settings): Try[EasyMetadata] = {
     trace(sdoDir)
     new File(s.bagitDir, "metadata/dataset.xml") match {
@@ -59,9 +61,9 @@ object EMD extends DebugEnhancedLogging {
   }
 
   def addAgreementFields(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    val agreementPath = s.bagitDir.toPath.resolve(Paths.get("metadata/agreements.xml"))
-    if (Files.exists(agreementPath)) {
-      val agreementsXml = XML.loadFile(agreementPath.toFile)
+    val agreementPath = new File(s.bagitDir, depositorInfoDir.resolve("agreements.xml").toString)
+    if (Files.exists(agreementPath.toPath)) {
+      val agreementsXml = XML.loadFile(agreementPath)
       if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
         emd.getEmdRights.setAcceptedLicense(true)
       }
@@ -75,7 +77,7 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    val msgForDataManager = new File(s.bagitDir, "metadata/message-from-depositor.txt")
+    val msgForDataManager = new File(s.bagitDir,  depositorInfoDir.resolve("message-from-depositor.txt").toString)
     if (msgForDataManager.exists) {
       val content = Source.fromFile(msgForDataManager).mkString
       emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
