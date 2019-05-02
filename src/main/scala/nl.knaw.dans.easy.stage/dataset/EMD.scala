@@ -81,7 +81,7 @@ object EMD extends DebugEnhancedLogging {
       emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
     }
     else {
-      debug("could not find message for message-for-the-datamanager.txt")
+      logger.info("message-for-the-datamanager.txt not found, not setting a remark")
     }
   }
 
