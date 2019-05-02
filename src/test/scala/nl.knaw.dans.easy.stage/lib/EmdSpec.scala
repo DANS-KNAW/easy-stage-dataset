@@ -24,14 +24,14 @@ import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
-import org.scalatest.{ FlatSpec, Inside, Matchers }
+import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Inside, Matchers }
 
 import scala.util.{ Failure, Success }
 
-class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture {
+class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
 
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
-  val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  private val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
 
   def newSettings(bagitDir: File): Settings = {
     new Settings(
@@ -45,6 +45,12 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       databaseUser = "",
       databasePassword = "",
       licenses = Map.empty)
+  }
+
+  override def beforeEach(): Unit = {
+    if (Files.exists(sdoSetDir.toPath)) {
+      FileUtils.deleteDirectory(sdoSetDir)
+    }
   }
 
   "create" should "succeed for each test bag" in {
@@ -81,7 +87,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     </agreements>
     val msg4ForDataManager = "Beware!!! Very personal data!!!"
     Files.write(mediumDir.toPath.resolve("metadata/agreements.xml"), agreementXml.toString.getBytes)
-    Files.write(mediumDir.toPath.resolve("metadata/message-for-the-datamanager.txt"), msg4ForDataManager.getBytes)
+    Files.write(mediumDir.toPath.resolve("metadata/message-from-depositor.txt"), msg4ForDataManager.getBytes)
     val bag = testDir.resolve("medium").toFile
     implicit val s: Settings = newSettings(bag)
     inside(EMD.create(sdoSetDir)) {
@@ -91,7 +97,6 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         emd.getEmdRights.getTermsLicense should contain(acceptBS)
         emd.getEmdOther.getEasRemarks should contain allOf(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
     }
-    FileUtils.deleteDirectory(sdoSetDir)
   }
 
   it should "produce an error containing possible values" in {
@@ -122,6 +127,5 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     Option(sdoSetDir.list()) shouldBe empty
 
     deleteQuietly(tmpDDM)
-    deleteDirectory(sdoSetDir)
   }
 }

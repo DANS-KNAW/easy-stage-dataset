@@ -75,13 +75,13 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    val msgForDataManager = new File(s.bagitDir, "metadata/message-for-the-datamanager.txt")
+    val msgForDataManager = new File(s.bagitDir, "metadata/message-from-depositor.txt")
     if (msgForDataManager.exists) {
       val content = Source.fromFile(msgForDataManager).mkString
       emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
     }
     else {
-      logger.info("message-for-the-datamanager.txt not found, not setting a remark")
+      logger.info("message-from-depositor.txt not found, not setting a remark")
     }
   }
 
