@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
-import java.nio.file.{ Files, Paths }
+import java.nio.file.Files
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
