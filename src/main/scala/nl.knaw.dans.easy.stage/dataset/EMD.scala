@@ -62,7 +62,7 @@ object EMD extends DebugEnhancedLogging {
 
   def addAgreementFields(emd: EasyMetadata)(implicit s: Settings): Unit = {
     val agreementPath = new File(s.bagitDir, depositorInfoDir.resolve("agreements.xml").toString)
-    if (Files.exists(agreementPath.toPath)) {
+    if (agreementPath.exists) {
       val agreementsXml = XML.loadFile(agreementPath)
       if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
         emd.getEmdRights.setAcceptedLicense(true)
