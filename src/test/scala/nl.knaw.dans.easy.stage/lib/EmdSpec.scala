@@ -73,8 +73,20 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
-        emd.getEmdRights.getTermsLicense should contain(acceptBS)
+        emd.getEmdRights.getTermsLicense should contain allOf(acceptBS, new BasicString("http://opensource.org/licenses/MIT"))
         emd.getEmdOther.getEasRemarks should contain allOf(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
+    }
+  }
+
+  it should "not set license, containsPrivacySensitiveData and remark for the data manager if the depositor-info dir not available" in {
+    assume(canConnect(xsds))
+    sdoSetDir.mkdirs()
+    val minimalDir = new File("src/test/resources/dataset-bags/minimal")
+    implicit val s: Settings = newSettings(minimalDir)
+    inside(EMD.create(sdoSetDir)) {
+      case Success(emd: EasyMetadata) =>
+        emd.getEmdRights.getTermsLicense shouldBe empty
+        emd.getEmdOther.getEasRemarks shouldBe empty
     }
   }
 
