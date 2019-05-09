@@ -311,6 +311,6 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with Inside with Befo
   }
 
   def mockFedora(expectations: Map[String, Seq[String]]): Fedora = {
-    (query: String, acc: Seq[String], token: Option[String]) => expectations(query)
+    (query: String, _, _) => expectations(query)
   }
 }
