@@ -73,8 +73,8 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
-        emd.getEmdRights.getTermsLicense should contain allOf(acceptBS, new BasicString("http://opensource.org/licenses/MIT"))
-        emd.getEmdOther.getEasRemarks should contain allOf(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
+        emd.getEmdRights.getTermsLicense should contain only(acceptBS, new BasicString("http://opensource.org/licenses/MIT"))
+        emd.getEmdOther.getEasRemarks should contain only(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
     }
   }
 
