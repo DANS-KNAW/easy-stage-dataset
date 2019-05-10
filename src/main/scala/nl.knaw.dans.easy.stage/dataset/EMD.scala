@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 import java.net.URI
-import java.nio.file.{ Files, Paths }
+import java.nio.file.Paths
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Util._
@@ -30,7 +30,7 @@ import org.apache.commons.lang.BooleanUtils
 
 import scala.io.Source
 import scala.util.{ Failure, Success, Try }
-import scala.xml.XML
+import scala.xml.{ Elem, XML }
 
 object EMD extends DebugEnhancedLogging {
 
@@ -67,20 +67,31 @@ object EMD extends DebugEnhancedLogging {
       if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
         emd.getEmdRights.setAcceptedLicense(true)
       }
-      if (BooleanUtils.toBoolean((agreementsXml \\ "containsPrivacySensitiveData").text)) {
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark("containsPrivacySensitiveData"))
-      }
+      addPrivacySensitiveRemark(emd, agreementsXml)
     }
     else {
       logger.info("agreements.xml not found, not setting agreement data")
     }
   }
 
+  private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
+    val signerId = (agreementsXml \\ "signerId").text
+    Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
+      case Some(boolText) =>
+        val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
+                                   else "DOES NOT"
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."))
+      case None =>
+        logger.info("The field containsPrivacySensitiveData could not be found in agreements.xml")
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data."))
+    }
+  }
+
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    val msgForDataManager = new File(s.bagitDir,  depositorInfoDir.resolve("message-from-depositor.txt").toString)
+    val msgForDataManager = new File(s.bagitDir, depositorInfoDir.resolve("message-from-depositor.txt").toString)
     if (msgForDataManager.exists) {
       val content = Source.fromFile(msgForDataManager).mkString
-      emd.getEmdOther.getEasRemarks.add(new BasicRemark(content))
+      emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $content"))
     }
     else {
       logger.info("message-from-depositor.txt not found, not setting a remark")

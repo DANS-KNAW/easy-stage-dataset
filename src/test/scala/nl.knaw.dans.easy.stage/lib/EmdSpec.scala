@@ -74,7 +74,10 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
         emd.getEmdRights.getTermsLicense should contain only(acceptBS, new BasicString("http://opensource.org/licenses/MIT"))
-        emd.getEmdOther.getEasRemarks should contain only(new BasicRemark("Beware!!! Very personal data!!!"), new BasicRemark("containsPrivacySensitiveData"))
+        emd.getEmdOther.getEasRemarks should contain only(
+          new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
+          new BasicRemark("Message for the Datamanager: according to the depositor user001 this dataset DOES contain Privacy Sensitive data.")
+        )
     }
   }
 
