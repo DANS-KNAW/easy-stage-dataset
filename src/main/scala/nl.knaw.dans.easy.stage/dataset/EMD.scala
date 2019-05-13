@@ -76,11 +76,17 @@ object EMD extends DebugEnhancedLogging {
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
     val signerId = (agreementsXml \\ "signerId").text
-    val privacySensitivePart = if (BooleanUtils.toBoolean((agreementsXml \\ "containsPrivacySensitiveData").text)) "DOES"
-                               else "DOES NOT"
-    val remark = s"according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."
+    Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
+      case Some(boolText) =>
+        val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
+                                   else "DOES NOT"
 
-    emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
+        val remark = s"according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
+      case None =>
+        logger.info("The field containsPrivacySensitiveData could not be found in agreements.xml")
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data."))
+    }
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
