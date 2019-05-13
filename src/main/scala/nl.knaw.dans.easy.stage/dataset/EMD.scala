@@ -17,7 +17,8 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 import java.net.URI
-import java.nio.file.Paths
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Util._
@@ -27,6 +28,7 @@ import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
 import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, BasicRemark, EmdArchive, EmdConstants }
 import org.apache.commons.lang.BooleanUtils
+import resource.Using
 
 import scala.io.Source
 import scala.util.{ Failure, Success, Try }
@@ -76,21 +78,17 @@ object EMD extends DebugEnhancedLogging {
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
     val signerId = (agreementsXml \\ "signerId").text
-    Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
-      case Some(boolText) =>
-        val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
-                                   else "DOES NOT"
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."))
-      case None =>
-        logger.info("The field containsPrivacySensitiveData could not be found in agreements.xml")
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data."))
-    }
+    val privacySensitivePart = if (BooleanUtils.toBoolean((agreementsXml \\ "containsPrivacySensitiveData").text)) "DOES"
+                               else "DOES NOT"
+    val remark = s"according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."
+
+    emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
-    val msgForDataManager = new File(s.bagitDir, depositorInfoDir.resolve("message-from-depositor.txt").toString)
-    if (msgForDataManager.exists) {
-      val content = Source.fromFile(msgForDataManager).mkString
+    val msgForDataManager = s.bagitDir.toPath.resolve(depositorInfoDir).resolve("message-from-depositor.txt")
+    if (Files.exists(msgForDataManager)) {
+      val content = new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
       emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $content"))
     }
     else {
