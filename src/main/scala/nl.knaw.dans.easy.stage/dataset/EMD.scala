@@ -28,9 +28,7 @@ import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
 import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, BasicRemark, EmdArchive, EmdConstants }
 import org.apache.commons.lang.BooleanUtils
-import resource.Using
 
-import scala.io.Source
 import scala.util.{ Failure, Success, Try }
 import scala.xml.{ Elem, XML }
 
