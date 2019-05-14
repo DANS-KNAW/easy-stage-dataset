@@ -67,6 +67,8 @@ object EMD extends DebugEnhancedLogging {
       val agreementsXml = XML.loadFile(agreementPath)
       if (BooleanUtils.toBoolean((agreementsXml \\ "depositAgreementAccepted").text)) {
         emd.getEmdRights.setAcceptedLicense(true)
+      } else {
+        logger.warn("agreements.xml did NOT contain a depositAgreementAccepted=true element")
       }
       addPrivacySensitiveRemark(emd, agreementsXml)
     }
