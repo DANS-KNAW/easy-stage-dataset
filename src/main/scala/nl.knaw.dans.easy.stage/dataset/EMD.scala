@@ -23,6 +23,7 @@ import java.nio.file.{ Files, Paths }
 import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.lib.Util._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
+import nl.knaw.dans.lib.string._
 import nl.knaw.dans.pf.language.ddm.api.Ddm2EmdCrosswalk
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.binding.EmdMarshaller
@@ -75,18 +76,23 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
-    val signerId = (agreementsXml \\ "signerId").text
-    Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
+    val signerId = agreementsXml \ "depositAgreement" \ "signerId"
+    val easyAccount = (signerId \@ "easy-account").toOption
+    val fullname = signerId.text
+
+    val remark = Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
       case Some(boolText) =>
         val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
                                    else "DOES NOT"
+        val usernamePart = easyAccount.map(username => s"$username ($fullname)").getOrElse(fullname)
 
-        val remark = s"according to the depositor $signerId this dataset $privacySensitivePart contain Privacy Sensitive data."
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
+        s"according to the depositor $usernamePart this dataset $privacySensitivePart contain Privacy Sensitive data."
       case None =>
-        logger.info("The field containsPrivacySensitiveData could not be found in agreements.xml")
-        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data."))
+        logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
+        "it could not be determined if this dataset does contain Privacy Sensitive data."
     }
+
+    emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
   }
 
   private def addMessageForDataManager(emd: EasyMetadata)(implicit s: Settings): Unit = {
