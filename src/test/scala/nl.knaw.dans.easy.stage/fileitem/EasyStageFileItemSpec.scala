@@ -307,16 +307,10 @@ class EasyStageFileItemSpec extends FlatSpec with Matchers with Inside with Befo
   }
 
   def mockEasyFilesAndFolders(expectations: Map[String, Try[ExistingAncestor]]): EasyFilesAndFolders = {
-    new EasyFilesAndFolders {
-      override def getExistingAncestor(file: File, datasetId: String): Try[ExistingAncestor] =
-        expectations(s"$datasetId $file")
-    }
+    (file, datasetId) => expectations(s"$datasetId $file")
   }
 
   def mockFedora(expectations: Map[String, Seq[String]]): Fedora = {
-    new Fedora {
-      override def findObjects(query: String, acc: Seq[String], token: Option[String]): Seq[String] =
-        expectations(query)
-    }
+    (query, _, _) => expectations(query)
   }
 }

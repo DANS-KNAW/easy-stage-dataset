@@ -16,17 +16,21 @@
 package nl.knaw.dans.easy.stage.lib
 
 import java.io.File
+import java.nio.file.Files
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
+import nl.knaw.dans.pf.language.emd.EasyMetadata
+import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
-import org.scalatest.{ FlatSpec, Inside, Matchers }
+import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Inside, Matchers }
 
 import scala.util.{ Failure, Success }
 
-class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture {
+class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
 
-  val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  private val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
 
   def newSettings(bagitDir: File): Settings = {
     new Settings(
@@ -42,6 +46,12 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       licenses = Map.empty)
   }
 
+  override def beforeEach(): Unit = {
+    if (Files.exists(sdoSetDir.toPath)) {
+      FileUtils.deleteDirectory(sdoSetDir)
+    }
+  }
+
   "create" should "succeed for each test bag" in {
     assume(canConnect(xsds))
 
@@ -51,6 +61,36 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       EMD.create(sdoSetDir) shouldBe a[Success[_]]
       sdoSetDir.list() shouldBe Array("EMD")
       deleteDirectory(sdoSetDir)
+    }
+  }
+
+  it should "set license, containsPrivacySensitiveData and remark for the data manager" in {
+    assume(canConnect(xsds))
+    sdoSetDir.mkdirs()
+    val mediumDir = new File("src/test/resources/dataset-bags/medium")
+    implicit val s: Settings = newSettings(mediumDir)
+    inside(EMD.create(sdoSetDir)) {
+      case Success(emd: EasyMetadata) =>
+        val acceptBS = new BasicString("accept")
+        acceptBS.setScheme("Easy2 version 1")
+
+        emd.getEmdRights.getTermsLicense should contain only (new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
+        emd.getEmdOther.getEasRemarks should contain only(
+          new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
+          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen) this dataset DOES contain Privacy Sensitive data.")
+        )
+    }
+  }
+
+  it should "not set license, containsPrivacySensitiveData and remark for the data manager if the depositor-info dir not available" in {
+    assume(canConnect(xsds))
+    sdoSetDir.mkdirs()
+    val minimalDir = new File("src/test/resources/dataset-bags/minimal")
+    implicit val s: Settings = newSettings(minimalDir)
+    inside(EMD.create(sdoSetDir)) {
+      case Success(emd: EasyMetadata) =>
+        emd.getEmdRights.getTermsLicense shouldBe empty
+        emd.getEmdOther.getEasRemarks shouldBe empty
     }
   }
 
@@ -82,6 +122,5 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     Option(sdoSetDir.list()) shouldBe empty
 
     deleteQuietly(tmpDDM)
-    deleteDirectory(sdoSetDir)
   }
 }

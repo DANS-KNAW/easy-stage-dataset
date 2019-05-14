@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<agreements xsi:schemaLocation="http://easy.dans.knaw.nl/schemas/bag/metadata/agreements/ https://easy.dans.knaw.nl/schemas/bag/metadata/agreements/agreements.xsd"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns:dcterms="http://purl.org/dc/terms/"
+            xmlns="http://easy.dans.knaw.nl/schemas/bag/metadata/agreements/">
+    <depositAgreement>
+        <signerId easy-account="user001">First Namen</signerId>
+        <dcterms:dateAccepted>2019-04-15T16:48:15.640+02:00</dcterms:dateAccepted>
+        <depositAgreementAccepted>true</depositAgreementAccepted>
+    </depositAgreement>
+    <personalDataStatement>
+        <signerId>First Namen</signerId>
+        <dateSigned>2019-04-15T16:48:15.640+02:00</dateSigned>
+        <containsPrivacySensitiveData>true</containsPrivacySensitiveData>
+    </personalDataStatement>
+</agreements>
