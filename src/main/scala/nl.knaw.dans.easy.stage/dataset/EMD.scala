@@ -73,7 +73,7 @@ object EMD extends DebugEnhancedLogging {
       addPrivacySensitiveRemark(emd, agreementsXml)
     }
     else {
-      logger.warn("agreements.xml not found, not setting agreement data")
+      logger.info("agreements.xml not found, not setting agreement data")
     }
   }
 
