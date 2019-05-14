@@ -71,7 +71,7 @@ object EMD extends DebugEnhancedLogging {
       addPrivacySensitiveRemark(emd, agreementsXml)
     }
     else {
-      logger.info("agreements.xml not found, not setting agreement data")
+      logger.warn("agreements.xml not found, not setting agreement data")
     }
   }
 
@@ -102,7 +102,7 @@ object EMD extends DebugEnhancedLogging {
       emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $content"))
     }
     else {
-      logger.info("message-from-depositor.txt not found, not setting a remark")
+      logger.debug("message-from-depositor.txt not found, not setting a remark")
     }
   }
 
