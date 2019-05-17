@@ -21,11 +21,12 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.io.FileUtils
 
 import scala.util.{ Failure, Try }
-import scala.xml.{ Elem, XML }
+import scala.xml.{ Node, Utility, XML }
 
 object Util extends DebugEnhancedLogging {
-  def loadXML(metadataFile: File): Elem =
-    XML.load(new InputStreamReader(new FileInputStream(metadataFile), "UTF-8"))
+  def loadXML(metadataFile: File): Node = {
+    Utility.trim(XML.load(new InputStreamReader(new FileInputStream(metadataFile), "UTF-8")))
+  }
 
   /*
    * DO NOT USE THE SCALA File CLASS TO WRITE THE XML.
