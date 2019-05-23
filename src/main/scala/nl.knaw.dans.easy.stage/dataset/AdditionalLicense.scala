@@ -48,9 +48,9 @@ object AdditionalLicense extends DebugEnhancedLogging {
       ddm <- Try { loadBagXML(ddmFileName) }
       rightsHolder <- getRightsHolder(ddm)
       year <- getYear(ddm)
-      (template, fileName, mime) <- getAdditionalLicenseTemplate(ddm, rightsHolder, year)
+      (template, fileName, mimetype) <- getAdditionalLicenseTemplate(ddm, rightsHolder, year)
       _ <- copyAdditionalLicense(template, sdo)
-    } yield (fileName, mime)
+    } yield (fileName, mimetype)
   }
 
   private def getAdditionalLicenseTemplate(ddm: NodeSeq, rightsHolder: String, year: String)(implicit s: Settings): Try[(ManagedResource[InputStream], FileName, MimeType)] = {
@@ -61,7 +61,7 @@ object AdditionalLicense extends DebugEnhancedLogging {
           licenseTemplateFile <- getMatchingLicense(uri, s.licenses).map(Success(_))
             .getOrElse(Failure(RejectedDepositException(s"Not a valid license URI: ${ license.text }")))
           name = licenseTemplateFile.getName
-          (mimetype, content) <- getLicenseTextAndMimeType(licenseTemplateFile, rightsHolder, year)
+          (mimetype, content) <- getMimeTypeAndLicenseStream(licenseTemplateFile, rightsHolder, year)
         } yield (content, name, mimetype)
       case Seq(license) => Success(managed(new ByteArrayInputStream(license.text.getBytes(StandardCharsets.UTF_8))), "additional_license.txt", "text/plain")
       case lics => Failure(RejectedDepositException(s"Found ${ lics.size } dcterms:license elements. There should be exactly one"))
@@ -105,7 +105,7 @@ object AdditionalLicense extends DebugEnhancedLogging {
     }
   }
 
-  private def getLicenseTextAndMimeType(licenseTemplateFile: File, rightsHolder: String, year: String): Try[(MimeType, ManagedResource[InputStream])] = {
+  private def getMimeTypeAndLicenseStream(licenseTemplateFile: File, rightsHolder: String, year: String): Try[(MimeType, ManagedResource[InputStream])] = {
     licenseTemplateFile.getName.split("\\.").last match {
       case "txt" => Try { "text/plain" -> asStream(readAndReplace(licenseTemplateFile, rightsHolder, year)) }
       case "html" => Try { "text/html" -> asStream(readAndReplace(licenseTemplateFile, rightsHolder, year)) }
@@ -114,13 +114,13 @@ object AdditionalLicense extends DebugEnhancedLogging {
     }
   }
 
-  private def readAndReplace(licenseTemplateFile: File, rightsHolder: String, year: String) = {
+  private def readAndReplace(licenseTemplateFile: File, rightsHolder: String, year: String): String = {
     FileUtils.readFileToString(licenseTemplateFile)
       .replace("<rightsHolder>", rightsHolder)
       .replace("<year>", year)
   }
 
-  private def asStream(string: String) = {
+  private def asStream(string: String): ManagedResource[InputStream] = {
     managed { new ByteArrayInputStream(string.getBytes(StandardCharsets.UTF_8)) }
   }
 
