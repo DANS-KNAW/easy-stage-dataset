@@ -18,8 +18,6 @@ package nl.knaw.dans.easy.stage
 import nl.knaw.dans.easy.stage.dataset.AdditionalLicense._
 import org.scalatest.{ FlatSpec, Inside, Matchers }
 
-import scala.util.{ Failure, Success }
-
 class AdditionalLicenseSpec extends FlatSpec with Matchers with Inside {
 
   "hasXsiType" should
@@ -97,20 +95,5 @@ class AdditionalLicenseSpec extends FlatSpec with Matchers with Inside {
 
   it should "return false if no attributes found" in {
     hasXsiType(<elementWithNoAttributes />, "http://the_namespace", "the_label") shouldBe false
-  }
-
-
-  "getLicenseMimeType" should "return 'text/html' if extension is .html" in {
-    getLicenseMimeType("/some/license/file.html") should matchPattern { case Success("text/html") => }
-  }
-
-  it should "return 'text/plain' if extension is .txt" in {
-    getLicenseMimeType("/some/license/file.txt") should matchPattern { case Success("text/plain") => }
-  }
-
-  it should "throw an exception if any other extension is used" in {
-    inside(getLicenseMimeType("/some/license/file.pdf")) {
-      case Failure(RejectedDepositException(msg, _)) => msg should include("Unknown extension")
-    }
   }
 }

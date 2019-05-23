@@ -23,7 +23,7 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
 import scala.sys.error
 import scala.util.{ Failure, Success, Try }
-import scala.xml.{ Elem, NodeSeq }
+import scala.xml.{ Node, NodeSeq }
 
 object Util extends DebugEnhancedLogging {
 
@@ -71,7 +71,7 @@ object Util extends DebugEnhancedLogging {
     (loadBagXML("metadata/dataset.xml") \\ "DDM" \ "profile" \ "audience").map(_.text)
   }
 
-  def loadBagXML(fileName: String)(implicit s: Settings): Elem = {
+  def loadBagXML(fileName: String)(implicit s: Settings): Node = {
     new File(s.bagitDir, fileName) match {
       case file if file.exists() => loadXML(file)
       case _ => error(s"Unable to find `$fileName` in bag.")
