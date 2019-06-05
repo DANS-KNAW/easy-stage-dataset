@@ -74,7 +74,7 @@ object EMD extends DebugEnhancedLogging {
       addPrivacySensitiveRemark(emd, agreementsXml)
     }
     else {
-      logger.info(s"[${ s.bagitDir }] agreements.xml not found, not setting agreement data")
+      logger.info(s"[${ s.bagitDir.getParentFile.getName }] agreements.xml not found, not setting agreement data")
     }
   }
 
