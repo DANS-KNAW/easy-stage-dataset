@@ -77,7 +77,8 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         emd.getEmdRights.getTermsLicense should contain only (new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
         emd.getEmdOther.getEasRemarks should contain only(
           new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
-          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen) this dataset DOES contain Privacy Sensitive data.")
+          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen) this dataset DOES contain Privacy Sensitive data."),
+          new BasicRemark("Instructions for Reuse: remark1"),
         )
     }
   }
@@ -122,5 +123,15 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     Option(sdoSetDir.list()) shouldBe empty
 
     deleteQuietly(tmpDDM)
+  }
+
+  "findInstructionsForReuse" should "return the text value of the instructions for reuse node" in {
+   val dataSetXmlFile = new File("src/test/resources/dataset-bags/medium/metadata/dataset.xml")
+    EMD.findInstructionForReuseText(dataSetXmlFile) shouldBe Some("remark1")
+  }
+
+  it should "return a none if the instructions for reuse  node is not present" in {
+    val dataSetXmlFile = new File("src/test/resources/dataset-bags/minimal/metadata/dataset.xml")
+    EMD.findInstructionForReuseText(dataSetXmlFile) shouldBe None
   }
 }

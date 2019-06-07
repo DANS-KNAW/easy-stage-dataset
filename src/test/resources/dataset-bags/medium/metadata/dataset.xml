@@ -17,6 +17,7 @@
             - A display name is provided for data/random images/image01.png
             - An additional license is selected
         </dcterms:description>
+        <ddm:description descriptionType="TechnicalInfo">remark1</ddm:description>
         <dcx-dai:creatorDetails>
             <dcx-dai:author>
                 <dcx-dai:titles></dcx-dai:titles>

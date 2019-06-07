@@ -31,7 +31,7 @@ import nl.knaw.dans.pf.language.emd.types.{ BasicIdentifier, BasicRemark, EmdArc
 import org.apache.commons.lang.BooleanUtils
 
 import scala.util.{ Failure, Success, Try }
-import scala.xml.{ Elem, XML }
+import scala.xml.{ Elem, NodeSeq, XML }
 
 object EMD extends DebugEnhancedLogging {
 
@@ -49,6 +49,7 @@ object EMD extends DebugEnhancedLogging {
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
           _ = addAgreementFields(emd)
           _ = addMessageForDataManager(emd)
+          _ = addInstructionsForReuseRemark(emd, file)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
@@ -59,6 +60,17 @@ object EMD extends DebugEnhancedLogging {
         } yield emd
       case _ => Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
     }
+  }
+
+  def addInstructionsForReuseRemark(emd: EasyMetadata, ddm: File): Unit = {
+    findInstructionForReuseText(ddm)
+      .foreach(value => emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Instructions for Reuse: $value")))
+  }
+
+  def findInstructionForReuseText(ddm: File): Option[String] = {
+    val xml = XML.loadFile(ddm)
+    (xml \\ "description").find(node => (node \\ "@descriptionType").toString == "TechnicalInfo")
+      .map(_.text)
   }
 
   def addAgreementFields(emd: EasyMetadata)(implicit s: Settings): Unit = {
