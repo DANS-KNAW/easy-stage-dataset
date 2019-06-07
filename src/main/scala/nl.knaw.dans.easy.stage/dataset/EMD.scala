@@ -69,12 +69,12 @@ object EMD extends DebugEnhancedLogging {
         emd.getEmdRights.setAcceptedLicense(true)
       }
       else {
-        logger.warn(s"[${ s.bagitDir }] agreements.xml did NOT contain a depositAgreementAccepted=true element")
+        logger.warn(s"[${ s.bagitDir.getParentFile.getName }] agreements.xml did NOT contain a depositAgreementAccepted=true element")
       }
       addPrivacySensitiveRemark(emd, agreementsXml)
     }
     else {
-      logger.info(s"[${ s.bagitDir }] agreements.xml not found, not setting agreement data")
+      logger.info(s"[${ s.bagitDir.getParentFile.getName }] agreements.xml not found, not setting agreement data")
     }
   }
 
