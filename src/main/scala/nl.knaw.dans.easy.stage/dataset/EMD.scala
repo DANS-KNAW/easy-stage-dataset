@@ -102,7 +102,10 @@ object EMD extends DebugEnhancedLogging {
     val msgForDataManager = s.bagitDir.toPath.resolve(depositorInfoDir).resolve("message-from-depositor.txt")
     if (Files.exists(msgForDataManager)) {
       val content = new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
-      emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $content"))
+      if (content.isBlank)
+        logger.debug("message-from-depositor.txt was found but was empty, not setting a remark")
+      else
+        emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $content"))
     }
     else {
       logger.debug("message-from-depositor.txt not found, not setting a remark")
