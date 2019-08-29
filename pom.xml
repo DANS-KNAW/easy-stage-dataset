@@ -155,7 +155,7 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-            <url>http://maven.dans.knaw.nl/</url>
+            <url>http://maven.dans.knaw.nl/releases</url>
         </repository>
     </repositories>
 
@@ -165,7 +165,7 @@
             <releases>
                 <enabled>true</enabled>
             </releases>
-            <url>http://maven.dans.knaw.nl/</url>
+            <url>http://maven.dans.knaw.nl/releases</url>
         </pluginRepository>
     </pluginRepositories>
 
