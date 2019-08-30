@@ -40,9 +40,8 @@ object Configuration {
         load(cfgPath.resolve("application.properties").toFile)
       },
       licenses = {
-        val licDir = home.resolve("lic")
-        val licenses = new PropertiesConfiguration(licDir.resolve("licenses.properties").toFile)
-        licenses.getKeys.asScala.map(key => key -> licDir.resolve(licenses.getString(key)).toFile).toMap
+        val licenses = new PropertiesConfiguration(licensesDir.resolve("licenses.properties").toFile)
+        licenses.getKeys.asScala.map(key => key -> licensesDir.resolve(licenses.getString(key)).toFile).toMap
       }
     )
   }

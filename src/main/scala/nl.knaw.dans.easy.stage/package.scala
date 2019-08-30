@@ -15,6 +15,8 @@
  */
 package nl.knaw.dans.easy
 
+import java.nio.file.Paths
+
 import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
 
 package object stage {
@@ -22,6 +24,8 @@ package object stage {
   case class RejectedDepositException(msg: String, cause: Throwable = null) extends Exception(msg, cause)
 
   val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
+
+  val licensesDir = Paths.get("target/easy-licenses/licenses")
 
   type FedoraID = String
 
