@@ -25,8 +25,6 @@ package object stage {
 
   val xsds: Array[String] = Array(NameSpace.DC.uri, NameSpace.DDM.uri)
 
-  val licensesDir = Paths.get("target/easy-licenses/licenses")
-
   type FedoraID = String
 
   type PathInDataset = String
