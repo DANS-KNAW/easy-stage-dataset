@@ -116,10 +116,9 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val path = Paths.get(getClass.getClassLoader.getResource("dataset-bags/bag-with-secret-file").toURI)
 
     val result = testDir.resolve("SDO-set")
-    val licensesDir = Paths.get(getClass.getResource("/licenses").toURI)
     EasyStageDataset.run(createSettings(path.toFile, result.toFile)
       .copy(licenses = Map("http://creativecommons.org/licenses/by-nc-sa/4.0/" ->
-        licensesDir.resolve("CC-BY-NC-SA-4.0.html").toFile))
+        Paths.get("target/easy-licenses/licenses/CC-BY-NC-SA-4.0.html").toFile))
       .copy(fileUris = Map(Paths.get("data/path/to/file.txt") -> new URI("http://x")))).get
 
     val secretFile = result.resolve("path_to_file_txt/EASY_FILE_METADATA")

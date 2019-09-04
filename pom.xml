@@ -197,12 +197,6 @@
                 </executions>
             </plugin>
         </plugins>
-        <resources>
-            <resource>
-                <filtering>false</filtering>
-                <directory>${project.build.directory}/easy-licenses</directory>
-            </resource>
-        </resources>
     </build>
 
     <profiles>
@@ -269,6 +263,15 @@
                                     <sources>
                                         <source>
                                             <location>src/main/assembly/dist/bin/easy-stage-file-item</location>
+                                        </source>
+                                    </sources>
+                                </mapping>
+                                <mapping>
+                                    <directory>/opt/${dans-provider-name}/${project.artifactId}/lic</directory>
+                                    <filemode>755</filemode>
+                                    <sources>
+                                        <source>
+                                            <location>target/easy-licenses/licenses</location>
                                         </source>
                                     </sources>
                                 </mapping>
