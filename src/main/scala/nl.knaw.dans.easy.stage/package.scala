@@ -15,8 +15,6 @@
  */
 package nl.knaw.dans.easy
 
-import java.nio.file.Paths
-
 import nl.knaw.dans.pf.language.ddm.handlermaps.NameSpace
 
 package object stage {
