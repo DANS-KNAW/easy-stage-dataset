@@ -40,7 +40,7 @@ object Configuration {
         load(cfgPath.resolve("application.properties").toFile)
       },
       licenses = {
-        val licDir = home.resolve("lic")
+        val licDir = Paths.get(s"/etc/opt/dans.knaw.nl/easy-validate-dans-bag/lic")
         val licenses = new PropertiesConfiguration(licDir.resolve("licenses.properties").toFile)
         licenses.getKeys.asScala.map(key => key -> licDir.resolve(licenses.getString(key)).toFile).toMap
       }

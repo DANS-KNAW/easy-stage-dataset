@@ -175,9 +175,7 @@
     <build>
         <plugins>
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>2.8</version>
                 <executions>
                     <execution>
                         <id>resources</id>
@@ -249,14 +247,6 @@
                     <plugin>
                         <groupId>org.codehaus.mojo</groupId>
                         <artifactId>rpm-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>attach-rpm</id>
-                                <goals>
-                                    <goal>attached-rpm</goal>
-                                </goals>
-                            </execution>
-                        </executions>
                         <configuration>
                             <group>Applications/Archiving</group>
                             <mappings combine.children="append">
@@ -270,7 +260,8 @@
                                     </sources>
                                 </mapping>
                                 <mapping>
-                                    <directory>/opt/${dans-provider-name}/${project.artifactId}/lic</directory>
+                                    <directory>/etc/opt/${dans-provider-name}/${project.artifactId}/lic</directory>
+                                    <configuration>${rpm-replace-configuration}</configuration>
                                     <filemode>755</filemode>
                                     <sources>
                                         <source>
