@@ -188,8 +188,7 @@
                                 <artifactItem>
                                     <groupId>nl.knaw.dans.easy</groupId>
                                     <artifactId>easy-licenses</artifactId>
-                                    <version>1.0.0-SNAPSHOT</version>
-                                    <type>tar.gz</type>
+                                    <version>1.0.1-SNAPSHOT</version>
                                     <outputDirectory>${project.build.directory}/easy-licenses</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
