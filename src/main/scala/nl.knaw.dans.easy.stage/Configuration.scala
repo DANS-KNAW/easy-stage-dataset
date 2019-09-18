@@ -40,7 +40,8 @@ object Configuration {
         load(cfgPath.resolve("application.properties").toFile)
       },
       licenses = {
-        val licDir = home.resolve("lic")
+        val licDir = cfgPath.resolve("lic")
+        require(Files.exists(licDir), s"The licenses are expected to be located at $licDir, but they don't exist.")
         val licenses = new PropertiesConfiguration(licDir.resolve("licenses.properties").toFile)
         licenses.getKeys.asScala.map(key => key -> licDir.resolve(licenses.getString(key)).toFile).toMap
       }

@@ -118,7 +118,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val result = testDir.resolve("SDO-set")
     EasyStageDataset.run(createSettings(path.toFile, result.toFile)
       .copy(licenses = Map("http://creativecommons.org/licenses/by-nc-sa/4.0/" ->
-        Paths.get("src/main/assembly/dist/lic/CC-BY-NC-SA-4.0.html").toFile))
+        Paths.get("target/easy-licenses/licenses/CC-BY-NC-SA-4.0.html").toFile))
       .copy(fileUris = Map(Paths.get("data/path/to/file.txt") -> new URI("http://x")))).get
 
     val secretFile = result.resolve("path_to_file_txt/EASY_FILE_METADATA")
@@ -131,14 +131,14 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     result.resolve("path_to_file_txt/EASY_FILE").toFile shouldNot exist
 
     Source.fromFile(result.resolve("path_to_file_txt/cfg.json").toFile).mkString should include
-      """
-        |"datastreams":[{
-        |    "dsLocation":"http://x",
-        |    "dsID":"EASY_FILE",
-        |    "controlGroup":"R",
-        |    "mimeType":"text/plain"
-        |  }
-      """.stripMargin
+    """
+      |"datastreams":[{
+      |    "dsLocation":"http://x",
+      |    "dsID":"EASY_FILE",
+      |    "controlGroup":"R",
+      |    "mimeType":"text/plain"
+      |  }
+    """.stripMargin
   }
 
   "checkFilesInBag" should "result in Success if files argument is empty" in {

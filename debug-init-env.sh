@@ -16,10 +16,16 @@
 #
 
 
+HOMEDIR=home
 DATADIR=data
 
 echo "Copying test data to $DATADIR..."
 cp -r src/test/resources/deposits $DATADIR/deposits
+
+echo "Copying licenses to $HOMEDIR/cfg..."
+mvn generate-resources
+LICENSES=target/easy-licenses/licenses
+cp -r "$LICENSES" $HOMEDIR/cfg/lic
 
 touch $DATADIR/easy-stage-dataset.log
 echo "OK"

@@ -18,6 +18,8 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.nio.file.{ Files, Path, Paths }
 
+import nl.knaw.dans.easy.stage.Configuration.getClass
+import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
 import org.scalatest.{ FlatSpec, Matchers }
 import resource._
@@ -76,9 +78,11 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
   def createSettings(bagitDir: File, sdoSetDir: File): Settings = {
     /*
      * Not the ideal solution, but we need to get the licenses list for this test to work, and it is
-     * available in the dist directory.
+     * available in the target/easy-licenses directory.
      */
-    val configuration = Configuration(Paths.get("src/main/assembly/dist"))
+    val licensesDir = Paths.get("target/easy-licenses/licenses")
+    val licenses = new PropertiesConfiguration(licensesDir.resolve("licenses.properties").toFile)
+    val licensesMap = licenses.getKeys.asScala.map(key => key -> licensesDir.resolve(licenses.getString(key)).toFile).toMap
 
     // the user and disciplines should exist in deasy
     // to allow ingest and subsequent examination with the web-ui of the generated sdo sets
@@ -99,7 +103,7 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       databaseUrl = "",
       databaseUser = "",
       databasePassword = "", // TODO: probably not the value in the actual deasy environment
-      licenses = configuration.licenses
+      licenses = licensesMap
     )
   }
 }
