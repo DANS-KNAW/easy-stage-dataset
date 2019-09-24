@@ -77,7 +77,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         emd.getEmdRights.getTermsLicense should contain only (new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
         emd.getEmdOther.getEasRemarks should contain only(
           new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
-          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen) this dataset DOES contain Privacy Sensitive data.")
+          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen, <a href='mailto:does.not.exist@dans.knaw.nl>does.not.exist@dans.knaw.nl</a>) this dataset DOES contain Privacy Sensitive data.")
         )
     }
   }
