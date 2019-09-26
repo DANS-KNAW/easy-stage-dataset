@@ -84,7 +84,7 @@ object EMD extends DebugEnhancedLogging {
       val signerId = agreementsXml \ "depositAgreement" \ "signerId"
       (signerId.text, (signerId \@ "easy-account").toOption, (signerId \@ "email").toOption) match {
         case (fullName, None, None) => fullName
-        case ("", None, Some(email)) => s"$email"
+        case ("", None, Some(email)) => email
         case ("", Some(account), None) => account
         case ("", Some(account), Some(email)) => s"$account ($email)"
         case (fullName, None, Some(email)) => s"$fullName ($email)"
@@ -93,7 +93,7 @@ object EMD extends DebugEnhancedLogging {
       }
     }
 
-    def privacyPart(boolText: String) = {
+    def privacyPart(boolText: String): String = {
       if (BooleanUtils.toBoolean(boolText)) "DOES"
       else "DOES NOT"
     }
