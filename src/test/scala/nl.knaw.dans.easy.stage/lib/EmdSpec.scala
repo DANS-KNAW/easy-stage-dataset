@@ -95,21 +95,21 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
 
   it should "create a remark for SignerId without account attribute" in {
     easRemarksFrom(agreementsWithout = """( easy-account="user001")""") should
-      include("the depositor First Namen, does.not.exist@dans.knaw.nl this dataset")
+      include("the depositor First Namen (does.not.exist@dans.knaw.nl) this dataset")
   }
 
   it should "create a remark for SignerId with neither email full name" in {
     easRemarksFrom(agreementsWithout = """(First Namen| email="does.not.exist@dans.knaw.nl")""") should
-      include("the depositor user001  this dataset")
+      include("the depositor user001 this dataset")
   }
 
   it should "create a remark for SignerId without a full name" in {
     easRemarksFrom(agreementsWithout = "First Namen") should
-      include("the depositor user001 (, does.not.exist@dans.knaw.nl) this dataset")
+      include("the depositor user001 (does.not.exist@dans.knaw.nl) this dataset")
   }
 
   /**
-   * @param agreementsWithout a regexp for .replaceAll(..., "")
+   * @param agreementsWithout a regexp, each match is replaced with ""
    * @return EMD.getEmdOther.getEasRemarks.toString
    */
   private def easRemarksFrom(agreementsWithout: String) = {

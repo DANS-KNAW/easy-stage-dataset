@@ -82,21 +82,25 @@ object EMD extends DebugEnhancedLogging {
 
     def userNamePart: String = {
       val signerId = agreementsXml \ "depositAgreement" \ "signerId"
-      val fullname = signerId.text // TODO empty string -> causes "(," because of emailPart
-      val emailPart = (signerId \@ "email").toOption
-        .map(email => s", $email")
-        .getOrElse("")
-      val usernamePart = (signerId \@ "easy-account").toOption
-        .map(username => s"$username ($fullname$emailPart)".replace("()",""))
-        .getOrElse(s"$fullname$emailPart".trim)
-      usernamePart
+      (signerId.text, (signerId \@ "easy-account").toOption, (signerId \@ "email").toOption) match {
+        case (fullName, None, None) => fullName
+        case ("", None, Some(email)) => s"$email"
+        case ("", Some(account), None) => account
+        case ("", Some(account), Some(email)) => s"$account ($email)"
+        case (fullName, None, Some(email)) => s"$fullName ($email)"
+        case (fullName, Some(account), None) => s"$account ($fullName)"
+        case (fullName, Some(account), Some(email)) => s"$account ($fullName, $email)"
+      }
+    }
+
+    def privacyPart(boolText: String) = {
+      if (BooleanUtils.toBoolean(boolText)) "DOES"
+      else "DOES NOT"
     }
 
     val remark = Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
       case Some(boolText) =>
-        val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
-                                   else "DOES NOT"
-        s"according to the depositor $userNamePart this dataset $privacySensitivePart contain Privacy Sensitive data."
+        s"according to the depositor $userNamePart this dataset ${ privacyPart(boolText) } contain Privacy Sensitive data."
       case None =>
         logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
         "it could not be determined if this dataset does contain Privacy Sensitive data."
