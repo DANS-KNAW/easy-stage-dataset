@@ -20,6 +20,7 @@ import java.nio.file.Files
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.easy.stage.dataset.EMD
+import nl.knaw.dans.lib.error._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
 import org.apache.commons.io.FileUtils
@@ -74,12 +75,57 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
 
-        emd.getEmdRights.getTermsLicense should contain only (new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
+        emd.getEmdRights.getTermsLicense should contain only(new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
         emd.getEmdOther.getEasRemarks should contain only(
           new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
-          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen, <a href='mailto:does.not.exist@dans.knaw.nl>does.not.exist@dans.knaw.nl</a>) this dataset DOES contain Privacy Sensitive data.")
+          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.")
         )
     }
+  }
+
+  it should "create a remark for SignerId without attributes" in {
+    easRemarksFrom(agreementsWithout = """( easy-account="user001"| email="does.not.exist@dans.knaw.nl")""") should
+      include("the depositor First Namen this dataset")
+  }
+
+  it should "create a remark for SignerId without email attribute" in {
+    easRemarksFrom(agreementsWithout = """( email="does.not.exist@dans.knaw.nl")""") should
+      include("the depositor user001 (First Namen) this dataset")
+  }
+
+  it should "create a remark for SignerId without account attribute" in {
+    easRemarksFrom(agreementsWithout = """( easy-account="user001")""") should
+      include("the depositor First Namen, does.not.exist@dans.knaw.nl this dataset")
+  }
+
+  it should "create a remark for SignerId with neither email full name" in {
+    easRemarksFrom(agreementsWithout = """(First Namen| email="does.not.exist@dans.knaw.nl")""") should
+      include("the depositor user001  this dataset")
+  }
+
+  it should "create a remark for SignerId without a full name" in {
+    easRemarksFrom(agreementsWithout = "First Namen") should
+      include("the depositor user001 (, does.not.exist@dans.knaw.nl) this dataset")
+  }
+
+  /**
+   * @param agreementsWithout a regexp for .replaceAll(..., "")
+   * @return EMD.getEmdOther.getEasRemarks.toString
+   */
+  private def easRemarksFrom(agreementsWithout: String) = {
+    assume(canConnect(xsds))
+    sdoSetDir.mkdirs()
+    val mediumDir = new File("src/test/resources/dataset-bags/medium")
+    val input = new File(sdoSetDir.getParentFile + "/input")
+    val agreementsFile = new File(input + "/metadata/depositor-info/agreements.xml")
+    FileUtils.copyDirectory(mediumDir, input)
+    FileUtils.write(
+      agreementsFile,
+      FileUtils.readFileToString(agreementsFile).replaceAll(agreementsWithout, "")
+    )
+    EMD.create(sdoSetDir)(newSettings(input))
+      .getOrRecover(e => fail(e))
+      .getEmdOther.getEasRemarks.toString
   }
 
   it should "not set license, containsPrivacySensitiveData and remark for the data manager if the depositor-info dir not available" in {

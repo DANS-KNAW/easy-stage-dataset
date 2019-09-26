@@ -82,13 +82,13 @@ object EMD extends DebugEnhancedLogging {
 
     def userNamePart: String = {
       val signerId = agreementsXml \ "depositAgreement" \ "signerId"
-      val fullname = signerId.text
+      val fullname = signerId.text // TODO empty string -> causes "(," because of emailPart
       val emailPart = (signerId \@ "email").toOption
-        .map(email => s", <a href='mailto:$email>$email</a>")
+        .map(email => s", $email")
         .getOrElse("")
       val usernamePart = (signerId \@ "easy-account").toOption
-        .map(username => s"$username ($fullname$emailPart)")
-        .getOrElse(s"$fullname$emailPart".trim) // TODO
+        .map(username => s"$username ($fullname$emailPart)".replace("()",""))
+        .getOrElse(s"$fullname$emailPart".trim)
       usernamePart
     }
 
