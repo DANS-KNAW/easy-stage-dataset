@@ -81,18 +81,21 @@ object EMD extends DebugEnhancedLogging {
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
 
     val userNamePart = {
-      val signer = agreementsXml \ "depositAgreement" \ "signerId"
-      val name = signer.text
-      val account = (signer \@ "easy-account").toOption
-      val email = (signer \@ "email").toOption
-      (name, account, email) match {
-        case (name, None, None) => name
-        case ("", None, Some(email)) => email
-        case ("", Some(account), None) => account
-        case ("", Some(account), Some(email)) => s"$account ($email)"
-        case (name, None, Some(email)) => s"$name ($email)"
-        case (name, Some(account), None) => s"$name ($account)"
-        case (name, Some(account), Some(email)) => s"$name ($account, $email)"
+      val maybeSigner = (agreementsXml \ "depositAgreement" \ "signerId").headOption
+      val maybeName = maybeSigner.map(_.text)
+      val maybeAccount = maybeSigner.flatMap(node => (node \@ "easy-account").toOption)
+      val maybeEmail = maybeSigner.flatMap(node => (node \@ "email").toOption)
+      (maybeName, maybeAccount, maybeEmail) match {
+        case (None, _, _) =>
+          logger.warn("The field signerId could not be found in agreements.xml")
+          "NOT KNOWN"
+        case (Some(name), None, None) => name
+        case (Some(""), None, Some(email)) => email
+        case (Some(""), Some(account), None) => account
+        case (Some(""), Some(account), Some(email)) => s"$account ($email)"
+        case (Some(name), None, Some(email)) => s"$name ($email)"
+        case (Some(name), Some(account), None) => s"$name ($account)"
+        case (Some(name), Some(account), Some(email)) => s"$name ($account, $email)"
       }
     }
 

@@ -120,6 +120,11 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       include("Message for the Datamanager: No statement by First Namen (user001, does.not.exist@dans.knaw.nl) could be found whether this dataset contains Privacy Sensitive data.")
   }
 
+  it should "create a remark without a signer" in {
+    easRemarksFromAgreements(replacing = """<signerId easy-account="user001" email="does.not.exist@dans.knaw.nl">First Namen</signerId>""", by = "") should
+      include("Message for the Datamanager: No statement by  could be found whether this dataset contains Privacy Sensitive data.")
+  }
+
   private def easRemarksFromAgreements(replacing: String, by: String) = {
     assume(canConnect(xsds))
     sdoSetDir.mkdirs()
