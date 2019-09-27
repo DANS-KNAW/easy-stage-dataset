@@ -59,7 +59,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      (bag, EMD.create(sdoSetDir)) should matchPattern {
+      (bag, EMD.create(sdoSetDir)) should matchPattern { // TODO use behave like
         case (_, Success(_)) =>
       }
       sdoSetDir.list() shouldBe Array("EMD")
@@ -110,19 +110,14 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       include("depositor user001 (does.not.exist@dans.knaw.nl) this dataset")
   }
 
-  it should "create a remark for a dataset without sensitive data" in {
-    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "<containsPrivacySensitiveData>false</containsPrivacySensitiveData>") should
+  it should "create a remark for a dataset without privacy sensitive data" in {
+    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true", by = "<containsPrivacySensitiveData>false") should
       include("this dataset DOES NOT contain Privacy Sensitive data")
   }
 
-  it should "create a remark for a dataset with invalid boolean text" in {
-    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "<containsPrivacySensitiveData>rubbish content</containsPrivacySensitiveData>") should
-      include("this dataset DOES NOT contain Privacy Sensitive data")
-  }
-
-  it should "create a remark when no privacy check box is found" in {
+  it should "create a remark without a privacy claim" in {
     easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "") should
-      include("Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data.")
+      include("Message for the Datamanager: No statement by First Namen (user001, does.not.exist@dans.knaw.nl) could be found whether this dataset contains Privacy Sensitive data.")
   }
 
   private def easRemarksFromAgreements(replacing: String, by: String) = {

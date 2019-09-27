@@ -80,7 +80,7 @@ object EMD extends DebugEnhancedLogging {
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
 
-    def userNamePart: String = {
+    val userNamePart = {
       val signer = agreementsXml \ "depositAgreement" \ "signerId"
       val name = signer.text
       val account = (signer \@ "easy-account").toOption
@@ -106,7 +106,7 @@ object EMD extends DebugEnhancedLogging {
       .map(privacyPart => s"According to depositor $userNamePart this dataset $privacyPart contain Privacy Sensitive data.")
       .getOrElse {
         logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
-        "it could not be determined if this dataset does contain Privacy Sensitive data."
+        s"No statement by $userNamePart could be found whether this dataset contains Privacy Sensitive data."
       }
 
     emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
