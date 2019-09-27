@@ -15,9 +15,10 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.net.{ HttpURLConnection, URL }
+import java.net.{ HttpURLConnection, URL, UnknownHostException }
 
-import scala.util.Try
+import scala.util.{ Failure, Try }
+import scala.xml.SAXParseException
 
 trait CanConnectFixture {
 
@@ -30,8 +31,14 @@ trait CanConnectFixture {
           connection.connect()
           connection.disconnect()
           true
-        case _ => throw new Exception
+        case connection => throw new Exception ("expecting a HttpURLConnection but got " + connection)
       }
     })
-  }.isSuccess
+  } match {
+    case Failure(e: SAXParseException) if e.getCause.isInstanceOf[UnknownHostException] => false
+    case Failure(e: SAXParseException) if e.getMessage.contains("Cannot resolve") =>
+      println("Probably an offline third party schema: " + e.getMessage)
+      false
+    case _ => true
+  }
 }

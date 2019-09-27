@@ -96,18 +96,18 @@ object EMD extends DebugEnhancedLogging {
       }
     }
 
-    def privacyPart(boolText: String): String = {
-      if (BooleanUtils.toBoolean(boolText)) "DOES"
-      else "DOES NOT"
-    }
-
-    val remark = Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
-      case Some(boolText) =>
-        s"According to depositor $userNamePart this dataset ${ privacyPart(boolText) } contain Privacy Sensitive data."
-      case None =>
+    val remark = (agreementsXml \\ "containsPrivacySensitiveData")
+      .headOption
+      .map(node => BooleanUtils.toBoolean(node.text)) // anything but true/y[es] becomes false
+      .map {
+        case true => "DOES"
+        case false => "DOES NOT"
+      }
+      .map(privacyPart => s"According to depositor $userNamePart this dataset $privacyPart contain Privacy Sensitive data.")
+      .getOrElse {
         logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
         "it could not be determined if this dataset does contain Privacy Sensitive data."
-    }
+      }
 
     emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
   }

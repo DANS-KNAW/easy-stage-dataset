@@ -59,7 +59,9 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      EMD.create(sdoSetDir) shouldBe a[Success[_]]
+      (bag, EMD.create(sdoSetDir)) should matchPattern {
+        case (_, Success(_)) =>
+      }
       sdoSetDir.list() shouldBe Array("EMD")
       deleteDirectory(sdoSetDir)
     }
@@ -84,35 +86,46 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
   }
 
   it should "create a remark for SignerId without attributes" in {
-    easRemarksFrom(agreementsWithout = """( easy-account="user001"| email="does.not.exist@dans.knaw.nl")""") should
+    easRemarksFromAgreements(replacing = """( easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "") should
       include("depositor First Namen this dataset")
   }
 
   it should "create a remark for SignerId without email attribute" in {
-    easRemarksFrom(agreementsWithout = """( email="does.not.exist@dans.knaw.nl")""") should
+    easRemarksFromAgreements(replacing = """( email="does.not.exist@dans.knaw.nl")""", by = "") should
       include("depositor First Namen (user001) this dataset")
   }
 
   it should "create a remark for SignerId without account attribute" in {
-    easRemarksFrom(agreementsWithout = """( easy-account="user001")""") should
+    easRemarksFromAgreements(replacing = """( easy-account="user001")""", by = "") should
       include("depositor First Namen (does.not.exist@dans.knaw.nl) this dataset")
   }
 
   it should "create a remark for SignerId with neither email full name" in {
-    easRemarksFrom(agreementsWithout = """(First Namen| email="does.not.exist@dans.knaw.nl")""") should
+    easRemarksFromAgreements(replacing = """(First Namen| email="does.not.exist@dans.knaw.nl")""", by = "") should
       include("depositor user001 this dataset")
   }
 
   it should "create a remark for SignerId without a full name" in {
-    easRemarksFrom(agreementsWithout = "First Namen") should
+    easRemarksFromAgreements(replacing = "First Namen", by = "") should
       include("depositor user001 (does.not.exist@dans.knaw.nl) this dataset")
   }
 
-  /**
-   * @param agreementsWithout a regexp, each match is replaced with ""
-   * @return EMD.getEmdOther.getEasRemarks.toString
-   */
-  private def easRemarksFrom(agreementsWithout: String) = {
+  it should "create a remark for a dataset without sensitive data" in {
+    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "<containsPrivacySensitiveData>false</containsPrivacySensitiveData>") should
+      include("this dataset DOES NOT contain Privacy Sensitive data")
+  }
+
+  it should "create a remark for a dataset with invalid boolean text" in {
+    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "<containsPrivacySensitiveData>rubbish content</containsPrivacySensitiveData>") should
+      include("this dataset DOES NOT contain Privacy Sensitive data")
+  }
+
+  it should "create a remark when no privacy check box is found" in {
+    easRemarksFromAgreements(replacing = "<containsPrivacySensitiveData>true</containsPrivacySensitiveData>", by = "") should
+      include("Message for the Datamanager: it could not be determined if this dataset does contain Privacy Sensitive data.")
+  }
+
+  private def easRemarksFromAgreements(replacing: String, by: String) = {
     assume(canConnect(xsds))
     sdoSetDir.mkdirs()
     val mediumDir = new File("src/test/resources/dataset-bags/medium")
@@ -121,10 +134,10 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     FileUtils.copyDirectory(mediumDir, input)
     FileUtils.write(
       agreementsFile,
-      FileUtils.readFileToString(agreementsFile).replaceAll(agreementsWithout, "")
+      FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
     )
     EMD.create(sdoSetDir)(newSettings(input))
-      .getOrRecover(e => fail(e))
+      .getOrRecover(e => fail(e.getMessage, e))
       .getEmdOther.getEasRemarks.toString
   }
 
