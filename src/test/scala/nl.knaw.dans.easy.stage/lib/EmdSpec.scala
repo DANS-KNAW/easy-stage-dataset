@@ -78,34 +78,34 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
         emd.getEmdRights.getTermsLicense should contain only(new BasicString("http://opensource.org/licenses/MIT"), acceptBS)
         emd.getEmdOther.getEasRemarks should contain only(
           new BasicRemark("Message for the Datamanager: Beware!!! Very personal data!!!"),
-          new BasicRemark("Message for the Datamanager: according to the depositor user001 (First Namen, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.")
+          new BasicRemark("Message for the Datamanager: According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.")
         )
     }
   }
 
   it should "create a remark for SignerId without attributes" in {
     easRemarksFrom(agreementsWithout = """( easy-account="user001"| email="does.not.exist@dans.knaw.nl")""") should
-      include("the depositor First Namen this dataset")
+      include("depositor First Namen this dataset")
   }
 
   it should "create a remark for SignerId without email attribute" in {
     easRemarksFrom(agreementsWithout = """( email="does.not.exist@dans.knaw.nl")""") should
-      include("the depositor user001 (First Namen) this dataset")
+      include("depositor First Namen (user001) this dataset")
   }
 
   it should "create a remark for SignerId without account attribute" in {
     easRemarksFrom(agreementsWithout = """( easy-account="user001")""") should
-      include("the depositor First Namen (does.not.exist@dans.knaw.nl) this dataset")
+      include("depositor First Namen (does.not.exist@dans.knaw.nl) this dataset")
   }
 
   it should "create a remark for SignerId with neither email full name" in {
     easRemarksFrom(agreementsWithout = """(First Namen| email="does.not.exist@dans.knaw.nl")""") should
-      include("the depositor user001 this dataset")
+      include("depositor user001 this dataset")
   }
 
   it should "create a remark for SignerId without a full name" in {
     easRemarksFrom(agreementsWithout = "First Namen") should
-      include("the depositor user001 (does.not.exist@dans.knaw.nl) this dataset")
+      include("depositor user001 (does.not.exist@dans.knaw.nl) this dataset")
   }
 
   /**

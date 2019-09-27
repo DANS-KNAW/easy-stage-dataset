@@ -81,15 +81,18 @@ object EMD extends DebugEnhancedLogging {
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
 
     def userNamePart: String = {
-      val signerId = agreementsXml \ "depositAgreement" \ "signerId"
-      (signerId.text, (signerId \@ "easy-account").toOption, (signerId \@ "email").toOption) match {
-        case (fullName, None, None) => fullName
+      val signer = agreementsXml \ "depositAgreement" \ "signerId"
+      val name = signer.text
+      val account = (signer \@ "easy-account").toOption
+      val email = (signer \@ "email").toOption
+      (name, account, email) match {
+        case (name, None, None) => name
         case ("", None, Some(email)) => email
         case ("", Some(account), None) => account
         case ("", Some(account), Some(email)) => s"$account ($email)"
-        case (fullName, None, Some(email)) => s"$fullName ($email)"
-        case (fullName, Some(account), None) => s"$account ($fullName)"
-        case (fullName, Some(account), Some(email)) => s"$account ($fullName, $email)"
+        case (name, None, Some(email)) => s"$name ($email)"
+        case (name, Some(account), None) => s"$name ($account)"
+        case (name, Some(account), Some(email)) => s"$name ($account, $email)"
       }
     }
 
@@ -100,7 +103,7 @@ object EMD extends DebugEnhancedLogging {
 
     val remark = Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
       case Some(boolText) =>
-        s"according to the depositor $userNamePart this dataset ${ privacyPart(boolText) } contain Privacy Sensitive data."
+        s"According to depositor $userNamePart this dataset ${ privacyPart(boolText) } contain Privacy Sensitive data."
       case None =>
         logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
         "it could not be determined if this dataset does contain Privacy Sensitive data."
