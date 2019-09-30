@@ -86,8 +86,8 @@ object EMD extends DebugEnhancedLogging {
       val maybeAccount = maybeSigner.flatMap(node => (node \@ "easy-account").toOption)
       val maybeEmail = maybeSigner.flatMap(node => (node \@ "email").toOption)
       (maybeName, maybeAccount, maybeEmail) match {
-        case (None, _, _) =>
-          logger.warn("The field signerId could not be found in agreements.xml")
+        case (None, _, _) | (Some(""), None, None) =>
+          logger.warn("The field signerId in agreements.xml could not be found or has no values")
           "NOT KNOWN"
         case (Some(name), None, None) => name
         case (Some(""), None, Some(email)) => email

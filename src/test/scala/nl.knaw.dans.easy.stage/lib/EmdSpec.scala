@@ -86,17 +86,17 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
   }
 
   it should "create a remark for SignerId without attributes" in {
-    easRemarksFromAgreements(replacing = """( easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "") should
+    easRemarksFromAgreements(replacing = """(easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "") should
       include("depositor First Namen this dataset")
   }
 
   it should "create a remark for SignerId without email attribute" in {
-    easRemarksFromAgreements(replacing = """( email="does.not.exist@dans.knaw.nl")""", by = "") should
+    easRemarksFromAgreements(replacing = """(email="does.not.exist@dans.knaw.nl")""", by = "") should
       include("depositor First Namen (user001) this dataset")
   }
 
   it should "create a remark for SignerId without account attribute" in {
-    easRemarksFromAgreements(replacing = """( easy-account="user001")""", by = "") should
+    easRemarksFromAgreements(replacing = """(easy-account="user001")""", by = "") should
       include("depositor First Namen (does.not.exist@dans.knaw.nl) this dataset")
   }
 
@@ -122,7 +122,12 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
 
   it should "create a remark without a signer" in {
     easRemarksFromAgreements(replacing = """<signerId easy-account="user001" email="does.not.exist@dans.knaw.nl">First Namen</signerId>""", by = "") should
-      include("Message for the Datamanager: No statement by  could be found whether this dataset contains Privacy Sensitive data.")
+      include("Message for the Datamanager: According to depositor NOT KNOWN this dataset DOES contain Privacy Sensitive data.")
+  }
+
+  it should "create a remark without any signer values" in {
+    easRemarksFromAgreements(replacing = """(First Namen|easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "") should
+      include("Message for the Datamanager: According to depositor NOT KNOWN this dataset DOES contain Privacy Sensitive data.")
   }
 
   private def easRemarksFromAgreements(replacing: String, by: String) = {
