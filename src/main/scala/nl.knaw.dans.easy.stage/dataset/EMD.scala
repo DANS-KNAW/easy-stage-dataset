@@ -79,7 +79,6 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
-
     val userNamePart = {
       val maybeSigner = (agreementsXml \ "depositAgreement" \ "signerId").headOption
       val maybeName = maybeSigner.map(_.text)

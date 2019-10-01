@@ -31,7 +31,7 @@ trait CanConnectFixture {
           connection.connect()
           connection.disconnect()
           true
-        case connection => throw new Exception ("expecting a HttpURLConnection but got " + connection)
+        case connection => throw new Exception("expecting a HttpURLConnection but got " + connection)
       }
     })
   } match {
