@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
-import java.io.File
+import java.io.{ File, FileNotFoundException }
 import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
 
@@ -82,19 +82,23 @@ case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
 
   def messageForDataManager: Option[String] = {
     val msgFromDepositor = "message-from-depositor.txt"
-    val msgForDataManager = bagitDir.toPath.resolve(depositorInfoDir).resolve(msgFromDepositor)
-    if (Files.exists(msgForDataManager)) {
-      val content = new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
+    Try{
+      val msgForDataManager = bagitDir.toPath.resolve(depositorInfoDir).resolve(msgFromDepositor)
+      new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
+    }.map{ content =>
       if (content.isBlank) {
         logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")
         None
       }
       else
         Some(s"Message for the Datamanager: $content")
-    }
-    else {
-      logger.debug(msgFromDepositor + " not found, not setting a remark")
-      None
+    }.getOrRecover{
+      case _: FileNotFoundException =>
+        logger.debug(msgFromDepositor + " not found, not setting a remark")
+        None
+      case e =>
+        logger.error(e.getMessage, e)
+        None
     }
   }
 }
