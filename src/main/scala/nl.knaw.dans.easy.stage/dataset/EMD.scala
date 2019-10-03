@@ -79,21 +79,37 @@ object EMD extends DebugEnhancedLogging {
   }
 
   private def addPrivacySensitiveRemark(emd: EasyMetadata, agreementsXml: Elem): Unit = {
-    val signerId = agreementsXml \ "depositAgreement" \ "signerId"
-    val easyAccount = (signerId \@ "easy-account").toOption
-    val fullname = signerId.text
-
-    val remark = Option((agreementsXml \\ "containsPrivacySensitiveData").text) match {
-      case Some(boolText) =>
-        val privacySensitivePart = if (BooleanUtils.toBoolean(boolText)) "DOES"
-                                   else "DOES NOT"
-        val usernamePart = easyAccount.map(username => s"$username ($fullname)").getOrElse(fullname)
-
-        s"according to the depositor $usernamePart this dataset $privacySensitivePart contain Privacy Sensitive data."
-      case None =>
-        logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
-        "it could not be determined if this dataset does contain Privacy Sensitive data."
+    val userNamePart = {
+      val maybeSigner = (agreementsXml \ "depositAgreement" \ "signerId").headOption
+      val maybeName = maybeSigner.map(_.text)
+      val maybeAccount = maybeSigner.flatMap(node => (node \@ "easy-account").toOption)
+      val maybeEmail = maybeSigner.flatMap(node => (node \@ "email").toOption)
+      (maybeName, maybeAccount, maybeEmail) match {
+        case (None, _, _) | (Some(""), None, None) =>
+          logger.warn("The field signerId in agreements.xml could not be found or has no values")
+          "NOT KNOWN"
+        case (Some(name), None, None) => name
+        case (Some(""), None, Some(email)) => email
+        case (Some(""), Some(account), None) => account
+        case (Some(""), Some(account), Some(email)) => s"$account ($email)"
+        case (Some(name), None, Some(email)) => s"$name ($email)"
+        case (Some(name), Some(account), None) => s"$name ($account)"
+        case (Some(name), Some(account), Some(email)) => s"$name ($account, $email)"
+      }
     }
+
+    val remark = (agreementsXml \\ "containsPrivacySensitiveData")
+      .headOption
+      .map(node => BooleanUtils.toBoolean(node.text)) // anything but true/y[es] becomes false
+      .map {
+        case true => "DOES"
+        case false => "DOES NOT"
+      }
+      .map(privacyPart => s"According to depositor $userNamePart this dataset $privacyPart contain Privacy Sensitive data.")
+      .getOrElse {
+        logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
+        s"No statement by $userNamePart could be found whether this dataset contains Privacy Sensitive data."
+      }
 
     emd.getEmdOther.getEasRemarks.add(new BasicRemark(s"Message for the Datamanager: $remark"))
   }
