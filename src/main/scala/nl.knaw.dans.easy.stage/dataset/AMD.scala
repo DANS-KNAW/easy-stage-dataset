@@ -30,7 +30,7 @@ object AMD extends DebugEnhancedLogging {
          |${remarks.messageFromDepositor.getOrElse("")}
          |""".stripMargin.trim
     trace(depositorId, submissionTimestamp, state)
-    <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
+    <damd:administrative-md xmlns:damd="https://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>{state}</datasetState>{
         if (state != "DRAFT") {
           <previousState>DRAFT</previousState>
@@ -55,7 +55,7 @@ object AMD extends DebugEnhancedLogging {
       <groupIds />
       <damd:workflowData version="0.1">
         <assigneeId>NOT_ASSIGNED</assigneeId>
-        <wfs:workflow xmlns:wfs="http://easy.dans.knaw.nl/easy/workflow/">
+        <wfs:workflow xmlns:wfs="https://easy.dans.knaw.nl/easy/workflow/">
           <id>dataset</id>
           <remarks>
             <remark>
