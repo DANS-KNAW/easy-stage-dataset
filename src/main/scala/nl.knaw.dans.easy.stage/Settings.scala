@@ -90,7 +90,7 @@ object Settings {
       databaseUser = databaseUser,
       databasePassword = databasePassword,
       licenses = licenses,
-      stageDatasetVersion = stageDatasetVersion
+      stageDatasetVersion = stageDatasetVersion,
     )
   }
 }

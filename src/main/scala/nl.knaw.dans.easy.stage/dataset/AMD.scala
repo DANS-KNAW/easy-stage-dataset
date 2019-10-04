@@ -61,7 +61,7 @@ object AMD extends DebugEnhancedLogging {
             <remark>
               <text>{ remarksContent }</text>
               <remarkerId>{ s"easy-stage-dataset_$stageDatasetVersion" }</remarkerId>
-              <remarkDate>{ DateTime.now() }</remarkDate>
+              <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
             </remark>
           </remarks>
           <steps>
