@@ -30,7 +30,7 @@ import scala.util.{ Failure, Success, Try }
 
 object EMD extends DebugEnhancedLogging {
 
-  def create(sdoDir: File, acceptedLicense: Boolean)(implicit s: Settings): Try[EasyMetadata] = {
+  def create(sdoDir: File, licenseAccepted: Boolean)(implicit s: Settings): Try[EasyMetadata] = {
     trace(sdoDir)
     new File(s.bagitDir, "metadata/dataset.xml") match {
       case file if file.exists() =>
