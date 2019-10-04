@@ -31,6 +31,7 @@ import scala.util.{ Failure, Success }
 class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
 
   private val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  private val depositorInfoDir = sdoSetDir.toPath.resolve("metadata/depositor-info")
 
   def newSettings(bagitDir: File): Settings = {
     new Settings(
@@ -60,7 +61,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      (bag, EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) should matchPattern { // TODO use behave like
+      (bag, EMD.create(sdoSetDir, DepositorInfo(depositorInfoDir).acceptedLicense)) should matchPattern { // TODO use behave like
         case (_, Success(_)) =>
       }
       sdoSetDir.list() shouldBe Array("EMD")
@@ -73,7 +74,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     sdoSetDir.mkdirs()
     val mediumDir = new File("src/test/resources/dataset-bags/medium")
     implicit val s: Settings = newSettings(mediumDir)
-    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
+    inside(EMD.create(sdoSetDir, DepositorInfo(depositorInfoDir).acceptedLicense)) {
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
@@ -142,7 +143,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       agreementsFile,
       FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
     )
-    EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)(newSettings(input))
+    EMD.create(sdoSetDir, DepositorInfo(depositorInfoDir).acceptedLicense)(newSettings(input))
       .getOrRecover(e => fail(e.getMessage, e))
       .getEmdOther.getEasRemarks.toString
   }
@@ -152,7 +153,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     sdoSetDir.mkdirs()
     val minimalDir = new File("src/test/resources/dataset-bags/minimal")
     implicit val s: Settings = newSettings(minimalDir)
-    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
+    inside(EMD.create(sdoSetDir, DepositorInfo(depositorInfoDir).acceptedLicense)) {
       case Success(emd: EasyMetadata) =>
         emd.getEmdRights.getTermsLicense shouldBe empty
         emd.getEmdOther.getEasRemarks shouldBe empty
@@ -179,7 +180,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     write(tmpDDM, ddm.toString())
     implicit val s: Settings = newSettings(tmpDDM.getParentFile.getParentFile)
 
-    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
+    inside(EMD.create(sdoSetDir, DepositorInfo(depositorInfoDir).acceptedLicense)) {
       case Failure(e) => e.getMessage should
         include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
     }

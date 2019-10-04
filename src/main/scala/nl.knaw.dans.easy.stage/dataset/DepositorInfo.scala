@@ -15,9 +15,9 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
-import java.io.{ File, FileNotFoundException }
+import java.io.FileNotFoundException
 import java.nio.charset.StandardCharsets
-import java.nio.file.{ Files, NoSuchFileException, Paths }
+import java.nio.file.{ Files, NoSuchFileException, Path }
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -27,20 +27,17 @@ import org.apache.commons.lang.BooleanUtils
 import scala.util.Try
 import scala.xml.{ Elem, XML }
 
-case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
-  private val depositDir = bagitDir.getParentFile.getName
-  private val depositorInfoDir = Paths.get("metadata/depositor-info")
-  private val triedAgreementsXml: Try[Elem] = {
-    val agreementsFile = new File(bagitDir, depositorInfoDir.resolve("agreements.xml").toString)
-    Try {
-      XML.loadFile(agreementsFile)
-    }.doIfFailure {
+case class DepositorInfo(depositorInfoDir: Path) extends DebugEnhancedLogging {
+  private lazy val depositDir = depositorInfoDir.getParent.getParent.getParent.toFile.getName
+  private lazy val triedAgreementsXml: Try[Elem] = {
+    val agreementsFile = depositorInfoDir.resolve("agreements.xml").toFile
+    Try(XML.loadFile(agreementsFile)).doIfFailure {
       case _: FileNotFoundException => logger.warn(s"agreements.xml not found: $agreementsFile")
       case e => logger.warn(s"Could not load agreements.xml of $agreementsFile", e)
     }
   }
 
-  def acceptedLicense: Boolean = triedAgreementsXml.map { agreementsXml =>
+  lazy val acceptedLicense: Boolean = triedAgreementsXml.map { agreementsXml =>
     (agreementsXml \\ "depositAgreementAccepted")
       .headOption
       .map { el =>
@@ -54,7 +51,7 @@ case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
       }
   }.getOrElse(false)
 
-  def privacySensitiveRemark: String = triedAgreementsXml.map { agreementsXml =>
+  lazy val privacySensitiveRemark: String = triedAgreementsXml.map { agreementsXml =>
     val userNamePart = {
       val maybeSigner = (agreementsXml \ "depositAgreement" \ "signerId").headOption
       val maybeName = maybeSigner.map(_.text)
@@ -88,10 +85,10 @@ case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
       }
   }.getOrElse(s"No (valid) agreements.xml found in $depositDir")
 
-  def messageFromDepositor: Option[String] = {
+  lazy val messageFromDepositor: Option[String] = {
     val msgFromDepositor = "message-from-depositor.txt"
     Try {
-      val msgForDataManager = bagitDir.toPath.resolve(depositorInfoDir).resolve(msgFromDepositor)
+      val msgForDataManager = depositorInfoDir.resolve(msgFromDepositor)
       new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
     }.map { content =>
       if (content.isBlank) {
