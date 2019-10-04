@@ -23,7 +23,12 @@ import scala.xml.Elem
 object AMD extends DebugEnhancedLogging {
   type AdministrativeMetadata = Elem
 
-  def apply(depositorId: String, submissionTimestamp: DateTime, state: String): AdministrativeMetadata = {
+  def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: Remarks, stageDatasetVersion: String): AdministrativeMetadata = {
+    val remarksContent =
+      s"""${remarks.privacySensitiveRemark}
+         |
+         |${remarks.messageFromDepositor.getOrElse("")}
+         |""".stripMargin.trim
     trace(depositorId, submissionTimestamp, state)
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>{state}</datasetState>{
@@ -52,7 +57,13 @@ object AMD extends DebugEnhancedLogging {
         <assigneeId>NOT_ASSIGNED</assigneeId>
         <wfs:workflow xmlns:wfs="http://easy.dans.knaw.nl/easy/workflow/">
           <id>dataset</id>
-          <remarks></remarks>
+          <remarks>
+            <remark>
+              <text>{ remarksContent }</text>
+              <remarkerId>{ s"easy-stage-dataset_$stageDatasetVersion" }</remarkerId>
+              <remarkDate>{ DateTime.now() }</remarkDate>
+            </remark>
+          </remarks>
           <steps>
             <wfs:workflow>
               <id>dataset.sip</id>

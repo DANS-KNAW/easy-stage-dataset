@@ -13,13 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package nl.knaw.dans.easy.stage.lib
+package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 import java.nio.file.Files
 
 import nl.knaw.dans.easy.stage._
-import nl.knaw.dans.easy.stage.dataset.EMD
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
@@ -44,7 +43,9 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       databaseUrl = "",
       databaseUser = "",
       databasePassword = "",
-      licenses = Map.empty)
+      licenses = Map.empty,
+      stageDatasetVersion = "test",
+    )
   }
 
   override def beforeEach(): Unit = {
@@ -59,7 +60,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      (bag, EMD.create(sdoSetDir)) should matchPattern { // TODO use behave like
+      (bag, EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) should matchPattern { // TODO use behave like
         case (_, Success(_)) =>
       }
       sdoSetDir.list() shouldBe Array("EMD")
@@ -72,7 +73,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     sdoSetDir.mkdirs()
     val mediumDir = new File("src/test/resources/dataset-bags/medium")
     implicit val s: Settings = newSettings(mediumDir)
-    inside(EMD.create(sdoSetDir)) {
+    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
@@ -141,7 +142,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
       agreementsFile,
       FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
     )
-    EMD.create(sdoSetDir)(newSettings(input))
+    EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)(newSettings(input))
       .getOrRecover(e => fail(e.getMessage, e))
       .getEmdOther.getEasRemarks.toString
   }
@@ -151,7 +152,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     sdoSetDir.mkdirs()
     val minimalDir = new File("src/test/resources/dataset-bags/minimal")
     implicit val s: Settings = newSettings(minimalDir)
-    inside(EMD.create(sdoSetDir)) {
+    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
       case Success(emd: EasyMetadata) =>
         emd.getEmdRights.getTermsLicense shouldBe empty
         emd.getEmdOther.getEasRemarks shouldBe empty
@@ -178,7 +179,7 @@ class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture 
     write(tmpDDM, ddm.toString())
     implicit val s: Settings = newSettings(tmpDDM.getParentFile.getParentFile)
 
-    inside(EMD.create(sdoSetDir)) {
+    inside(EMD.create(sdoSetDir, Remarks(sdoSetDir).acceptedLicense)) {
       case Failure(e) => e.getMessage should
         include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
     }

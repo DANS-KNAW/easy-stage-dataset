@@ -18,7 +18,6 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.nio.file.{ Files, Path, Paths }
 
-import nl.knaw.dans.easy.stage.Configuration.getClass
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
 import org.scalatest.{ FlatSpec, Matchers }
@@ -103,7 +102,8 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       databaseUrl = "",
       databaseUser = "",
       databasePassword = "", // TODO: probably not the value in the actual deasy environment
-      licenses = licensesMap
+      licenses = licensesMap,
+      stageDatasetVersion = "test",
     )
   }
 }

@@ -17,7 +17,7 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.{ File, FileNotFoundException }
 import java.nio.charset.StandardCharsets
-import java.nio.file.{ Files, Paths }
+import java.nio.file.{ Files, NoSuchFileException, Paths }
 
 import nl.knaw.dans.lib.error._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
@@ -30,19 +30,29 @@ import scala.xml.{ Elem, XML }
 case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
   private val depositDir = bagitDir.getParentFile.getName
   private val depositorInfoDir = Paths.get("metadata/depositor-info")
-  private val agreementsFile = depositorInfoDir.resolve("agreements.xml")
-  private val triedAgreementsXml: Try[Elem] = Try {
-    XML.loadFile(new File(bagitDir, agreementsFile.toString))
-  }.doIfFailure{case e => logger.warn(s"Could not load agreements.xml of $depositDir",e)}
+  private val triedAgreementsXml: Try[Elem] = {
+    val agreementsFile = new File(bagitDir, depositorInfoDir.resolve("agreements.xml").toString)
+    Try {
+      XML.loadFile(agreementsFile)
+    }.doIfFailure {
+      case _: FileNotFoundException => logger.warn(s"agreements.xml not found: $agreementsFile")
+      case e => logger.warn(s"Could not load agreements.xml of $agreementsFile", e)
+    }
+  }
 
   def acceptedLicense: Boolean = triedAgreementsXml.map { agreementsXml =>
     (agreementsXml \\ "depositAgreementAccepted")
       .headOption
-      .exists(el => BooleanUtils.toBoolean(el.text))
-  }.getOrElse{ // TODO don't log twice if xml not loaded
-    logger.warn(s"[$depositDir] agreements.xml did NOT contain a depositAgreementAccepted or its value was not true")
-    false
-  }
+      .map { el =>
+        val accepted = BooleanUtils.toBoolean(el.text)
+        if (!accepted) logger.warn(s"[$depositDir] agreements.xml did NOT contain a depositAgreementAccepted")
+        accepted
+      }
+      .getOrElse {
+        logger.warn(s"[$depositDir] depositAgreementAccepted in agreements.xml was not true")
+        false
+      }
+  }.getOrElse(false)
 
   def privacySensitiveRemark: String = triedAgreementsXml.map { agreementsXml =>
     val userNamePart = {
@@ -64,7 +74,7 @@ case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
       }
     }
 
-    val remark = (agreementsXml \\ "containsPrivacySensitiveData")
+    (agreementsXml \\ "containsPrivacySensitiveData")
       .headOption
       .map(node => BooleanUtils.toBoolean(node.text)) // anything but true/y[es] becomes false
       .map {
@@ -76,24 +86,22 @@ case class Remarks(bagitDir: File) extends DebugEnhancedLogging {
         logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
         s"No statement by $userNamePart could be found whether this dataset contains Privacy Sensitive data."
       }
+  }.getOrElse(s"No (valid) agreements.xml found in $depositDir")
 
-    s"Message for the Datamanager: $remark"
-  }.getOrElse(s"Message for the Datamanager: no (valid) agreements.xml found in $depositDir")
-
-  def messageForDataManager: Option[String] = {
+  def messageFromDepositor: Option[String] = {
     val msgFromDepositor = "message-from-depositor.txt"
-    Try{
+    Try {
       val msgForDataManager = bagitDir.toPath.resolve(depositorInfoDir).resolve(msgFromDepositor)
       new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
-    }.map{ content =>
+    }.map { content =>
       if (content.isBlank) {
         logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")
         None
       }
       else
-        Some(s"Message for the Datamanager: $content")
-    }.getOrRecover{
-      case _: FileNotFoundException =>
+        Some(content)
+    }.getOrRecover {
+      case _: NoSuchFileException =>
         logger.debug(msgFromDepositor + " not found, not setting a remark")
         None
       case e =>
