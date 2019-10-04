@@ -16,7 +16,6 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
-import java.nio.file.Files
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.lib.error._
@@ -24,36 +23,10 @@ import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.types.{ BasicRemark, BasicString }
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
-import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Inside, Matchers }
 
 import scala.util.{ Failure, Success }
 
-class EmdSpec extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
-
-  private val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
-  private val depositorInfoDir = sdoSetDir.toPath.resolve("metadata/depositor-info")
-
-  def newSettings(bagitDir: File): Settings = {
-    new Settings(
-      ownerId = "",
-      bagitDir = bagitDir,
-      sdoSetDir = sdoSetDir,
-      state = "DRAFT",
-      archive = "EASY",
-      disciplines = Map.empty,
-      databaseUrl = "",
-      databaseUser = "",
-      databasePassword = "",
-      licenses = Map.empty,
-      stageDatasetVersion = "test",
-    )
-  }
-
-  override def beforeEach(): Unit = {
-    if (Files.exists(sdoSetDir.toPath)) {
-      FileUtils.deleteDirectory(sdoSetDir)
-    }
-  }
+class EmdSpec extends MdFixture {
 
   "create" should "succeed for each test bag" in {
     assume(canConnect(xsds))
