@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.{ File, StringReader }
+import java.nio.file.Path
 
 import javax.xml.transform.stream.StreamSource
 import org.apache.commons.io.FileUtils.deleteDirectory
@@ -30,16 +31,31 @@ class AmdSpec extends MdFixture {
   private val triedSchema = loadSchema("https://easy.dans.knaw.nl/schemas/bag/metadata/agreements/2019/09/agreements.xsd")
 
   "apply" should "validate for each test bag" in pendingUntilFixed {
+    val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
     // TODO SAXParseException; lineNumber: 1; columnNumber: 116; cvc-elt.1.a: Cannot find the declaration of element 'damd:administrative-md'.
     assume(isAvailable(triedSchema))
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
-      val amd =  AMD("foo", DateTime.now, "SUBMITTED",DepositorInfo(depositorInfoDir), "test-version")
+      val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir), "test-version")
       val validation = triedSchema.map(
         _.newValidator().validate(new StreamSource(new StringReader(prettyPrinter.format(amd))))
       )
-      (bag, validation) shouldBe (bag, a[Success[_]]) // TODO use behave like (as in EmdSpec)
+      (bag, validation) shouldBe(bag, a[Success[_]]) // TODO use behave like (as in EmdSpec)
       deleteDirectory(sdoSetDir)
     }
   }
+
+//  it should "" in {
+//    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+//    val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
+//    amd.
+//    //println(prettyPrinter.format(amd))
+//    (amd \\ "remarks").theSeq.head.descendant(1) shouldBe Some(
+//      <remark>
+//          <text></text>
+//          <remarkerId>easy-stage-dataset_test-version</remarkerId>
+//          <remarkDate>{ DateTime.now.toString(ISODateTimeFormat.dateTime()) }</remarkDate>
+//      </remark>
+//    )
+//  }
 }
