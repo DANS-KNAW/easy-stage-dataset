@@ -26,9 +26,9 @@ object AMD extends DebugEnhancedLogging {
 
   def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: DepositorInfo, stageDatasetVersion: String): AdministrativeMetadata = {
     val remarksContent =
-      s"""${remarks.privacySensitiveRemark}
+      s"""${ remarks.privacySensitiveRemark }
          |
-         |${remarks.messageFromDepositor.getOrElse("")}
+         |${ remarks.messageFromDepositor.getOrElse("") }
          |""".stripMargin.trim
     trace(depositorId, submissionTimestamp, state)
     <damd:administrative-md xmlns:damd="https://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">

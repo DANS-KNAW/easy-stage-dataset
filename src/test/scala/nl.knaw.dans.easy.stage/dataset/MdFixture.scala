@@ -36,6 +36,7 @@ class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixtur
       stageDatasetVersion = "test",
     )
   }
+
   override def beforeEach(): Unit = {
     if (Files.exists(testDir.toPath)) {
       FileUtils.deleteDirectory(testDir)

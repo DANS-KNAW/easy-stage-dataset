@@ -96,7 +96,7 @@ object DepositorInfo extends DebugEnhancedLogging {
       Try {
         val msgForDataManager = depositorInfoDir.resolve(msgFromDepositor)
         new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
-          .replaceAll("<","&gt;")
+          .replaceAll("<", "&gt;")
       }.map { content =>
         if (content.isBlank) {
           logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")

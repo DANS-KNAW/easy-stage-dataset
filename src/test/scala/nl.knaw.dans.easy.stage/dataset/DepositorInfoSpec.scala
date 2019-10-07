@@ -25,21 +25,21 @@ class DepositorInfoSpec extends MdFixture {
 
   "constructor" should "handle and empty info dir" in { // as in the minimal bag
     DepositorInfo(infoDir.toPath) shouldBe
-    DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+      DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
   }
 
   it should "handle the medium bag" in {
     fromAgreements(replacing = "", by = "") shouldBe
-    DepositorInfo(
-      acceptedLicense = true,
-      privacySensitiveRemark = "According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.",
-      messageFromDepositor = Some("Beware!!! Very personal data!!!"),
-    )
+      DepositorInfo(
+        acceptedLicense = true,
+        privacySensitiveRemark = "According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.",
+        messageFromDepositor = Some("Beware!!! Very personal data!!!"),
+      )
   }
 
   it should "handle invalid agreements.xml" in {
     infoDir.mkdirs()
-    FileUtils.write(new File(infoDir + "/agreements.xml"),"blablabla")
+    FileUtils.write(new File(infoDir + "/agreements.xml"), "blablabla")
     DepositorInfo(infoDir.toPath) shouldBe
       DepositorInfo(
         acceptedLicense = false,
@@ -54,27 +54,27 @@ class DepositorInfoSpec extends MdFixture {
   }
 
   it should "create a remark for SignerId without email attribute" in {
-    fromAgreements(replacing = """(email="does.not.exist@dans.knaw.nl")""", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = """(email="does.not.exist@dans.knaw.nl")""", by = "").privacySensitiveRemark shouldBe
       "According to depositor First Namen (user001) this dataset DOES contain Privacy Sensitive data."
   }
 
   it should "create a remark for SignerId without account attribute" in {
-    fromAgreements(replacing = """(easy-account="user001")""", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = """(easy-account="user001")""", by = "").privacySensitiveRemark shouldBe
       "According to depositor First Namen (does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data."
   }
 
   it should "create a remark for SignerId with neither email full name" in {
-    fromAgreements(replacing = """(First Namen| email="does.not.exist@dans.knaw.nl")""", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = """(First Namen| email="does.not.exist@dans.knaw.nl")""", by = "").privacySensitiveRemark shouldBe
       "According to depositor user001 this dataset DOES contain Privacy Sensitive data."
   }
 
   it should "create a remark for SignerId without a full name" in {
-    fromAgreements(replacing = "First Namen", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = "First Namen", by = "").privacySensitiveRemark shouldBe
       "According to depositor user001 (does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data."
   }
 
   it should "create a remark for a dataset without privacy sensitive data" in {
-    fromAgreements(replacing = "<containsPrivacySensitiveData>true", by = "<containsPrivacySensitiveData>false") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = "<containsPrivacySensitiveData>true", by = "<containsPrivacySensitiveData>false").privacySensitiveRemark shouldBe
       "According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES NOT contain Privacy Sensitive data."
   }
 
@@ -84,12 +84,12 @@ class DepositorInfoSpec extends MdFixture {
   }
 
   it should "create a remark without a signer" in {
-    fromAgreements(replacing = """<signerId easy-account="user001" email="does.not.exist@dans.knaw.nl">First Namen</signerId>""", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = """<signerId easy-account="user001" email="does.not.exist@dans.knaw.nl">First Namen</signerId>""", by = "").privacySensitiveRemark shouldBe
       "According to depositor NOT KNOWN this dataset DOES contain Privacy Sensitive data."
   }
 
   it should "create a remark without any signer values" in {
-    fromAgreements(replacing = """(First Namen|easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "") .privacySensitiveRemark shouldBe
+    fromAgreements(replacing = """(First Namen|easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "").privacySensitiveRemark shouldBe
       "According to depositor NOT KNOWN this dataset DOES contain Privacy Sensitive data."
   }
 
