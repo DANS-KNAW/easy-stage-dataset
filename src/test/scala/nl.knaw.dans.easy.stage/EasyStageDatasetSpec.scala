@@ -31,7 +31,7 @@ import scala.io.Source
 import scala.util.{ Failure, Success }
 import scala.xml.XML
 
-class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest {
+class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest with CanConnectFixture {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
   FileUtils.deleteQuietly(testDir.toFile)
   Files.createDirectories(testDir)
@@ -113,6 +113,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
   }
 
   "bag with secret file" should "have the correct visibleTo and accessibleTo keywords" in {
+    assume(canConnect(xsds))
     val path = Paths.get(getClass.getClassLoader.getResource("dataset-bags/bag-with-secret-file").toURI)
 
     val result = testDir.resolve("SDO-set")

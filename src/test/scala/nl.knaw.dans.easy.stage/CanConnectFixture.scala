@@ -15,31 +15,37 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.net.{ HttpURLConnection, URL, UnknownHostException }
+import java.net.UnknownHostException
+
+import javax.xml.XMLConstants
+import javax.xml.transform.Source
+import javax.xml.transform.stream.StreamSource
+import javax.xml.validation.{ Schema, SchemaFactory }
 
 import scala.util.{ Failure, Try }
 import scala.xml.SAXParseException
 
 trait CanConnectFixture {
 
-  def canConnect(urls: Array[String]): Boolean = Try {
-    // TODO EmdSpec has failing tests when working off line
-    urls.map(url => {
-      new URL(url).openConnection match {
-        case connection: HttpURLConnection =>
-          connection.setConnectTimeout(1000)
-          connection.setReadTimeout(1000)
-          connection.connect()
-          connection.disconnect()
-          true
-        case connection => throw new Exception("expecting a HttpURLConnection but got " + connection)
-      }
-    })
-  } match {
-    case Failure(e: SAXParseException) if e.getCause.isInstanceOf[UnknownHostException] => false
-    case Failure(e: SAXParseException) if e.getMessage.contains("Cannot resolve") =>
-      println("Probably an offline third party schema: " + e.getMessage)
-      false
-    case _ => true
+  def canConnect(urls: Array[String]): Boolean = urls
+    .map(url => isAvailable(loadSchema(url)))
+    .distinct sameElements Array(true)
+
+  def loadSchema(schema: String): Try[Schema] = {
+    Try {
+      SchemaFactory
+        .newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI)
+        .newSchema(Array(new StreamSource(schema)).toArray[Source])
+    }
+  }
+
+  def isAvailable(schema: Try[Any]): Boolean = {
+    schema match {
+      case Failure(e: SAXParseException) if e.getCause.isInstanceOf[UnknownHostException] => false
+      case Failure(e: SAXParseException) if e.getMessage.contains("Cannot resolve") =>
+        println("Probably an offline third party schema: " + e.getMessage)
+        false
+      case _ => true
+    }
   }
 }
