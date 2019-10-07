@@ -26,13 +26,14 @@ import scala.util.Success
 import scala.xml.PrettyPrinter
 
 class AmdSpec extends MdFixture {
-  private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 2)
+  // an indentation of zero allows simple comparison
+  private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
 
   private val triedSchema = loadSchema("https://easy.dans.knaw.nl/schemas/bag/metadata/agreements/2019/09/agreements.xsd")
 
   "apply" should "validate for each test bag" in pendingUntilFixed {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
-    // TODO SAXParseException; lineNumber: 1; columnNumber: 116; cvc-elt.1.a: Cannot find the declaration of element 'damd:administrative-md'.
+    // TODO add name space location to generated xml?
     assume(isAvailable(triedSchema))
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
@@ -45,17 +46,54 @@ class AmdSpec extends MdFixture {
     }
   }
 
-//  it should "" in {
-//    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
-//    val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
-//    amd.
-//    //println(prettyPrinter.format(amd))
-//    (amd \\ "remarks").theSeq.head.descendant(1) shouldBe Some(
-//      <remark>
-//          <text></text>
-//          <remarkerId>easy-stage-dataset_test-version</remarkerId>
-//          <remarkDate>{ DateTime.now.toString(ISODateTimeFormat.dateTime()) }</remarkDate>
-//      </remark>
-//    )
-//  }
+  it should "generate a remark" in {
+    val msg1 = "this dataset DOES NOT contain Privacy Sensitive data."
+    val msg2 = "Please contact me about blabla"
+    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = msg1, messageFromDepositor = Some(msg2))
+    val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
+    val formattedAmd = prettyPrinter.format(amd)
+
+    formattedAmd should include(prettyPrinter.format(
+       <stateChangeDates>
+         <damd:stateChangeDate>
+           <fromState>DRAFT</fromState>
+           <toState>SUBMITTED</toState>
+           <changeDate>2018-03-22T21:43:01.000+01:00</changeDate>
+         </damd:stateChangeDate>
+       </stateChangeDates>
+    ))
+
+    formattedAmd should include(prettyPrinter.format(
+      <remarks>
+        <remark>
+          <text>{ msg1 } { msg2 }</text>
+          <remarkerId>easy-stage-dataset_test-version</remarkerId>
+          <remarkDate>{ nowIso }</remarkDate>
+        </remark>
+      </remarks>
+    ))
+    // not formatted remark (as shown in the webui):
+    (amd \\ "remarks" \\ "text").text shouldBe
+      s"""$msg1
+         |
+         |$msg2
+         |""".stripMargin.trim
+  }
+
+  it should "not generate state changes for a DRAFT (and an empty remark)" in {
+    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+    val amd = AMD("foo", DateTime.now, "DRAFT", info, "test-version")
+    val formattedAmd = prettyPrinter.format(amd)
+
+    formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
+    formattedAmd should include(prettyPrinter.format(
+      <remarks>
+        <remark>
+          <text></text>
+          <remarkerId>easy-stage-dataset_test-version</remarkerId>
+          <remarkDate>{ nowIso }</remarkDate>
+        </remark>
+      </remarks>
+    ))
+  }
 }
