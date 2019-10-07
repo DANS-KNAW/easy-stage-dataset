@@ -48,7 +48,7 @@ object Command extends App {
     databaseUser = configuration.properties.getString("db-connection-user"),
     databasePassword = configuration.properties.getString("db-connection-password"),
     licenses = configuration.licenses,
-    stageDatasetVersion = configuration.version
+    stageDatasetVersion = configuration.version,
   )
 
   EasyStageDataset.run
