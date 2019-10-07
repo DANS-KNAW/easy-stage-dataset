@@ -17,7 +17,8 @@ import scala.xml.SAXParseException
 
 class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
 
-  val sdoSetDir = new File("target/test/EmdSpec/sdoSet")
+  val testDir = new File(s"target/test/${ getClass.getSimpleName }")
+  val sdoSetDir = new File(s"$testDir/sdoSet")
   val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
 
   def newSettings(bagitDir: File): Settings = {
@@ -35,12 +36,12 @@ class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixtur
       stageDatasetVersion = "test",
     )
   }
-
   override def beforeEach(): Unit = {
-    if (Files.exists(sdoSetDir.toPath)) {
-      FileUtils.deleteDirectory(sdoSetDir)
+    if (Files.exists(testDir.toPath)) {
+      FileUtils.deleteDirectory(testDir)
     }
   }
+
 
   def loadSchema(schema: String): Try[Schema] = {
     Try {

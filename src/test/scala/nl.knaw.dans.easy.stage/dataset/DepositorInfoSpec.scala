@@ -17,10 +17,36 @@ package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
 
-import nl.knaw.dans.easy.stage.xsds
 import org.apache.commons.io.FileUtils
 
 class DepositorInfoSpec extends MdFixture {
+
+  val infoDir = new File(sdoSetDir.getParentFile + "/input/metadata/deposit-info")
+
+  "constructor" should "handle and empty info dir" in {
+    DepositorInfo(infoDir.toPath) shouldBe
+    DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+  }
+
+  it should "handle the medium bag" in {
+    fromAgreements(replacing = "", by = "") shouldBe
+    DepositorInfo(
+      acceptedLicense = true,
+      privacySensitiveRemark = "According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.",
+      messageFromDepositor = Some("Beware!!! Very personal data!!!"),
+    )
+  }
+
+  it should "handle invalid agreements.xml" in {
+    infoDir.mkdirs()
+    FileUtils.write(new File(infoDir + "/agreements.xml"),"blablabla")
+    DepositorInfo(infoDir.toPath) shouldBe
+      DepositorInfo(
+        acceptedLicense = false,
+        privacySensitiveRemark = "agreements.xml not valid: Content is not allowed in prolog.",
+        messageFromDepositor = None,
+      )
+  }
 
   "privacySensitiveRemark" should "create a remark for SignerId without attributes" in {
     fromAgreements(replacing = """(easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "").privacySensitiveRemark shouldBe
@@ -68,16 +94,18 @@ class DepositorInfoSpec extends MdFixture {
   }
 
   private def fromAgreements(replacing: String, by: String) = {
-    assume(canConnect(xsds))
     sdoSetDir.mkdirs()
-    val mediumDir = new File("src/test/resources/dataset-bags/medium/metadata/depositor-info")
-    val input = new File(sdoSetDir.getParentFile + "/input/metadata/deposit-info")
-    val agreementsFile = new File(input + "/agreements.xml")
-    FileUtils.copyDirectory(mediumDir, input)
-    FileUtils.write(
-      agreementsFile,
-      FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
+    FileUtils.copyDirectory(
+      new File("src/test/resources/dataset-bags/medium/metadata/depositor-info"),
+      infoDir
     )
-    DepositorInfo(input.toPath)
+    if (replacing != "") {
+      val agreementsFile = new File(infoDir + "/agreements.xml")
+      FileUtils.write(
+        agreementsFile,
+        FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
+      )
+    }
+    DepositorInfo(infoDir.toPath)
   }
 }

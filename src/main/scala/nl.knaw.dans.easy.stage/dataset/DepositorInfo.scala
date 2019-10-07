@@ -86,13 +86,17 @@ object DepositorInfo extends DebugEnhancedLogging {
           logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
           s"No statement by $userNamePart could be found whether this dataset contains Privacy Sensitive data."
         }
-    }.getOrElse(s"No (valid) agreements.xml found in $depositDir")
+    }.getOrRecover {
+      case _: FileNotFoundException => ""
+      case e: Throwable => s"agreements.xml not valid: ${ e.getMessage }"
+    }
 
     val messageFromDepositor: Option[String] = {
       val msgFromDepositor = "message-from-depositor.txt"
       Try {
         val msgForDataManager = depositorInfoDir.resolve(msgFromDepositor)
         new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
+          .replaceAll("<","&gt;")
       }.map { content =>
         if (content.isBlank) {
           logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")

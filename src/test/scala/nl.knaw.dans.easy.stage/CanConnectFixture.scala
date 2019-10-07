@@ -23,6 +23,7 @@ import scala.xml.SAXParseException
 trait CanConnectFixture {
 
   def canConnect(urls: Array[String]): Boolean = Try {
+    // TODO EmdSpec has failing tests when working off line
     urls.map(url => {
       new URL(url).openConnection match {
         case connection: HttpURLConnection =>

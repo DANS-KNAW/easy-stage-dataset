@@ -40,7 +40,7 @@ object EMD extends DebugEnhancedLogging {
           _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
-          _ = emd.getEmdRights.setAcceptedLicense(acceptedLicense)
+          _ = emd.getEmdRights.setAcceptedLicense(licenseAccepted)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
