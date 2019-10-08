@@ -34,7 +34,7 @@ object Command extends App {
   implicit val settings: Settings = new Settings(
     ownerId = getUserId(clo.deposit()),
     submissionTimestamp = if (clo.submissionTimestamp.isSupplied) clo.submissionTimestamp()
-                          else new DateTime(),
+                          else DateTime.now,
     bagitDir = getBagDir(clo.deposit()).get,
     sdoSetDir = clo.sdoSet(),
     urn = clo.urn.toOption,
