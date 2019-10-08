@@ -32,7 +32,7 @@ class EmdSpec extends MdFixture {
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      (bag, EMD.create(sdoSetDir, licenseAccepted = true)) should matchPattern { // TODO use behave like
+      (bag, EMD.create(sdoSetDir, licenseAccepted = Some(true))) should matchPattern { // TODO use behave like
         case (_, Success(_)) =>
       }
       sdoSetDir.list() shouldBe Array("EMD")
@@ -45,7 +45,7 @@ class EmdSpec extends MdFixture {
     sdoSetDir.mkdirs()
     val mediumDir = new File("src/test/resources/dataset-bags/medium")
     implicit val s: Settings = newSettings(mediumDir)
-    inside(EMD.create(sdoSetDir, licenseAccepted = true)) {
+    inside(EMD.create(sdoSetDir, licenseAccepted = Some(true))) {
       case Success(emd: EasyMetadata) =>
         val acceptBS = new BasicString("accept")
         acceptBS.setScheme("Easy2 version 1")
@@ -60,7 +60,7 @@ class EmdSpec extends MdFixture {
     sdoSetDir.mkdirs()
     val minimalDir = new File("src/test/resources/dataset-bags/minimal")
     implicit val s: Settings = newSettings(minimalDir)
-    inside(EMD.create(sdoSetDir, licenseAccepted = false)) {
+    inside(EMD.create(sdoSetDir, licenseAccepted = Some(false))) {
       case Success(emd: EasyMetadata) =>
         emd.getEmdRights.getTermsLicense shouldBe empty
         emd.getEmdOther.getEasRemarks shouldBe empty
@@ -87,7 +87,7 @@ class EmdSpec extends MdFixture {
     write(tmpDDM, ddm.toString())
     implicit val s: Settings = newSettings(tmpDDM.getParentFile.getParentFile)
 
-    inside(EMD.create(sdoSetDir, licenseAccepted = true)) {
+    inside(EMD.create(sdoSetDir, licenseAccepted = Some(true))) {
       case Failure(e) => e.getMessage should
         include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
     }

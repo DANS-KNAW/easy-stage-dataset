@@ -25,15 +25,15 @@ class DepositorInfoSpec extends MdFixture {
 
   "constructor" should "handle and empty info dir" in { // as in the minimal bag
     DepositorInfo(infoDir.toPath) shouldBe
-      DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+      DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
   }
 
   it should "handle the medium bag" in {
     fromAgreements(replacing = "", by = "") shouldBe
       DepositorInfo(
-        acceptedLicense = true,
+        acceptedLicense = Some(true),
         privacySensitiveRemark = "According to depositor First Namen (user001, does.not.exist@dans.knaw.nl) this dataset DOES contain Privacy Sensitive data.",
-        messageFromDepositor = Some("Beware!!! Very personal data!!!"),
+        messageFromDepositor = "Beware!!! Very personal data!!!",
       )
   }
 
@@ -42,9 +42,9 @@ class DepositorInfoSpec extends MdFixture {
     FileUtils.write(new File(infoDir + "/agreements.xml"), "blablabla")
     DepositorInfo(infoDir.toPath) shouldBe
       DepositorInfo(
-        acceptedLicense = false,
+        acceptedLicense = None,
         privacySensitiveRemark = "agreements.xml not valid: Content is not allowed in prolog.",
-        messageFromDepositor = None,
+        messageFromDepositor = "",
       )
   }
 

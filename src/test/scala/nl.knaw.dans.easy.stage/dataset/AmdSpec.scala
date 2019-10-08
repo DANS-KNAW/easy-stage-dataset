@@ -49,9 +49,10 @@ class AmdSpec extends MdFixture {
   it should "generate a remark" in {
     val msg1 = "this dataset DOES NOT contain Privacy Sensitive data."
     val msg2 = "Please contact me about blabla"
-    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = msg1, messageFromDepositor = Some(msg2))
+    val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
     val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
     val formattedAmd = prettyPrinter.format(amd)
+    println(amd)
 
     formattedAmd should include(prettyPrinter.format(
        <stateChangeDates>
@@ -81,19 +82,11 @@ class AmdSpec extends MdFixture {
   }
 
   it should "not generate state changes for a DRAFT (and an empty remark)" in {
-    val info = DepositorInfo(acceptedLicense = false, privacySensitiveRemark = "", messageFromDepositor = None)
+    val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
     val amd = AMD("foo", DateTime.now, "DRAFT", info, "test-version")
     val formattedAmd = prettyPrinter.format(amd)
 
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
-    formattedAmd should include(prettyPrinter.format(
-      <remarks>
-        <remark>
-          <text></text>
-          <remarkerId>easy-stage-dataset_test-version</remarkerId>
-          <remarkDate>{ nowIso }</remarkDate>
-        </remark>
-      </remarks>
-    ))
+    formattedAmd should include(prettyPrinter.format(<remarks></remarks>))
   }
 }

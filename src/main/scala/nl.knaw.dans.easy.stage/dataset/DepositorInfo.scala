@@ -27,7 +27,13 @@ import org.apache.commons.lang.BooleanUtils
 import scala.util.Try
 import scala.xml.{ Elem, XML }
 
-case class DepositorInfo(acceptedLicense: Option[Boolean], privacySensitiveRemark: String, messageFromDepositor: Option[String])
+/**
+ *
+ * @param acceptedLicense none if there was no (syntax-valid) agreements.xml
+ * @param privacySensitiveRemark empty if there was no agreements.xml, an error message if the file was not syntax-valid
+ * @param messageFromDepositor the content of message-from-depositor.txt, empty if the file is not found
+ */
+case class DepositorInfo(acceptedLicense: Option[Boolean], privacySensitiveRemark: String, messageFromDepositor: String)
 
 object DepositorInfo extends DebugEnhancedLogging {
   def apply(depositorInfoDir: Path): DepositorInfo = {
@@ -91,7 +97,7 @@ object DepositorInfo extends DebugEnhancedLogging {
       case e: Throwable => s"agreements.xml not valid: ${ e.getMessage }"
     }
 
-    val messageFromDepositor: Option[String] = {
+    val messageFromDepositor: String = {
       val msgFromDepositor = "message-from-depositor.txt"
       Try {
         val msgForDataManager = depositorInfoDir.resolve(msgFromDepositor)
@@ -100,17 +106,17 @@ object DepositorInfo extends DebugEnhancedLogging {
       }.map { content =>
         if (content.isBlank) {
           logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")
-          None
+          ""
         }
         else
-          Some(content)
+          content
       }.getOrRecover {
         case _: NoSuchFileException =>
           logger.debug(msgFromDepositor + " not found, not setting a remark")
-          None
+          ""
         case e =>
           logger.error(e.getMessage, e)
-          None
+          ""
       }
     }
     new DepositorInfo(acceptedLicense, privacySensitiveRemark, messageFromDepositor)
