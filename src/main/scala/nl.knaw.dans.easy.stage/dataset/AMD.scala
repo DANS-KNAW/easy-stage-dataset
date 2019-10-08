@@ -25,6 +25,7 @@ object AMD extends DebugEnhancedLogging {
   type AdministrativeMetadata = Elem
 
   def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: DepositorInfo, stageDatasetVersion: String): AdministrativeMetadata = {
+    val formattedSubmissionTimeStamp = submissionTimestamp.toString(ISODateTimeFormat.dateTime())
     val remarksContent =
       s"""${ remarks.privacySensitiveRemark }
          |
@@ -35,7 +36,7 @@ object AMD extends DebugEnhancedLogging {
       <datasetState>{state}</datasetState>{
         if (state != "DRAFT") {
           <previousState>DRAFT</previousState>
-          <lastStateChange>{submissionTimestamp}</lastStateChange>
+          <lastStateChange>{ formattedSubmissionTimeStamp }</lastStateChange>
         }
       }
       <depositorId>{depositorId}</depositorId>
@@ -48,7 +49,7 @@ object AMD extends DebugEnhancedLogging {
             <damd:stateChangeDate>
               <fromState>DRAFT</fromState>
               <toState>{ state }</toState>
-              <changeDate>{ submissionTimestamp }</changeDate>
+              <changeDate>{ formattedSubmissionTimeStamp }</changeDate>
             </damd:stateChangeDate>
           </stateChangeDates>
         }
