@@ -28,7 +28,7 @@ object AMD extends DebugEnhancedLogging {
     val remarksContent =
       s"""${ remarks.privacySensitiveRemark }
          |
-         |${ remarks.messageFromDepositor.getOrElse("") }
+         |${ remarks.messageFromDepositor }
          |""".stripMargin.trim
     trace(depositorId, submissionTimestamp, state)
     <damd:administrative-md xmlns:damd="https://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
@@ -59,11 +59,14 @@ object AMD extends DebugEnhancedLogging {
         <wfs:workflow xmlns:wfs="https://easy.dans.knaw.nl/easy/workflow/">
           <id>dataset</id>
           <remarks>
-            <remark>
-              <text>{ remarksContent }</text>
-              <remarkerId>{ s"easy-stage-dataset_$stageDatasetVersion" }</remarkerId>
-              <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
-            </remark>
+          {
+            if (remarksContent.nonEmpty)
+              <remark>
+                <text>{ remarksContent }</text>
+                <remarkerId>{ s"easy-stage-dataset_$stageDatasetVersion" }</remarkerId>
+                <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
+              </remark>
+          }
           </remarks>
           <steps>
             <wfs:workflow>
