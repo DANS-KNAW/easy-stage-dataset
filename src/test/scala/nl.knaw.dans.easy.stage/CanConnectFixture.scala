@@ -28,8 +28,7 @@ import scala.xml.SAXParseException
 trait CanConnectFixture {
 
   def canConnect(urls: Array[String]): Boolean = urls
-    .map(url => isAvailable(loadSchema(url)))
-    .distinct sameElements Array(true)
+    .forall(url => isAvailable(loadSchema(url)))
 
   def loadSchema(schema: String): Try[Schema] = {
     Try {
