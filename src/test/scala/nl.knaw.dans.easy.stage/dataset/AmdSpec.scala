@@ -21,6 +21,7 @@ import java.nio.file.Path
 import javax.xml.transform.stream.StreamSource
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import scala.util.Success
 import scala.xml.PrettyPrinter
@@ -30,6 +31,8 @@ class AmdSpec extends MdFixture {
   private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
 
   private val triedSchema = loadSchema("https://easy.dans.knaw.nl/schemas/bag/metadata/agreements/2019/09/agreements.xsd")
+
+  private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
 
   "apply" should "validate for each test bag" in pendingUntilFixed {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
@@ -58,7 +61,7 @@ class AmdSpec extends MdFixture {
          <damd:stateChangeDate>
            <fromState>DRAFT</fromState>
            <toState>SUBMITTED</toState>
-           <changeDate>2018-03-22T21:43:01.000+01:00</changeDate>
+           <changeDate>{ nowIso }</changeDate>
          </damd:stateChangeDate>
        </stateChangeDates>
     ))
