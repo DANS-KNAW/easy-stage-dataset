@@ -29,9 +29,9 @@ import scala.xml.{ Elem, XML }
 
 /**
  *
- * @param acceptedLicense none if there was no (syntax-valid) agreements.xml
+ * @param acceptedLicense        none if there was no (syntax-valid) agreements.xml
  * @param privacySensitiveRemark empty if there was no agreements.xml, an error message if the file was not syntax-valid
- * @param messageFromDepositor the content of message-from-depositor.txt, empty if the file is not found
+ * @param messageFromDepositor   the content of message-from-depositor.txt, empty if the file is not found
  */
 case class DepositorInfo(acceptedLicense: Option[Boolean], privacySensitiveRemark: String, messageFromDepositor: String)
 
