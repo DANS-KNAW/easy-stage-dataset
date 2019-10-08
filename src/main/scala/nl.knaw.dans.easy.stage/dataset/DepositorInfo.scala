@@ -27,7 +27,7 @@ import org.apache.commons.lang.BooleanUtils
 import scala.util.Try
 import scala.xml.{ Elem, XML }
 
-case class DepositorInfo(acceptedLicense: Boolean, privacySensitiveRemark: String, messageFromDepositor: Option[String])
+case class DepositorInfo(acceptedLicense: Option[Boolean], privacySensitiveRemark: String, messageFromDepositor: Option[String])
 
 object DepositorInfo extends DebugEnhancedLogging {
   def apply(depositorInfoDir: Path): DepositorInfo = {
@@ -40,19 +40,19 @@ object DepositorInfo extends DebugEnhancedLogging {
       }
     }
 
-    val acceptedLicense: Boolean = triedAgreementsXml.map { agreementsXml =>
+    val acceptedLicense: Option[Boolean] = triedAgreementsXml.map { agreementsXml =>
       (agreementsXml \\ "depositAgreementAccepted")
         .headOption
         .map { el =>
           val accepted = BooleanUtils.toBoolean(el.text)
           if (!accepted) logger.warn(s"[$depositDir] agreements.xml did NOT contain a depositAgreementAccepted")
-          accepted
+          Some(accepted)
         }
         .getOrElse {
           logger.warn(s"[$depositDir] depositAgreementAccepted in agreements.xml was not true")
-          false
+          Some(false)
         }
-    }.getOrElse(false)
+    }.getOrElse(None)
 
     val privacySensitiveRemark: String = triedAgreementsXml.map { agreementsXml =>
       val userNamePart = {

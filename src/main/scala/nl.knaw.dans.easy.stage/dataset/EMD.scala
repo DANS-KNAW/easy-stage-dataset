@@ -30,7 +30,7 @@ import scala.util.{ Failure, Success, Try }
 
 object EMD extends DebugEnhancedLogging {
 
-  def create(sdoDir: File, licenseAccepted: Boolean)(implicit s: Settings): Try[EasyMetadata] = {
+  def create(sdoDir: File, licenseAccepted: Option[Boolean])(implicit s: Settings): Try[EasyMetadata] = {
     trace(sdoDir)
     new File(s.bagitDir, "metadata/dataset.xml") match {
       case file if file.exists() =>
@@ -40,7 +40,7 @@ object EMD extends DebugEnhancedLogging {
           _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
           _ = emd.getEmdOther.getEasApplicationSpecific.setArchive(createEmdArchive(s.archive))
-          _ = emd.getEmdRights.setAcceptedLicense(licenseAccepted)
+          _ = licenseAccepted.map(emd.getEmdRights.setAcceptedLicense)
           /*
            * DO NOT USE getXmlString !! It will get the XML bytes and convert them to string using the
            * platform's default Charset, which may not be what we expect.
