@@ -52,7 +52,6 @@ class AmdSpec extends MdFixture {
     val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
     val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
     val formattedAmd = prettyPrinter.format(amd)
-    println(amd)
 
     formattedAmd should include(prettyPrinter.format(
        <stateChangeDates>
