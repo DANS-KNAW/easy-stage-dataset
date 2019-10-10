@@ -15,12 +15,12 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
-import java.io.{ ByteArrayInputStream, File }
+import java.io.File
 import java.nio.file.Path
 
 import nl.knaw.dans.common.jibx.JiBXObjectFactory
 import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
-import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
+import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
@@ -31,10 +31,11 @@ import scala.xml.PrettyPrinter
 class AmdSpec extends MdFixture {
   // an indentation of zero allows simple comparison
   private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
-
-  private val triedSchema = loadSchema("https://easy.dans.knaw.nl/schemas/bag/metadata/agreements/2019/09/agreements.xsd")
-
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
+
+  "sword2-amd" should "unMarshall" in {
+    unMarshall(new File("src/test/resources/sword2-amd.xml"))
+  }
 
   "apply" should "validate for each test bag" in {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
@@ -42,7 +43,7 @@ class AmdSpec extends MdFixture {
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
-      unMarshal(amd) shouldBe a[Success[_]]
+      // unMarshall(amd) shouldBe a[Success[_]]
       deleteDirectory(sdoSetDir)
     }
   }
@@ -52,7 +53,6 @@ class AmdSpec extends MdFixture {
     val msg2 = "Please contact me about blabla"
     val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
     val amd = AMD("foo", DateTime.now, "SUBMITTED", info)
-    unMarshal(amd) shouldBe a[Success[_]]
 
     val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(
@@ -80,22 +80,33 @@ class AmdSpec extends MdFixture {
          |
          |$msg2
          |""".stripMargin.trim
+    // unMarshall(amd) shouldBe a[Success[_]]
   }
 
   it should "not generate state changes for a DRAFT (and an empty remark)" in {
     val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
     val amd = AMD("foo", DateTime.now, "DRAFT", info)
-    unMarshal(amd) shouldBe a[Success[_]]
-
     val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
-    formattedAmd should include(prettyPrinter.format(<remarks></remarks>))
+    formattedAmd should include(prettyPrinter.format(<remarks/>))
   }
 
-  private def unMarshal(amd: AdministrativeMetadata) = Try {
-    JiBXObjectFactory.unmarshal( // how the webui reads it
-      new AdministrativeMetadataImpl().getClass,
-      new ByteArrayInputStream(prettyPrinter.format(amd).getBytes())
-    )
+  it should "unMarshall a published AMD" in {
+    // minimal differences with sword2-amd.xml
+    val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
+    val amd = AMD("IPDBSTest", DateTime.now, "PUBLISHED", info)
+
+    val file = new File(testDir + "/tested-amd.xml")
+    FileUtils.write(file, prettyPrinter.format(amd))
+    unMarshall(file) shouldBe a[Success[_]]
+  }
+
+  private def unMarshall(file: File) = {
+    Try {
+      JiBXObjectFactory.unmarshal( // how the webui reads it
+        new AdministrativeMetadataImpl().getClass,
+        FileUtils.readFileToByteArray(file)
+      )
+    }
   }
 }

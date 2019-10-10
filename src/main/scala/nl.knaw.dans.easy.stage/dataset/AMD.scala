@@ -59,71 +59,74 @@ object AMD extends DebugEnhancedLogging {
         <assigneeId>NOT_ASSIGNED</assigneeId>
         <wfs:workflow xmlns:wfs="https://easy.dans.knaw.nl/easy/workflow/">
           <id>dataset</id>
-          <remarks>
+          
           {
-            if (remarksContent.nonEmpty)
-              <remark>
-                <text>{ remarksContent }</text>
-                <remarkerId>{depositorId}</remarkerId>
-                <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
-              </remark>
+            if (remarksContent.isEmpty)
+              <remarks/>
+            else
+              <remarks>
+                <remark>
+                  <text>{ remarksContent }</text>
+                  <remarkerId>{depositorId}</remarkerId>
+                  <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
+                </remark>
+              </remarks>
           }
-          </remarks>
           <steps>
             <wfs:workflow>
               <id>dataset.sip</id>
               <timeSpentWritable>true</timeSpentWritable>
-              <remarks></remarks>
+              <remarks/>
               <steps>
                 <wfs:workflow>
                   <id>dataset.sip.files</id>
-                  <remarks></remarks>
+                  <remarks/>
                   <steps>
                     <wfs:workflow>
                       <id>dataset.sip.files.completeness</id>
                       <required>true</required>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                     <wfs:workflow>
                       <id>dataset.sip.files.accessibility</id>
                       <required>true</required>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                     <wfs:workflow>
                       <id>dataset.sip.files.privacy</id>
                       <required>true</required>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                   </steps>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.sip.file-list</id>
-                  <remarks></remarks>
+                  <remarks/>
                   <steps>
                     <wfs:workflow>
                       <id>dataset.sip.file-list.file-metadata</id>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                   </steps>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.sip.descriptive-metadata</id>
-                  <remarks></remarks>
+                  <remarks/>
                   <steps>
                     <wfs:workflow>
                       <id>dataset.sip.descriptive-metadata.completeness</id>
                       <required>true</required>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                     <wfs:workflow>
                       <id>dataset.sip.descriptive-metadata.identifiers</id>
-                      <remarks></remarks>
-                      <steps></steps>
+                      <remarks/>
+                      <steps/>
                     </wfs:workflow>
                   </steps>
                 </wfs:workflow>
@@ -132,45 +135,45 @@ object AMD extends DebugEnhancedLogging {
             <wfs:workflow>
               <id>dataset.aip</id>
               <timeSpentWritable>true</timeSpentWritable>
-              <remarks></remarks>
+              <remarks/>
               <steps>
                 <wfs:workflow>
                   <id>dataset.aip.file-conversion</id>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.aip.file-metadata</id>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.aip.structure</id>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
               </steps>
             </wfs:workflow>
             <wfs:workflow>
               <id>dataset.dip</id>
               <timeSpentWritable>true</timeSpentWritable>
-              <remarks></remarks>
+              <remarks/>
               <steps>
                 <wfs:workflow>
                   <id>dataset.dip.publish-files</id>
                   <required>true</required>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.dip.jumpoff</id>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
                 <wfs:workflow>
                   <id>dataset.dip.relations</id>
-                  <remarks></remarks>
-                  <steps></steps>
+                  <remarks/>
+                  <steps/>
                 </wfs:workflow>
               </steps>
             </wfs:workflow>
