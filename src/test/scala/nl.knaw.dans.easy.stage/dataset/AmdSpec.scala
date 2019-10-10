@@ -20,6 +20,7 @@ import java.nio.file.Path
 
 import nl.knaw.dans.common.jibx.JiBXObjectFactory
 import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
+import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
@@ -41,10 +42,7 @@ class AmdSpec extends MdFixture {
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
-      Try(JiBXObjectFactory.unmarshal( // how the webui reads it
-        new AdministrativeMetadataImpl().getClass,
-        new ByteArrayInputStream(prettyPrinter.format(amd).getBytes())
-      )) shouldBe a[Success[_]]
+      unMarshal(amd) shouldBe a[Success[_]]
       deleteDirectory(sdoSetDir)
     }
   }
@@ -54,8 +52,9 @@ class AmdSpec extends MdFixture {
     val msg2 = "Please contact me about blabla"
     val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
     val amd = AMD("foo", DateTime.now, "SUBMITTED", info)
-    val formattedAmd = prettyPrinter.format(amd)
+    unMarshal(amd) shouldBe a[Success[_]]
 
+    val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(
        <stateChangeDates>
          <damd:stateChangeDate>
@@ -86,9 +85,17 @@ class AmdSpec extends MdFixture {
   it should "not generate state changes for a DRAFT (and an empty remark)" in {
     val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
     val amd = AMD("foo", DateTime.now, "DRAFT", info)
-    val formattedAmd = prettyPrinter.format(amd)
+    unMarshal(amd) shouldBe a[Success[_]]
 
+    val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
     formattedAmd should include(prettyPrinter.format(<remarks></remarks>))
+  }
+
+  private def unMarshal(amd: AdministrativeMetadata) = Try {
+    JiBXObjectFactory.unmarshal( // how the webui reads it
+      new AdministrativeMetadataImpl().getClass,
+      new ByteArrayInputStream(prettyPrinter.format(amd).getBytes())
+    )
   }
 }
