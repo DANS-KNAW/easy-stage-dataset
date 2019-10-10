@@ -103,7 +103,6 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       databaseUser = "",
       databasePassword = "", // TODO: probably not the value in the actual deasy environment
       licenses = licensesMap,
-      stageDatasetVersion = "test",
     )
   }
 }

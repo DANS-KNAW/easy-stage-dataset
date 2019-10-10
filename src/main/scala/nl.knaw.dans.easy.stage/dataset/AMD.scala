@@ -24,7 +24,7 @@ import scala.xml.Elem
 object AMD extends DebugEnhancedLogging {
   type AdministrativeMetadata = Elem
 
-  def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: DepositorInfo, stageDatasetVersion: String): AdministrativeMetadata = {
+  def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: DepositorInfo): AdministrativeMetadata = {
     val formattedSubmissionTimeStamp = submissionTimestamp.toString(ISODateTimeFormat.dateTime())
     val remarksContent =
       s"""${ remarks.privacySensitiveRemark }
@@ -64,7 +64,7 @@ object AMD extends DebugEnhancedLogging {
             if (remarksContent.nonEmpty)
               <remark>
                 <text>{ remarksContent }</text>
-                <remarkerId>{ s"easy-stage-dataset_$stageDatasetVersion" }</remarkerId>
+                <remarkerId></remarkerId>
                 <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
               </remark>
           }

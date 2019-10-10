@@ -43,7 +43,6 @@ class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixtur
       databaseUser = "",
       databasePassword = "",
       licenses = Map.empty,
-      stageDatasetVersion = "test",
     )
   }
 

@@ -40,7 +40,7 @@ class AmdSpec extends MdFixture {
     assume(isAvailable(triedSchema))
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
-      val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir), "test-version")
+      val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
       val validation = triedSchema.map(
         _.newValidator().validate(new StreamSource(new StringReader(prettyPrinter.format(amd))))
       )
@@ -53,7 +53,7 @@ class AmdSpec extends MdFixture {
     val msg1 = "this dataset DOES NOT contain Privacy Sensitive data."
     val msg2 = "Please contact me about blabla"
     val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
-    val amd = AMD("foo", DateTime.now, "SUBMITTED", info, "test-version")
+    val amd = AMD("foo", DateTime.now, "SUBMITTED", info)
     val formattedAmd = prettyPrinter.format(amd)
 
     formattedAmd should include(prettyPrinter.format(
@@ -70,7 +70,7 @@ class AmdSpec extends MdFixture {
       <remarks>
         <remark>
           <text>{ msg1 } { msg2 }</text>
-          <remarkerId>easy-stage-dataset_test-version</remarkerId>
+          <remarkerId></remarkerId>
           <remarkDate>{ nowIso }</remarkDate>
         </remark>
       </remarks>
@@ -85,7 +85,7 @@ class AmdSpec extends MdFixture {
 
   it should "not generate state changes for a DRAFT (and an empty remark)" in {
     val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
-    val amd = AMD("foo", DateTime.now, "DRAFT", info, "test-version")
+    val amd = AMD("foo", DateTime.now, "DRAFT", info)
     val formattedAmd = prettyPrinter.format(amd)
 
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))

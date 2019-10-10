@@ -38,7 +38,6 @@ case class Settings(ownerId: String,
                     databaseUser: String,
                     databasePassword: String,
                     licenses: Map[String, File],
-                    stageDatasetVersion: String,
                    ) {
   override def toString: String = {
     s"Stage-Dataset.Settings(ownerId = $ownerId, submissionTimestamp = $submissionTimestamp, " +
@@ -67,7 +66,6 @@ object Settings {
             databaseUser: String,
             databasePassword: String,
             licenses: Map[String, File],
-            stageDatasetVersion: String,
            ): Settings = {
     Fedora.setFedoraConnectionSettings(
       credentials.getBaseUrl.toString,
@@ -90,7 +88,6 @@ object Settings {
       databaseUser = databaseUser,
       databasePassword = databasePassword,
       licenses = licenses,
-      stageDatasetVersion = stageDatasetVersion,
     )
   }
 }

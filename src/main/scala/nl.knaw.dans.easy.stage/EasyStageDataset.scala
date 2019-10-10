@@ -92,7 +92,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
       remarks = DepositorInfo(s.bagitDir.toPath.resolve("metadata/depositor-info"))
-      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state, remarks, s.stageDatasetVersion)
+      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state, remarks)
       emdContent <- EMD.create(sdoDir, remarks.acceptedLicense)
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       additionalLicenseFilenameAndMimeType <- AdditionalLicense.createOptionally(sdoDir)
