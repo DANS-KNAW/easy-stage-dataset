@@ -15,15 +15,16 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
-import java.io.{ File, StringReader }
+import java.io.{ ByteArrayInputStream, File }
 import java.nio.file.Path
 
-import javax.xml.transform.stream.StreamSource
+import nl.knaw.dans.common.jibx.JiBXObjectFactory
+import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
 
-import scala.util.Success
+import scala.util.{ Success, Try }
 import scala.xml.PrettyPrinter
 
 class AmdSpec extends MdFixture {
@@ -34,17 +35,16 @@ class AmdSpec extends MdFixture {
 
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
 
-  "apply" should "validate for each test bag" in pendingUntilFixed {
+  "apply" should "validate for each test bag" in {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
-    // TODO add name space location to generated xml?
-    assume(isAvailable(triedSchema))
+    //assume(isAvailable(triedSchema))
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
-      val validation = triedSchema.map(
-        _.newValidator().validate(new StreamSource(new StringReader(prettyPrinter.format(amd))))
-      )
-      (bag, validation) shouldBe(bag, a[Success[_]]) // TODO use behave like (as in EmdSpec)
+      Try(JiBXObjectFactory.unmarshal( // how the webui reads it
+        new AdministrativeMetadataImpl().getClass,
+        new ByteArrayInputStream(prettyPrinter.format(amd).getBytes())
+      )) shouldBe a[Success[_]]
       deleteDirectory(sdoSetDir)
     }
   }
@@ -70,7 +70,7 @@ class AmdSpec extends MdFixture {
       <remarks>
         <remark>
           <text>{ msg1 } { msg2 }</text>
-          <remarkerId></remarkerId>
+          <remarkerId>foo</remarkerId>
           <remarkDate>{ nowIso }</remarkDate>
         </remark>
       </remarks>

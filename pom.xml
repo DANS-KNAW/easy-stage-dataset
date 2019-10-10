@@ -106,6 +106,12 @@
             <artifactId>fedora-client-core</artifactId>
         </dependency>
         <dependency>
+            <groupId>nl.knaw.dans.easy</groupId>
+            <artifactId>dans-fedora</artifactId>
+            <version>4.0.0-SNAPSHOT</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>com.yourmediashelf.fedora.client</groupId>
             <artifactId>fedora-client-messaging</artifactId>
             <exclusions>

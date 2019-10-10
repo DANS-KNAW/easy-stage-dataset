@@ -64,7 +64,7 @@ object AMD extends DebugEnhancedLogging {
             if (remarksContent.nonEmpty)
               <remark>
                 <text>{ remarksContent }</text>
-                <remarkerId></remarkerId>
+                <remarkerId>{depositorId}</remarkerId>
                 <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
               </remark>
           }
