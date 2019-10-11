@@ -21,20 +21,19 @@ import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import nl.knaw.dans.pf.language.emd.types.BasicString
 import org.apache.commons.io.FileUtils.{ deleteDirectory, deleteQuietly, write }
+import org.scalatest.Inspectors
 
 import scala.util.{ Failure, Success }
 
-class EmdSpec extends MdFixture {
+class EmdSpec extends MdFixture with Inspectors {
 
   "create" should "succeed for each test bag" in {
     assume(canConnect(xsds))
 
-    for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
+    forEvery(new File("src/test/resources/dataset-bags").listFiles()) { bag =>
       sdoSetDir.mkdirs()
       implicit val s: Settings = newSettings(bag)
-      (bag, EMD.create(sdoSetDir, licenseAccepted = Some(true))) should matchPattern { // TODO use behave like
-        case (_, Success(_)) =>
-      }
+      EMD.create(sdoSetDir, licenseAccepted = Some(true)) shouldBe a[Success[_]]
       sdoSetDir.list() shouldBe Array("EMD")
       deleteDirectory(sdoSetDir)
     }

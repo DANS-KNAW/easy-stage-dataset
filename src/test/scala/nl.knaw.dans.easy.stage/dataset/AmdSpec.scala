@@ -29,7 +29,7 @@ import org.scalatest.prop.GeneratorDrivenPropertyChecks
 import scala.util.{ Success, Try }
 import scala.xml.PrettyPrinter
 
-class AmdSpec extends MdFixture with Inspectors {
+class AmdSpec extends MdFixture {
   // an indentation of zero allows simple comparison
   private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())

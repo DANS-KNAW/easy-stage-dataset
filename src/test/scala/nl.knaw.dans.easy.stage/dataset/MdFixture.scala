@@ -21,9 +21,9 @@ import java.nio.file.Files
 import nl.knaw.dans.easy.stage.{ CanConnectFixture, Settings }
 import org.apache.commons.io.FileUtils
 import org.joda.time.{ DateTime, DateTimeUtils }
-import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Inside, Matchers }
+import org.scalatest.{ BeforeAndAfterEach, FlatSpec, Inside, Inspectors, Matchers }
 
-class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach {
+class MdFixture extends FlatSpec with Matchers with Inside with CanConnectFixture with BeforeAndAfterEach with Inspectors {
 
   val testDir = new File(s"target/test/${ getClass.getSimpleName }")
   val sdoSetDir = new File(s"$testDir/sdoSet")
