@@ -15,12 +15,11 @@
  */
 package nl.knaw.dans.easy.stage.dataset
 
-import java.io.File
+import java.io.{ ByteArrayInputStream, File }
 import java.nio.file.Path
 
 import nl.knaw.dans.common.jibx.JiBXObjectFactory
 import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
-import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
@@ -35,11 +34,10 @@ class AmdSpec extends MdFixture {
 
   "apply" should "validate for each test bag" in {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
-    //assume(isAvailable(triedSchema))
     for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
       sdoSetDir.mkdirs()
       val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
-      // unMarshall(amd) shouldBe a[Success[_]]
+      unMarshall(prettyPrinter.format(amd)) shouldBe a[Success[_]]
       deleteDirectory(sdoSetDir)
     }
   }
@@ -76,7 +74,7 @@ class AmdSpec extends MdFixture {
          |
          |$msg2
          |""".stripMargin.trim
-    // unMarshall(amd) shouldBe a[Success[_]]
+    unMarshall(formattedAmd) shouldBe a[Success[_]]
   }
 
   it should "not generate state changes for a DRAFT (and an empty remark)" in {
@@ -85,22 +83,20 @@ class AmdSpec extends MdFixture {
     val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
     formattedAmd should include(prettyPrinter.format(<remarks></remarks>))
+    unMarshall(formattedAmd) shouldBe a[Success[_]]
   }
 
   it should "unMarshall a published AMD" in {
     val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
     val amd = AMD("IPDBSTest", DateTime.now, "PUBLISHED", info)
-
-    val file = new File(testDir + "/tested-amd.xml")
-    FileUtils.write(file, prettyPrinter.format(amd))
-    unMarshall(file) shouldBe a[Success[_]]
+    unMarshall(prettyPrinter.format(amd)) shouldBe a[Success[_]]
   }
 
-  private def unMarshall(file: File) = {
+  private def unMarshall(xml: String) = {
     Try {
       JiBXObjectFactory.unmarshal( // how the webui reads it
-        new AdministrativeMetadataImpl().getClass,
-        FileUtils.readFileToByteArray(file)
+        classOf[AdministrativeMetadataImpl],
+        new ByteArrayInputStream(xml.getBytes())
       )
     }
   }
