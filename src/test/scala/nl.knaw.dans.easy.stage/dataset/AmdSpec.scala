@@ -84,7 +84,7 @@ class AmdSpec extends MdFixture {
     val amd = AMD("foo", DateTime.now, "DRAFT", info)
     val formattedAmd = prettyPrinter.format(amd)
     formattedAmd should include(prettyPrinter.format(<stateChangeDates/>))
-    formattedAmd should include(prettyPrinter.format(<remarks/>))
+    formattedAmd should include(prettyPrinter.format(<remarks></remarks>))
   }
 
   it should "unMarshall a published AMD" in {
