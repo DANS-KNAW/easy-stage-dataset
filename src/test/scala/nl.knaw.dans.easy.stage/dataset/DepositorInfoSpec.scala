@@ -48,6 +48,14 @@ class DepositorInfoSpec extends MdFixture {
       )
   }
 
+  it should "escape the content of message-from-depositor.txt" in {
+    infoDir.mkdirs()
+    FileUtils.write(new File(infoDir + "/message-from-depositor.txt"), "blab<br>labla")
+    DepositorInfo(infoDir.toPath) should matchPattern {
+      case DepositorInfo(_, _, "blab&lt;br&gt;labla") =>
+    }
+  }
+
   "privacySensitiveRemark" should "create a remark for SignerId without attributes" in {
     fromAgreements(replacing = """(easy-account="user001"| email="does.not.exist@dans.knaw.nl")""", by = "").privacySensitiveRemark shouldBe
       "According to depositor First Namen this dataset DOES contain Privacy Sensitive data."
