@@ -43,7 +43,7 @@ class DepositorInfoSpec extends MdFixture {
     DepositorInfo(infoDir.toPath) shouldBe
       DepositorInfo(
         acceptedLicense = None,
-        privacySensitiveRemark = "agreements.xml not valid: Content is not allowed in prolog.",
+        privacySensitiveRemark = "File agreements.xml not valid: Content is not allowed in prolog.",
         messageFromDepositor = "",
       )
   }

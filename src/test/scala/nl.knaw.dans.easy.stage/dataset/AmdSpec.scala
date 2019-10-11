@@ -16,15 +16,11 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.{ ByteArrayInputStream, File }
-import java.nio.file.Path
 
 import nl.knaw.dans.common.jibx.JiBXObjectFactory
 import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
-import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
-import org.scalatest.Inspectors
-import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import scala.util.{ Success, Try }
 import scala.xml.PrettyPrinter
@@ -35,7 +31,7 @@ class AmdSpec extends MdFixture {
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
 
   "unMarshall(AMD(...))" should "validate for each test bag" in {
-    forEvery(new File("src/test/resources/dataset-bags").listFiles()){ bag =>
+    forEvery(new File("src/test/resources/dataset-bags").listFiles()) { bag =>
       val info = DepositorInfo(bag.toPath.resolve("metadata/depositor-info"))
       val amd = AMD("foo", DateTime.now, "SUBMITTED", info)
       unMarshall(prettyPrinter.format(amd)) shouldBe a[Success[_]]

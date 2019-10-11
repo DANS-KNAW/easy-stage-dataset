@@ -41,8 +41,8 @@ object DepositorInfo extends DebugEnhancedLogging {
     lazy val triedAgreementsXml: Try[Elem] = {
       val agreementsFile = depositorInfoDir.resolve("agreements.xml").toFile
       Try(XML.loadFile(agreementsFile)).doIfFailure {
-        case _: FileNotFoundException => logger.warn(s"agreements.xml not found: $agreementsFile")
-        case e => logger.warn(s"Could not load agreements.xml of $agreementsFile", e)
+        case _: FileNotFoundException => logger.warn(s"[$depositDir] agreements.xml not found")
+        case e => logger.warn(s"[$depositDir] could not load agreements.xml", e)
       }
     }
 
@@ -51,14 +51,15 @@ object DepositorInfo extends DebugEnhancedLogging {
         .headOption
         .map { el =>
           val accepted = BooleanUtils.toBoolean(el.text)
-          if (!accepted) logger.warn(s"[$depositDir] agreements.xml did NOT contain a depositAgreementAccepted")
-          Some(accepted)
+          if (!accepted)
+            logger.warn(s"[$depositDir] depositAgreementAccepted in agreements.xml was not true")
+          accepted
         }
         .getOrElse {
-          logger.warn(s"[$depositDir] depositAgreementAccepted in agreements.xml was not true")
-          Some(false)
+          logger.warn(s"[$depositDir] agreements.xml did NOT contain element depositAgreementAccepted")
+          false
         }
-    }.getOrElse(None)
+    }.toOption
 
     val privacySensitiveRemark: String = triedAgreementsXml.map { agreementsXml =>
       val userNamePart = {
@@ -89,12 +90,12 @@ object DepositorInfo extends DebugEnhancedLogging {
         }
         .map(privacyPart => s"According to depositor $userNamePart this dataset $privacyPart contain Privacy Sensitive data.")
         .getOrElse {
-          logger.warn("The field containsPrivacySensitiveData could not be found in agreements.xml")
+          logger.warn("The field containsPrivacySensitiveData in agreements.xml could not be found")
           s"No statement by $userNamePart could be found whether this dataset contains Privacy Sensitive data."
         }
     }.getOrRecover {
       case _: FileNotFoundException => ""
-      case e: Throwable => s"agreements.xml not valid: ${ e.getMessage }"
+      case e: Throwable => s"File agreements.xml not valid: ${ e.getMessage }"
     }
 
     val messageFromDepositor: String = {
@@ -102,21 +103,20 @@ object DepositorInfo extends DebugEnhancedLogging {
       Try {
         val msgForDataManager = depositorInfoDir.resolve(msgFromDepositor)
         new String(Files.readAllBytes(msgForDataManager), StandardCharsets.UTF_8)
-          .replaceAll("<", "&gt;")
-      }.map { content =>
-        if (content.isBlank) {
-          logger.debug(msgFromDepositor + " was found but was empty, not setting a remark")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+      }.map {
+        case content if content.isBlank =>
+          logger.debug(s"[$depositDir] $msgFromDepositor was found but was empty, not setting a remark")
           ""
-        }
-        else
-          content
+        case content => content
       }.getOrRecover {
         case _: NoSuchFileException =>
-          logger.debug(msgFromDepositor + " not found, not setting a remark")
+          logger.debug(s"[$depositDir] $msgFromDepositor not found, not setting a remark")
           ""
         case e =>
-          logger.error(e.getMessage, e)
-          ""
+          logger.warn(e.getMessage, e)
+          s"File $msgFromDepositor could not be read: ${ e.getMessage }"
       }
     }
     new DepositorInfo(acceptedLicense, privacySensitiveRemark, messageFromDepositor)
