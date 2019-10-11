@@ -47,8 +47,7 @@ object Command extends App {
     databaseUrl = configuration.properties.getString("db-connection-url"),
     databaseUser = configuration.properties.getString("db-connection-user"),
     databasePassword = configuration.properties.getString("db-connection-password"),
-    licenses = configuration.licenses,
-  )
+    licenses = configuration.licenses)
 
   EasyStageDataset.run
     .doIfSuccess(_ => println("OK: Completed succesfully"))

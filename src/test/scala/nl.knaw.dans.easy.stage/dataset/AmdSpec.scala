@@ -33,10 +33,6 @@ class AmdSpec extends MdFixture {
   private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
 
-  "sword2-amd" should "unMarshall" in {
-    unMarshall(new File("src/test/resources/sword2-amd.xml"))
-  }
-
   "apply" should "validate for each test bag" in {
     val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
     //assume(isAvailable(triedSchema))
@@ -92,7 +88,6 @@ class AmdSpec extends MdFixture {
   }
 
   it should "unMarshall a published AMD" in {
-    // minimal differences with sword2-amd.xml
     val info = DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
     val amd = AMD("IPDBSTest", DateTime.now, "PUBLISHED", info)
 
