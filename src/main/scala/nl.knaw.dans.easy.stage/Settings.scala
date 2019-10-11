@@ -24,7 +24,7 @@ import nl.knaw.dans.easy.stage.lib.Fedora
 import org.joda.time.DateTime
 
 case class Settings(ownerId: String,
-                    submissionTimestamp: DateTime = new DateTime(),
+                    submissionTimestamp: DateTime = DateTime.now,
                     bagitDir: File,
                     sdoSetDir: File,
                     urn: Option[String] = None,

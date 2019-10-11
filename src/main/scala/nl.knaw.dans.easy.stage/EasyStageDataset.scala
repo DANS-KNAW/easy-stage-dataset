@@ -91,8 +91,9 @@ object EasyStageDataset extends DebugEnhancedLogging {
     logger.info("Creating dataset SDO")
     for {
       sdoDir <- mkdirSafe(new File(s.sdoSetDir, DATASET_SDO))
-      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state)
-      emdContent <- EMD.create(sdoDir)
+      remarks = DepositorInfo(s.bagitDir.toPath.resolve("metadata/depositor-info"))
+      amdContent = AMD(s.ownerId, s.submissionTimestamp, s.state, remarks)
+      emdContent <- EMD.create(sdoDir, remarks.acceptedLicense)
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       additionalLicenseFilenameAndMimeType <- AdditionalLicense.createOptionally(sdoDir)
       audiences <- readAudiences()
@@ -117,9 +118,9 @@ object EasyStageDataset extends DebugEnhancedLogging {
         .lines.filter(_.nonEmpty)
         .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
-        case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
-        case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${ array.mkString(" ") }")
-      }
+          case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
+          case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${ array.mkString(" ") }")
+        }
         .toMap
     }.recoverWith { case _: FileNotFoundException => Success(Map.empty[String, String]) }
 

@@ -17,19 +17,26 @@ package nl.knaw.dans.easy.stage.dataset
 
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.joda.time.DateTime
+import org.joda.time.format.ISODateTimeFormat
 
 import scala.xml.Elem
 
 object AMD extends DebugEnhancedLogging {
   type AdministrativeMetadata = Elem
 
-  def apply(depositorId: String, submissionTimestamp: DateTime, state: String): AdministrativeMetadata = {
+  def apply(depositorId: String, submissionTimestamp: DateTime, state: String, remarks: DepositorInfo): AdministrativeMetadata = {
+    val formattedSubmissionTimeStamp = submissionTimestamp.toString(ISODateTimeFormat.dateTime())
+    val remarksContent =
+      s"""${ remarks.privacySensitiveRemark }
+         |
+         |${ remarks.messageFromDepositor }
+         |""".stripMargin.trim
     trace(depositorId, submissionTimestamp, state)
     <damd:administrative-md xmlns:damd="http://easy.dans.knaw.nl/easy/dataset-administrative-metadata/" version="0.1">
       <datasetState>{state}</datasetState>{
         if (state != "DRAFT") {
           <previousState>DRAFT</previousState>
-          <lastStateChange>{submissionTimestamp}</lastStateChange>
+          <lastStateChange>{ formattedSubmissionTimeStamp }</lastStateChange>
         }
       }
       <depositorId>{depositorId}</depositorId>
@@ -42,7 +49,7 @@ object AMD extends DebugEnhancedLogging {
             <damd:stateChangeDate>
               <fromState>DRAFT</fromState>
               <toState>{ state }</toState>
-              <changeDate>{ submissionTimestamp }</changeDate>
+              <changeDate>{ formattedSubmissionTimeStamp }</changeDate>
             </damd:stateChangeDate>
           </stateChangeDates>
         }
@@ -52,7 +59,16 @@ object AMD extends DebugEnhancedLogging {
         <assigneeId>NOT_ASSIGNED</assigneeId>
         <wfs:workflow xmlns:wfs="http://easy.dans.knaw.nl/easy/workflow/">
           <id>dataset</id>
-          <remarks></remarks>
+          <remarks>
+          {
+            if (remarksContent.nonEmpty)
+              <remark>
+                <text>{ remarksContent }</text>
+                <remarkerId>{depositorId}</remarkerId>
+                <remarkDate>{ DateTime.now().toString(ISODateTimeFormat.dateTime()) }</remarkDate>
+              </remark>
+          }
+          </remarks>
           <steps>
             <wfs:workflow>
               <id>dataset.sip</id>
