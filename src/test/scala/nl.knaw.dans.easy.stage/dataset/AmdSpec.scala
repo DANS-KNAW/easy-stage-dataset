@@ -23,26 +23,26 @@ import nl.knaw.dans.easy.domain.dataset.AdministrativeMetadataImpl
 import org.apache.commons.io.FileUtils.deleteDirectory
 import org.joda.time.DateTime
 import org.joda.time.format.ISODateTimeFormat
+import org.scalatest.Inspectors
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
 
 import scala.util.{ Success, Try }
 import scala.xml.PrettyPrinter
 
-class AmdSpec extends MdFixture {
+class AmdSpec extends MdFixture with Inspectors {
   // an indentation of zero allows simple comparison
   private val prettyPrinter: PrettyPrinter = new scala.xml.PrettyPrinter(1024, 0)
   private val nowIso = DateTime.now.toString(ISODateTimeFormat.dateTime())
 
-  "apply" should "validate for each test bag" in {
-    val depositorInfoDir: Path = sdoSetDir.toPath.resolve("metadata/depositor-info")
-    for (bag <- new File("src/test/resources/dataset-bags").listFiles()) {
-      sdoSetDir.mkdirs()
-      val amd = AMD("foo", DateTime.now, "SUBMITTED", DepositorInfo(depositorInfoDir))
+  "unMarshall(AMD(...))" should "validate for each test bag" in {
+    forEvery(new File("src/test/resources/dataset-bags").listFiles()){ bag =>
+      val info = DepositorInfo(bag.toPath.resolve("metadata/depositor-info"))
+      val amd = AMD("foo", DateTime.now, "SUBMITTED", info)
       unMarshall(prettyPrinter.format(amd)) shouldBe a[Success[_]]
-      deleteDirectory(sdoSetDir)
     }
   }
 
-  it should "generate a remark" in {
+  "apply" should "generate a remark" in {
     val msg1 = "this dataset DOES NOT contain Privacy Sensitive data."
     val msg2 = "Please contact me about blabla"
     val info = DepositorInfo(acceptedLicense = Some(false), privacySensitiveRemark = msg1, messageFromDepositor = msg2)
