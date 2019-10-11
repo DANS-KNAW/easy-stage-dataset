@@ -23,7 +23,7 @@ class DepositorInfoSpec extends MdFixture {
 
   val infoDir = new File(sdoSetDir.getParentFile + "/input/metadata/deposit-info")
 
-  "constructor" should "handle and empty info dir" in { // as in the minimal bag
+  "constructor" should "handle an empty info dir" in { // as in the minimal bag
     DepositorInfo(infoDir.toPath) shouldBe
       DepositorInfo(acceptedLicense = None, privacySensitiveRemark = "", messageFromDepositor = "")
   }
