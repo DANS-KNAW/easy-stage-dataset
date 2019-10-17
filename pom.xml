@@ -36,8 +36,8 @@
 
     <properties>
         <main-class>nl.knaw.dans.easy.stage.Command</main-class>
-        <easy-ddm.version>3.8.8</easy-ddm.version>
-        <easy-licenses.version>1.0.1</easy-licenses.version>
+        <easy.ddm.version>3.9.0</easy.ddm.version>
+        <easy.licenses.version>1.0.1</easy.licenses.version>
     </properties>
 
     <scm>
@@ -77,7 +77,7 @@
         <dependency>
             <groupId>nl.knaw.dans.easy</groupId>
             <artifactId>ddm</artifactId>
-            <version>${easy-ddm.version}</version>
+            <version>${easy.ddm.version}</version>
         </dependency>
         <dependency>
             <!--
@@ -195,7 +195,7 @@
                                 <artifactItem>
                                     <groupId>nl.knaw.dans.easy</groupId>
                                     <artifactId>easy-licenses</artifactId>
-                                    <version>${easy-licenses.version}</version>
+                                    <version>${easy.licenses.version}</version>
                                     <outputDirectory>${project.build.directory}/easy-licenses</outputDirectory>
                                 </artifactItem>
                             </artifactItems>
