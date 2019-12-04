@@ -19,14 +19,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>nl.knaw.dans.shared</groupId>
-        <artifactId>dans-scala-app-project</artifactId>
-        <version>5.1.0</version>
-    </parent>
-
     <groupId>nl.knaw.dans.easy</groupId>
-    <artifactId>easy-stage-dataset</artifactId>
+    <artifactId>easy-stage-dataset-build</artifactId>
     <version>1.8.6-SNAPSHOT</version>
 
     <name>EASY Stage Dataset</name>
@@ -34,251 +28,36 @@
     <description>Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository.</description>
     <inceptionYear>2015</inceptionYear>
 
-    <properties>
-        <main-class>nl.knaw.dans.easy.stage.Command</main-class>
-        <easy.ddm.version>3.9.0</easy.ddm.version>
-        <easy.licenses.version>1.0.4</easy.licenses.version>
-    </properties>
+    <packaging>pom</packaging>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/DANS-KNAW/${project.artifactId}</developerConnection>
+        <developerConnection>scm:git:https://github.com/DANS-KNAW/easy-stage-dataset</developerConnection>
         <tag>HEAD</tag>
     </scm>
-
-    <dependencies>
-        <dependency>
-            <groupId>commons-configuration</groupId>
-            <artifactId>commons-configuration</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-csv</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.rogach</groupId>
-            <artifactId>scallop_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scala-lang.modules</groupId>
-            <artifactId>scala-xml_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.json4s</groupId>
-            <artifactId>json4s-native_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>nl.knaw.dans.easy</groupId>
-            <artifactId>ddm</artifactId>
-            <version>${easy.ddm.version}</version>
-        </dependency>
-        <dependency>
-            <!--
-            Work-around.
-
-            Somehow dom4j does not get included in the lib folder of easy-ingest-flow
-            unless it is specified explicitly as a dependency here, even though ddm already
-            includes it as a transitive dependency.
-            -->
-            <groupId>dom4j</groupId>
-            <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
-            <exclusions>
-                <!--
-                Without this exclusion we get java.lang.NoClassDefFoundError: org/w3c/dom/ElementTraversal
-                when using Xerces (which is used by yourmediashelf's fedora-client).
-                -->
-                <exclusion>
-                    <groupId>xml-apis</groupId>
-                    <artifactId>xml-apis</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.yourmediashelf.fedora.client</groupId>
-            <artifactId>fedora-client-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>nl.knaw.dans.easy</groupId>
-            <artifactId>dans-fedora</artifactId>
-            <version>3.1.7</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.yourmediashelf.fedora.client</groupId>
-            <artifactId>fedora-client-messaging</artifactId>
-            <exclusions>
-                <!--
-                    To get rid of build warnings complaining about not being able to build parent project.
-                    According to the following post this dependency is only needed for Java 5
-                    http://stackoverflow.com/questions/32794791/maven-build-error-cannot-find-parent-org-apache-geronimo-genesis-configconfig#33055632
-
-                    TODO: move this up to dans-parent
-                -->
-                <exclusion>
-                    <groupId>org.apache.geronimo.specs</groupId>
-                    <artifactId>geronimo-stax-api_1.0_spec</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-        <dependency>
-            <!-- Necessary to get rid of jodatime warnings about missing FromString
-                (Jodatime is a transitive dependency through yourmediashelf)  -->
-            <groupId>org.joda</groupId>
-            <artifactId>joda-convert</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.scalatest</groupId>
-            <artifactId>scalatest_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>nl.knaw.dans.lib</groupId>
-            <artifactId>dans-scala-lib_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.jsuereth</groupId>
-            <artifactId>scala-arm_2.12</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>gov.loc</groupId>
-            <artifactId>bagit</artifactId>
-        </dependency>
-    </dependencies>
-
-    <repositories>
-        <repository>
-            <id>dans-releases</id>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/releases/</url>
-        </repository>
-        <repository>
-            <id>dans-snapshots</id>
-            <releases>
-                <enabled>false</enabled>
-            </releases>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-            <url>https://maven.dans.knaw.nl/snapshots/</url>
-        </repository>
-    </repositories>
 
     <build>
         <plugins>
             <plugin>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>resources</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>unpack</goal>
-                        </goals>
-                        <configuration>
-                            <artifactItems>
-                                <artifactItem>
-                                    <groupId>nl.knaw.dans.easy</groupId>
-                                    <artifactId>easy-licenses</artifactId>
-                                    <version>${easy.licenses.version}</version>
-                                    <outputDirectory>${project.build.directory}/easy-licenses</outputDirectory>
-                                </artifactItem>
-                            </artifactItems>
-                        </configuration>
-                    </execution>
-                </executions>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.0.0-M1</version>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>2.5.3</version>
+                <configuration>
+                    <tagNameFormat>v@{project.version}</tagNameFormat>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                </configuration>
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>stageDataset</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>stageFileItem</id>
-            <activation>
-                <property>
-                    <name>stageFileItem</name>
-                </property>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>exec-maven-plugin</artifactId>
-                        <configuration>
-                            <mainClass>nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem</mainClass>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>rpm</id>
-            <activation>
-                <activeByDefault>false</activeByDefault>
-                <file>
-                    <exists>/usr/local/bin/rpm</exists>
-                </file>
-            </activation>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>org.codehaus.mojo</groupId>
-                        <artifactId>rpm-maven-plugin</artifactId>
-                        <configuration>
-                            <group>Applications/Archiving</group>
-                            <mappings combine.children="append">
-                                <mapping>
-                                    <directory>/opt/${dans-provider-name}/${project.artifactId}/bin</directory>
-                                    <filemode>755</filemode>
-                                    <sources>
-                                        <source>
-                                            <location>src/main/assembly/dist/bin/easy-stage-file-item</location>
-                                        </source>
-                                    </sources>
-                                </mapping>
-                                <mapping>
-                                    <directory>/etc/opt/${dans-provider-name}/${project.artifactId}/lic</directory>
-                                    <configuration>${rpm-replace-configuration}</configuration>
-                                    <sources>
-                                        <source>
-                                            <location>target/easy-licenses/licenses</location>
-                                        </source>
-                                    </sources>
-                                </mapping>
-                            </mappings>
-                        </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
+    
+    <modules>
+        <module>lib</module>
+        <module>command</module>
+    </modules>
 </project>
