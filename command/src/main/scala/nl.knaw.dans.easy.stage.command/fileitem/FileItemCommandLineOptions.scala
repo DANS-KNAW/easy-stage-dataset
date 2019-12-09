@@ -30,7 +30,7 @@ class FileItemCommandLineOptions(args: Seq[String], configuration: Configuration
   editBuilder(_.setHelpWidth(110))
 
   printedName = "easy-stage-file-item"
-  version(s"$printedName v${configuration.version}")
+  version(s"$printedName v${ configuration.version }")
   val description = "Stage a file item for ingest into a datasaet in an EASY Fedora Commons 3.x Repository."
   val synopsis = s"$printedName [<options>...] <staged-digital-object-set>"
   banner(
@@ -73,13 +73,13 @@ class FileItemCommandLineOptions(args: Seq[String], configuration: Configuration
       "If omitted the trailing argument csv-file is required")
   val accessibleTo: ScallopOption[UserCategory] = opt[UserCategory](name = "accessible-to",
     short = 'a', default = Some(FileAccessRights.NONE),
-    descr = s"specifies the accessibility of the file item; one of: ${FileAccessRights.values.mkString(", ")}"
+    descr = s"specifies the accessibility of the file item; one of: ${ FileAccessRights.values.mkString(", ") }"
   )(userCategory(FileAccessRights.NONE))
   val visibleTo: ScallopOption[UserCategory] = opt[UserCategory](name = "visible-to", short = 'v',
-    descr = s"specifies the visibility of the file item; one of: ${FileAccessRights.values.mkString(", ")}",
+    descr = s"specifies the visibility of the file item; one of: ${ FileAccessRights.values.mkString(", ") }",
     default = Some(FileAccessRights.ANONYMOUS))(userCategory(FileAccessRights.ANONYMOUS))
   val creatorRole: ScallopOption[String] = opt[String](name = "creator-role", short = 'c',
-    descr = s"specifies the role of the file item creator; one of: ${creatorRoles.mkString(", ")}",
+    descr = s"specifies the role of the file item creator; one of: ${ creatorRoles.mkString(", ") }",
     default = Some(defaultCreatorRole))(emptyIsDefault(defaultCreatorRole))
 
   val ownerId: ScallopOption[String] = opt[String](name = "owner-id", noshort = true,

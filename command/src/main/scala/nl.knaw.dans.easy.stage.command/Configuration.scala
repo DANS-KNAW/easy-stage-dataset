@@ -16,7 +16,7 @@
 package nl.knaw.dans.easy.stage.command
 
 import java.io.File
-import java.nio.file.{Files, Path, Paths}
+import java.nio.file.{ Files, Path, Paths }
 
 import org.apache.commons.configuration.PropertiesConfiguration
 import resource.managed

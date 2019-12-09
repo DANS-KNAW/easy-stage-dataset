@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 
 import org.apache.commons.io.FileUtils._
-import org.scalatest.matchers.{MatchResult, Matcher}
+import org.scalatest.matchers.{ MatchResult, Matcher }
 
 /** See also <a href="http://www.scalatest.org/user_guide/using_matchers#usingCustomMatchers">CustomMatchers</a> */
 trait CustomMatchers {

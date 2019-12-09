@@ -23,7 +23,7 @@ import nl.knaw.dans.lib.error._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
 
-import nl.knaw.dans.easy.stage.{Settings, EasyStageDataset}
+import nl.knaw.dans.easy.stage.{ Settings, EasyStageDataset }
 
 object Command extends App {
 
@@ -36,7 +36,7 @@ object Command extends App {
   implicit val settings: Settings = new Settings(
     ownerId = getUserId(clo.deposit()),
     submissionTimestamp = if (clo.submissionTimestamp.isSupplied) clo.submissionTimestamp()
-    else DateTime.now,
+                          else DateTime.now,
     bagitDir = getBagDir(clo.deposit()).get,
     sdoSetDir = clo.sdoSet(),
     urn = clo.urn.toOption,
@@ -53,7 +53,7 @@ object Command extends App {
 
   EasyStageDataset.run
     .doIfSuccess(_ => println("OK: Completed succesfully"))
-    .doIfFailure { case e => println(s"FAILED: ${e.getMessage}") }
+    .doIfFailure { case e => println(s"FAILED: ${ e.getMessage }") }
 
   private def getBagDir(depositDir: File): Option[File] = {
     depositDir.listFiles.find(f => f.isDirectory && f.getName != ".git")

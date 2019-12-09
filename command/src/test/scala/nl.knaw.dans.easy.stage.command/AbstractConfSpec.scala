@@ -15,12 +15,12 @@
  */
 package nl.knaw.dans.easy.stage.command
 
-import java.io.{ByteArrayOutputStream, File}
+import java.io.{ ByteArrayOutputStream, File }
 
 import nl.knaw.dans.easy.stage.CustomMatchers._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
-import org.scalatest.{FlatSpec, Matchers}
+import org.scalatest.{ FlatSpec, Matchers }
 
 import scala.collection.JavaConverters._
 
@@ -37,8 +37,8 @@ abstract class AbstractConfSpec extends FlatSpec with Matchers {
   }
 
   "options in help info" should "be part of README.md" in {
-    val lineSeparators = s"(${System.lineSeparator()})+"
-    val options = helpInfo.split(s"${lineSeparators}Options:$lineSeparators")(1)
+    val lineSeparators = s"(${ System.lineSeparator() })+"
+    val options = helpInfo.split(s"${ lineSeparators }Options:$lineSeparators")(1)
     options.trim should not be empty
     new File("../README.md") should containTrimmed(options)
   }

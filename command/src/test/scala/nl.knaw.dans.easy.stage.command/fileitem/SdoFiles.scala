@@ -20,20 +20,20 @@ import java.io.File
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 
 /**
-  * Gets filenames of and SDO set or essential contents of SDO files
-  * with as little knowledge as possible yet insensitive to
-  * varying whitespace, order of elements and namespace prefixes.
-  */
+ * Gets filenames of and SDO set or essential contents of SDO files
+ * with as little knowledge as possible yet insensitive to
+ * varying whitespace, order of elements and namespace prefixes.
+ */
 object SdoFiles {
 
   /** Gets (label,text) of dc elements and (name,value)-attributes of object properties,
-    * labels are prefixed with "dc_" and names are prefixed with "prop_". */
+   * labels are prefixed with "dc_" and names are prefixed with "prop_". */
   def readDatastreamFoxml(file: String): Set[(String, String)] = {
     val xml = loadXML(new File(file))
     (xml \\ "dc" \ "_")
-      .map(node => s"dc_${node.label}" -> node.text)
+      .map(node => s"dc_${ node.label }" -> node.text)
       .toSet ++
       (xml \\ "property")
-        .map(node => s"prop_${(node \ "@NAME").toString().replaceAll(".*#", "")}" -> (node \ "@VALUE").toString()).toSet
+        .map(node => s"prop_${ (node \ "@NAME").toString().replaceAll(".*#", "") }" -> (node \ "@VALUE").toString()).toSet
   }
 }

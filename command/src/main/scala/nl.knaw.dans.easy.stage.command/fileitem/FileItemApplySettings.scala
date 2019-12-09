@@ -15,7 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.command.fileitem
 
-import nl.knaw.dans.easy.stage.fileitem.{EasyFilesAndFolders, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem.{ EasyFilesAndFolders, FileItemSettings }
 import nl.knaw.dans.easy.stage.lib.FedoraRelationObject
 
 object FileItemApplySettings {

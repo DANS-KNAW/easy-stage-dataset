@@ -61,7 +61,8 @@ object JSON extends DebugEnhancedLogging {
           ("dsID" -> "ADDITIONAL_LICENSE") ~
           ("label" -> name) ~
           ("controlGroup" -> "M") ~
-          ("mimeType" -> mimetype) }
+          ("mimeType" -> mimetype)
+      }
 
     pretty(render(sdoCfg(audiences, datastreams)))
   }

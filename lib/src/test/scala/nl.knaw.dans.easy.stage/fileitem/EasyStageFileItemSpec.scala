@@ -20,11 +20,11 @@ import java.net.URL
 
 import nl.knaw.dans.easy.stage.ExistingAncestor
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
-import nl.knaw.dans.easy.stage.lib.{Fedora, FedoraRelationObject}
+import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject }
 import org.scalatest._
 
 import scala.collection.immutable.HashMap
-import scala.util.{Failure, Success, Try}
+import scala.util.{ Failure, Success, Try }
 
 class EasyStageFileItemSpec extends FlatSpec with Matchers with Inside with BeforeAndAfterEach {
 

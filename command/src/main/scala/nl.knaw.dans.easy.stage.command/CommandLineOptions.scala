@@ -17,11 +17,11 @@ package nl.knaw.dans.easy.stage.command
 
 import java.io.File
 import java.net.URI
-import java.nio.file.{Path, Paths}
+import java.nio.file.{ Path, Paths }
 import java.util.regex.Pattern
 
 import org.joda.time.DateTime
-import org.rogach.scallop.{ScallopConf, ScallopOption, ValueConverter, singleArgConverter}
+import org.rogach.scallop.{ ScallopConf, ScallopOption, ValueConverter, singleArgConverter }
 import resource._
 
 import scala.io.Source
@@ -33,12 +33,12 @@ class CommandLineOptions(args: Seq[String], configuration: Configuration) extend
   editBuilder(sc => sc.setHelpWidth(110))
 
   printedName = "easy-stage-dataset"
-  version(s"$printedName v${configuration.version}")
+  version(s"$printedName v${ configuration.version }")
   private val _________ = " " * printedName.length
   val description = "Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."
   val synopsis: String =
     s"""$printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
-       |${_________} <EASY-deposit> <staged-digital-object-set>""".stripMargin
+       |${ _________ } <EASY-deposit> <staged-digital-object-set>""".stripMargin
   banner(
     s"""
        |$description

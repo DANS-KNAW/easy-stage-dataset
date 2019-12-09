@@ -20,12 +20,12 @@ import java.sql.SQLException
 
 import com.yourmediashelf.fedora.client.FedoraClientException
 import nl.knaw.dans.easy.stage.command.Configuration
-import nl.knaw.dans.easy.stage.fileitem.{EasyFilesAndFoldersImpl, EasyStageFileItem, FileItemSettings}
+import nl.knaw.dans.easy.stage.fileitem.{ EasyFilesAndFoldersImpl, EasyStageFileItem, FileItemSettings }
 import nl.knaw.dans.easy.stage.lib._
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import resource._
 
-import scala.util.{Success, Try}
+import scala.util.{ Success, Try }
 
 object EasyStageFileItemCommand extends DebugEnhancedLogging {
 
@@ -47,7 +47,7 @@ object EasyStageFileItemCommand extends DebugEnhancedLogging {
               if (t.isInstanceOf[SQLException] || t.isInstanceOf[FedoraClientException]) return
             }
         })
-      .recover { case t: Throwable => logger.error(s"Staging FAIL of $clo with repo url ${configuration.properties.getString("fcrepo.url")}", t) }
+      .recover { case t: Throwable => logger.error(s"Staging FAIL of $clo with repo url ${ configuration.properties.getString("fcrepo.url") }", t) }
   }
 
   def getSettingsRows(clo: FileItemCommandLineOptions, configuration: Configuration): Try[Seq[ManagedResource[FileItemSettings]]] = {
@@ -69,7 +69,7 @@ object EasyStageFileItemCommand extends DebugEnhancedLogging {
             val rows = csv.getRows
             if (rows.isEmpty) logger.warn("Empty CSV file")
             rows.map(options => {
-              logger.info(s"Options: ${options.mkString(" ")}")
+              logger.info(s"Options: ${ options.mkString(" ") }")
               managed(new EasyFilesAndFoldersImpl(
                 databaseUrl = configuration.properties.getString("db-connection-url"),
                 databaseUser = configuration.properties.getString("db-connection-user"),
