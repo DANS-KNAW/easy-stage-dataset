@@ -20,7 +20,7 @@ HOMEDIR=home
 DATADIR=data
 
 echo "Copying test data to $DATADIR..."
-cp -r src/test/resources/deposits $DATADIR/deposits
+cp -r ../lib/src/test/resources/dataset-bags $DATADIR/deposits
 
 echo "Copying licenses to $HOMEDIR/cfg..."
 mvn generate-resources
