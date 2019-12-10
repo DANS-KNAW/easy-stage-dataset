@@ -88,7 +88,7 @@ class EmdSpec extends MdFixture with Inspectors {
 
     inside(EMD.create(sdoSetDir, licenseAccepted = Some(true))) {
       case Failure(e) => e.getMessage should
-        include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, GROUP_ACCESS, REQUEST_PERMISSION, NO_ACCESS]")
+        include("[OPEN_ACCESS, OPEN_ACCESS_FOR_REGISTERED_USERS, REQUEST_PERMISSION, NO_ACCESS]")
     }
 
     Option(sdoSetDir.list()) shouldBe empty
