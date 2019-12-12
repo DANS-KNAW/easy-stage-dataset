@@ -62,8 +62,8 @@ ARGUMENTS for easy-stage-dataset
                                            does not exist)
 
 
-ARGUMENTS for easy-stage-fileItem
----------------------------------
+ARGUMENTS
+---------
 
     -i, --dataset-id  <arg>            id of the dataset in Fedora that should receive the file to stage
                                        (requires file-path). If omitted the trailing argument csv-file is
@@ -106,20 +106,12 @@ ARGUMENTS for easy-stage-fileItem
 
 INSTALLATION AND CONFIGURATION
 ------------------------------
+Currently this project is built as an RPM package for RHEL7/CentOS7 and later. The RPM will install the binaries to
+`/opt/dans.knaw.nl/easy-stage-dataset` and the configuration files to `/etc/opt/dans.knaw.nl/easy-stage-dataset`. 
 
-### Installation steps:
-
-1. Unzip the tarball to a directory of your choice, e.g. `/opt/`
-2. A new directory called easy-stage-dataset-<version> will be created
-3. The directory from step 2 is used as value for the system property ``app.home``
-4. Add ``${app.home}/bin`` to your ``PATH`` environment variable
-
-
-### Configuration
-
-General configuration settings can be set in `${app.home}/cfg/application.properties` and logging can be
-configured in `${app.home}/cfg/logback.xml`. The available settings are explained in comments in 
-aforementioned files.
+To install the module on systems that do not support RPM, you can copy and unarchive the tarball to the target host.
+You will have to take care of placing the files in the correct locations for your system yourself. For instructions
+on building the tarball, see next section.
 
 
 BUILDING FROM SOURCE
@@ -129,12 +121,21 @@ Prerequisites:
 
 * Java 8 or higher
 * Maven 3.3.3 or higher
+* RPM
  
 Steps:
 
         git clone https://github.com/DANS-KNAW/easy-stage-dataset.git
         cd easy-stage-dataset
         mvn install
+
+If the `rpm` executable is found at `/usr/local/bin/rpm`, the build profile that includes the RPM 
+packaging will be activated. If `rpm` is available, but at a different path, then activate it by using
+Maven's `-P` switch: `mvn -Pprm install`.
+
+Alternatively, to build the tarball execute:
+
+    mvn clean install assembly:single
 
 [easy-sword2]: https://github.com/DANS-KNAW/easy-sword2#easy-sword2
 [BagIt]: https://tools.ietf.org/html/draft-kunze-bagit-11
