@@ -34,7 +34,7 @@
     <inceptionYear>2015</inceptionYear>
 
     <properties>
-        <easy.ddm.version>3.9.2</easy.ddm.version>
+        <easy.ddm.version>3.10.0</easy.ddm.version>
         <easy.licenses.version>1.0.5</easy.licenses.version>
     </properties>
 
