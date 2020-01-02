@@ -58,10 +58,15 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       res shouldBe a[Success[_]]
       sdoSetDir.resolve("dataset/EMD").toFile should exist
       sdoSetDir.resolve("dataset/AMD").toFile should exist
+      sdoSetDir.resolve("dataset/dataset.xml").toFile should exist
+      sdoSetDir.resolve("dataset/files.xml").toFile should exist
       sdoSetDir.resolve("dataset/cfg.json").toFile should exist
       sdoSetDir.resolve("dataset/fo.xml").toFile should exist
       sdoSetDir.resolve("dataset/PRSQL").toFile should exist
     }
+
+    puddingsDir.resolve("medium/dataset/agreements.xml").toFile should exist
+    puddingsDir.resolve("medium/dataset/message-from-depositor.txt").toFile should exist
 
     numberOfFilesInDir(puddingsDir.resolve("minimal")) shouldBe 1
     numberOfFilesInDir(puddingsDir.resolve("no-additional-license")) shouldBe 5

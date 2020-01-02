@@ -56,6 +56,18 @@ object Util extends DebugEnhancedLogging {
   def writeEMD(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EMD"), content)
 
+  def writeDatasetXML(sdoDir: File, content: String): Try[Unit] =
+    writeToFile(new File(sdoDir, "dataset.xml"), content)
+
+  def writeFilesXML(sdoDir: File, content: String): Try[Unit] =
+    writeToFile(new File(sdoDir, "files.xml"), content)
+
+  def writeAgreementsXML(sdoDir: File, content: String): Try[Unit] =
+    writeToFile(new File(sdoDir, "agreements.xml"), content)
+
+  def writeMessageFromDepositor(sdoDir: File, content: String): Try[Unit] =
+    writeToFile(new File(sdoDir, "message-from-depositor.txt"), content)
+
   def writeFileMetadata(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "EASY_FILE_METADATA"), content)
 
