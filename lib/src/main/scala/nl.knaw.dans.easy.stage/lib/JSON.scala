@@ -19,7 +19,7 @@ import nl.knaw.dans.easy.stage.Settings
 import nl.knaw.dans.easy.stage.fileitem.FileItemSettings
 import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.json4s.JsonAST
-import org.json4s.JsonAST.JValue
+import org.json4s.JsonAST.{ JObject, JValue }
 import org.json4s.JsonDSL._
 import org.json4s.native.JsonMethods._
 
@@ -49,22 +49,41 @@ object JSON extends DebugEnhancedLogging {
       Option(b).withFilter(identity).map(_ => ())
     }
 
-    val agreementsXmlEntry = agreementsXmlExists
-      .map(_ => {
-        ("contentFile" -> "agreements.xml") ~
-          ("dsID" -> "agreements.xml") ~
-          ("label" -> "Agreement specific metadata for this dataset") ~
-          ("controlGroup" -> "X") ~
-          ("mimeType" -> "text/xml")
-      })
+    val bagMetadata = s.includeBagMetadata
+      .fold(List.empty[JObject])(_ => {
+        val mandatory = List(
+          ("contentFile" -> "dataset.xml") ~
+            ("dsID" -> "dataset.xml") ~
+            ("label" -> "DDM metadata for this dataset") ~
+            ("controlGroup" -> "X") ~
+            ("mimeType" -> "text/xml"),
 
-    val messageFromDepositorEntry = messageFromDepositorExists
-      .map(_ => {
-        ("contentFile" -> "message-from-depositor.txt") ~
-          ("dsID" -> "message-from-depositor.txt") ~
-          ("label" -> "Message from depositor to archivist about this dataset") ~
-          ("controlGroup" -> "M") ~
-          ("mimeType" -> "text/plain")
+          ("contentFile" -> "files.xml") ~
+            ("dsID" -> "files.xml") ~
+            ("label" -> "File metadata for this dataset") ~
+            ("controlGroup" -> "X") ~
+            ("mimeType" -> "text/xml"),
+        )
+
+        val agreementsXmlEntry = agreementsXmlExists
+          .map(_ => {
+            ("contentFile" -> "agreements.xml") ~
+              ("dsID" -> "agreements.xml") ~
+              ("label" -> "Agreement specific metadata for this dataset") ~
+              ("controlGroup" -> "X") ~
+              ("mimeType" -> "text/xml")
+          })
+
+        val messageFromDepositorEntry = messageFromDepositorExists
+          .map(_ => {
+            ("contentFile" -> "message-from-depositor.txt") ~
+              ("dsID" -> "message-from-depositor.txt") ~
+              ("label" -> "Message from depositor to archivist about this dataset") ~
+              ("controlGroup" -> "M") ~
+              ("mimeType" -> "text/plain")
+          })
+
+        mandatory ++ agreementsXmlEntry ++ messageFromDepositorEntry
       })
 
     val additionalLicense = additionalLicenseFilenameAndMimetype
@@ -93,19 +112,7 @@ object JSON extends DebugEnhancedLogging {
           ("dsID" -> "PRSQL") ~
           ("controlGroup" -> "X") ~
           ("mimeType" -> "text/xml"),
-
-        ("contentFile" -> "dataset.xml") ~
-          ("dsID" -> "dataset.xml") ~
-          ("label" -> "DDM metadata for this dataset") ~
-          ("controlGroup" -> "X") ~
-          ("mimeType" -> "text/xml"),
-
-        ("contentFile" -> "files.xml") ~
-          ("dsID" -> "files.xml") ~
-          ("label" -> "File metadata for this dataset") ~
-          ("controlGroup" -> "X") ~
-          ("mimeType" -> "text/xml"),
-      ) ++ agreementsXmlEntry ++ messageFromDepositorEntry ++ additionalLicense
+      ) ++ bagMetadata ++ additionalLicense
 
     pretty(render(sdoCfg(audiences, datastreams)))
   }

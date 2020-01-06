@@ -198,6 +198,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
       databaseUser = "",
       databasePassword = "",
       licenses = Map.empty,
+      includeBagMetadata = false,
     )
   }
 }

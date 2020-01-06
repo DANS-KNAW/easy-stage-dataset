@@ -38,28 +38,30 @@ the command `easy-stage-file-item`. It executes step 3 to stage one or more file
 ARGUMENTS for easy-stage-dataset
 --------------------------------
 
-    -a, --archive  <arg>                The way the dataset is archived. This must be either EASY or DATAVAULT.
-                                        EASY: Data and metadata are archived in EASY. DATAVAULT: Data and
-                                        metadata are archived in the DATAVAULT. There may be dissemination
-                                        copies in EASY. (default = EASY)
-    -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
-    -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
-    -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
-                                        in this file must contain a mapping. The path is separated from the URI
-                                        by one ore more whitespaces. If more groups of whitespaces are
-                                        encountered, they are considered part of the path.
-    -s, --state  <arg>                  The state of the dataset to be created. This must be one of DRAFT,
-                                        SUBMITTED or PUBLISHED. (default = DRAFT)                                      
-    -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
-    -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
-    -h, --help                          Show help message
-    -v, --version                       Show version of this program
+      -a, --archive  <arg>                The way the dataset is archived. This must be either EASY or DATAVAULT.
+                                          EASY: Data and metadata are archived in EASY. DATAVAULT: Data and
+                                          metadata are archived in the DATAVAULT. There may be dissemination
+                                          copies in EASY. (default = EASY)
+      -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
+      -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
+      -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
+                                          in this file must contain a mapping. The path is separated from the URI
+                                          by one ore more whitespaces. If more groups of whitespaces are
+                                          encountered, they are considered part of the path.
+      -i, --include-bag-metadata          Indicates whether bag metadata (such as dataset.xml and files.xml)
+                                          should be included in the resultant staged digital object.
+      -s, --state  <arg>                  The state of the dataset to be created. This must be one of DRAFT,
+                                          SUBMITTED or PUBLISHED. (default = DRAFT)
+      -t, --submission-timestamp  <arg>   Timestamp in ISO8601 format
+      -u, --urn  <arg>                    The URN to assign to the new dataset in EASY
+      -h, --help                          Show help message
+      -v, --version                       Show version of this program
 
-   trailing arguments:
-    EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
-                                           metadata for EASY to be staged for ingest into Fedora
-    staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
-                                           does not exist)
+     trailing arguments:
+      EASY-deposit (required)                Deposit directory contains deposit.properties file and bag with extra
+                                             metadata for EASY to be staged for ingest into Fedora
+      staged-digital-object-set (required)   The resulting Staged Digital Object directory (will be created if it
+                                             does not exist)
 
 
 ARGUMENTS
