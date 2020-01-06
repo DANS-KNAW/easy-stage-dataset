@@ -104,23 +104,21 @@ object EasyStageDataset extends DebugEnhancedLogging {
       _ <- writeAMD(sdoDir, amdContent.toString())
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())
-      _ <- writeBagMetadata(sdoDir, agreementsXmlExists, messageFromDepositorExists)
+      _ <- if (s.includeBagMetadata) writeBagMetadata(sdoDir, agreementsXmlExists, messageFromDepositorExists)
+           else Success(())
       _ <- writeJsonCfg(sdoDir, jsonCfgContent)
     } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
   }
 
   private def writeBagMetadata(sdoDir: File, agreementsXmlExists: Boolean, messageFromDepositorExists: Boolean)(implicit s: Settings): Try[Unit] = {
-    if (s.includeBagMetadata) {
-      for {
-        _ <- readFile("metadata/dataset.xml").flatMap(writeDatasetXML(sdoDir, _))
-        _ <- readFile("metadata/files.xml").flatMap(writeFilesXML(sdoDir, _))
-        _ <- if (agreementsXmlExists) readFile("metadata/depositor-info/agreements.xml").flatMap(writeAgreementsXML(sdoDir, _))
-             else Success(())
-        _ <- if (messageFromDepositorExists) readFile("metadata/depositor-info/message-from-depositor.txt").flatMap(writeMessageFromDepositor(sdoDir, _))
-             else Success(())
-      } yield ()
-    }
-    else Success(())
+    for {
+      _ <- readFile("metadata/dataset.xml").flatMap(writeDatasetXML(sdoDir, _))
+      _ <- readFile("metadata/files.xml").flatMap(writeFilesXML(sdoDir, _))
+      _ <- if (agreementsXmlExists) readFile("metadata/depositor-info/agreements.xml").flatMap(writeAgreementsXML(sdoDir, _))
+           else Success(())
+      _ <- if (messageFromDepositorExists) readFile("metadata/depositor-info/message-from-depositor.txt").flatMap(writeMessageFromDepositor(sdoDir, _))
+           else Success(())
+    } yield ()
   }
 
   private def readFile(path: String)(implicit s: Settings): Try[String] = {

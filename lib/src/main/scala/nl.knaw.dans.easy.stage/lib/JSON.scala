@@ -65,7 +65,7 @@ object JSON extends DebugEnhancedLogging {
             ("mimeType" -> "text/xml"),
         )
 
-        val agreementsXmlEntry = agreementsXmlExists
+        val maybeAgreementsXmlEntry = agreementsXmlExists
           .map(_ => {
             ("contentFile" -> "agreements.xml") ~
               ("dsID" -> "agreements.xml") ~
@@ -74,7 +74,7 @@ object JSON extends DebugEnhancedLogging {
               ("mimeType" -> "text/xml")
           })
 
-        val messageFromDepositorEntry = messageFromDepositorExists
+        val maybeMessageFromDepositorEntry = messageFromDepositorExists
           .map(_ => {
             ("contentFile" -> "message-from-depositor.txt") ~
               ("dsID" -> "message-from-depositor.txt") ~
@@ -83,7 +83,7 @@ object JSON extends DebugEnhancedLogging {
               ("mimeType" -> "text/plain")
           })
 
-        mandatory ++ agreementsXmlEntry ++ messageFromDepositorEntry
+        mandatory ++ maybeAgreementsXmlEntry ++ maybeMessageFromDepositorEntry
       })
 
     val additionalLicense = additionalLicenseFilenameAndMimetype
