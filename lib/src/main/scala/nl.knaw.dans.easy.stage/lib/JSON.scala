@@ -37,6 +37,8 @@ object JSON extends DebugEnhancedLogging {
 
   def createDatasetCfg(additionalLicenseFilenameAndMimetype: Option[(String, String)],
                        audiences: Seq[String],
+                       manifestSha1Exists: Boolean,
+                       manifestMd5Exists: Boolean,
                        agreementsXmlExists: Boolean,
                        messageFromDepositorExists: Boolean,
                       )(implicit s: Settings): Try[String] = Try {
@@ -65,6 +67,24 @@ object JSON extends DebugEnhancedLogging {
             ("mimeType" -> "text/xml"),
         )
 
+        val maybeManifestMd5Entry = manifestMd5Exists
+          .map(_ => {
+            ("contentFile" -> "manifest-md5.txt") ~
+              ("dsId" -> "manifest-md5.txt") ~
+              ("label" -> "Manifest (md5) of the original bag") ~
+              ("controlGroup" -> "M") ~
+              ("mimeType" -> "text/plain")
+          })
+
+        val maybeManifestSha1Entry = manifestSha1Exists
+          .map(_ => {
+            ("contentFile" -> "manifest-sha1.txt") ~
+              ("dsId" -> "manifest-sha1.txt") ~
+              ("label" -> "Manifest (sha1) of the original bag") ~
+              ("controlGroup" -> "M") ~
+              ("mimeType" -> "text/plain")
+          })
+
         val maybeAgreementsXmlEntry = agreementsXmlExists
           .map(_ => {
             ("contentFile" -> "agreements.xml") ~
@@ -83,7 +103,7 @@ object JSON extends DebugEnhancedLogging {
               ("mimeType" -> "text/plain")
           })
 
-        mandatory ++ maybeAgreementsXmlEntry ++ maybeMessageFromDepositorEntry
+        mandatory ++ maybeManifestMd5Entry ++ maybeManifestSha1Entry ++ maybeAgreementsXmlEntry ++ maybeMessageFromDepositorEntry
       })
 
     val additionalLicense = additionalLicenseFilenameAndMimetype
