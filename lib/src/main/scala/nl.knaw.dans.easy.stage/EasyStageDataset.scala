@@ -16,7 +16,8 @@
 package nl.knaw.dans.easy.stage
 
 import java.io.{ File, FileNotFoundException }
-import java.nio.file.Path
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Path }
 
 import gov.loc.repository.bagit.reader.BagReader
 import nl.knaw.dans.common.lang.dataset.AccessCategory
@@ -97,12 +98,38 @@ object EasyStageDataset extends DebugEnhancedLogging {
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       additionalLicenseFilenameAndMimeType <- AdditionalLicense.createOptionally(sdoDir)
       audiences <- readAudiences()
-      jsonCfgContent <- JSON.createDatasetCfg(additionalLicenseFilenameAndMimeType, audiences)
+      manifestSha1Exists = new File(s.bagitDir, "manifest-sha1.txt").exists()
+      agreementsXmlExists = new File(s.bagitDir, "metadata/depositor-info/agreements.xml").exists()
+      messageFromDepositorExists = new File(s.bagitDir, "metadata/depositor-info/message-from-depositor.txt").exists()
+      jsonCfgContent <- JSON.createDatasetCfg(additionalLicenseFilenameAndMimeType, audiences, manifestSha1Exists, agreementsXmlExists, messageFromDepositorExists)
       _ <- writeAMD(sdoDir, amdContent.toString())
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())
+      _ <- if (s.includeBagMetadata) writeBagMetadata(sdoDir, manifestSha1Exists, agreementsXmlExists, messageFromDepositorExists)
+           else Success(())
       _ <- writeJsonCfg(sdoDir, jsonCfgContent)
     } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
+  }
+
+  private def writeBagMetadata(sdoDir: File, manifestSha1Exists: Boolean, agreementsXmlExists: Boolean, messageFromDepositorExists: Boolean)(implicit s: Settings): Try[Unit] = {
+    for {
+      _ <- readFile("metadata/dataset.xml").flatMap(writeDatasetXML(sdoDir, _))
+      _ <- readFile("metadata/files.xml").flatMap(writeFilesXML(sdoDir, _))
+      _ <- if (manifestSha1Exists) readFile("manifest-sha1.txt").flatMap(writeSha1Manifest(sdoDir, _))
+           else Success(())
+      _ <- if (agreementsXmlExists) readFile("metadata/depositor-info/agreements.xml").flatMap(writeAgreementsXML(sdoDir, _))
+           else Success(())
+      _ <- if (messageFromDepositorExists) readFile("metadata/depositor-info/message-from-depositor.txt").flatMap(writeMessageFromDepositor(sdoDir, _))
+           else Success(())
+    } yield ()
+  }
+
+  private def readFile(path: String)(implicit s: Settings): Try[String] = {
+    val file = new File(s.bagitDir, path)
+
+    if (!file.exists()) Failure(new RuntimeException(s"File $path does not exist"))
+    else if (!file.canRead) Failure(new RuntimeException(s"File $path exists but cannot be read"))
+    else Try { new String(Files.readAllBytes(file.toPath), StandardCharsets.UTF_8) }
   }
 
   private def getDataDir(implicit s: Settings) = {
@@ -118,9 +145,9 @@ object EasyStageDataset extends DebugEnhancedLogging {
         .lines.filter(_.nonEmpty)
         .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
-        case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
-        case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${ array.mkString(" ") }")
-      }
+          case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1
+          case array => throw new IllegalArgumentException(s"Invalid line in $sha1File: ${ array.mkString(" ") }")
+        }
         .toMap
     }.recoverWith { case _: FileNotFoundException => Success(Map.empty[String, String]) }
 

@@ -81,6 +81,11 @@ class CommandLineOptions(args: Seq[String], configuration: Configuration) extend
       "EASY: Data and metadata are archived in EASY. " +
       "DATAVAULT: Data and metadata are archived in the DATAVAULT. There may be dissemination copies in EASY.",
     default = Option("EASY"))
+  val includeBagMetadata: ScallopOption[Boolean] = opt[Boolean](
+    name = "include-bag-metadata", short = 'i',
+    descr = "Indicates whether bag metadata (such as dataset.xml and files.xml) should be included in the resultant staged digital object.",
+    default = Some(false),
+  )
   val deposit: ScallopOption[File] = trailArg[File](
     name = "EASY-deposit",
     descr = "Deposit directory contains deposit.properties file and bag with extra metadata for EASY to be staged for ingest into Fedora",
