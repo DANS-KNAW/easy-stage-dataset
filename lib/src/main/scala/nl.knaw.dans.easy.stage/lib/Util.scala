@@ -68,9 +68,6 @@ object Util extends DebugEnhancedLogging {
   def writeMessageFromDepositor(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "message-from-depositor.txt"), content)
 
-  def writeMd5Manifest(sdoDir: File, content: String): Try[Unit] =
-    writeToFile(new File(sdoDir, "manifest-md5.txt"), content)
-
   def writeSha1Manifest(sdoDir: File, content: String): Try[Unit] =
     writeToFile(new File(sdoDir, "manifest-sha1.txt"), content)
 

@@ -65,7 +65,6 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       sdoSetDir.resolve("dataset/PRSQL").toFile should exist
     }
 
-    puddingsDir.resolve("medium/dataset/manifest-md5.txt").toFile should exist
     puddingsDir.resolve("medium/dataset/manifest-sha1.txt").toFile should exist
     puddingsDir.resolve("medium/dataset/agreements.xml").toFile should exist
     puddingsDir.resolve("medium/dataset/message-from-depositor.txt").toFile should exist
