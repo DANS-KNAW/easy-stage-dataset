@@ -37,7 +37,7 @@ object JSON extends DebugEnhancedLogging {
 
   def createDatasetCfg(additionalLicenseFilenameAndMimetype: Option[(String, String)],
                        audiences: Seq[String],
-                       manifestSha1Exists: Boolean,
+                       manifestSha1ExistsAndNonEmpty: Boolean,
                        agreementsXmlExists: Boolean,
                        messageFromDepositorExists: Boolean,
                       )(implicit s: Settings): Try[String] = Try {
@@ -66,7 +66,7 @@ object JSON extends DebugEnhancedLogging {
             ("mimeType" -> "text/xml"),
         )
 
-        val maybeManifestSha1Entry = manifestSha1Exists
+        val maybeManifestSha1Entry = manifestSha1ExistsAndNonEmpty
           .map(_ => {
             ("contentFile" -> "manifest-sha1.txt") ~
               ("dsId" -> "manifest-sha1.txt") ~

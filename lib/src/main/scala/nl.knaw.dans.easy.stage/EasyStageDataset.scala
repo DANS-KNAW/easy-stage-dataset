@@ -98,24 +98,25 @@ object EasyStageDataset extends DebugEnhancedLogging {
       foxmlContent = getDatasetFOXML(s.ownerId, emdContent)
       additionalLicenseFilenameAndMimeType <- AdditionalLicense.createOptionally(sdoDir)
       audiences <- readAudiences()
-      manifestSha1Exists = new File(s.bagitDir, "manifest-sha1.txt").exists()
+      sha1ManifestFile = new File(s.bagitDir, "manifest-sha1.txt")
+      manifestSha1ExistsAndNonEmpty = sha1ManifestFile.exists() && sha1ManifestFile.length() > 0
       agreementsXmlExists = new File(s.bagitDir, "metadata/depositor-info/agreements.xml").exists()
       messageFromDepositorExists = new File(s.bagitDir, "metadata/depositor-info/message-from-depositor.txt").exists()
-      jsonCfgContent <- JSON.createDatasetCfg(additionalLicenseFilenameAndMimeType, audiences, manifestSha1Exists, agreementsXmlExists, messageFromDepositorExists)
+      jsonCfgContent <- JSON.createDatasetCfg(additionalLicenseFilenameAndMimeType, audiences, manifestSha1ExistsAndNonEmpty, agreementsXmlExists, messageFromDepositorExists)
       _ <- writeAMD(sdoDir, amdContent.toString())
       _ <- writeFoxml(sdoDir, foxmlContent)
       _ <- writePrsql(sdoDir, PRSQL.create())
-      _ <- if (s.includeBagMetadata) writeBagMetadata(sdoDir, manifestSha1Exists, agreementsXmlExists, messageFromDepositorExists)
+      _ <- if (s.includeBagMetadata) writeBagMetadata(sdoDir, manifestSha1ExistsAndNonEmpty, agreementsXmlExists, messageFromDepositorExists)
            else Success(())
       _ <- writeJsonCfg(sdoDir, jsonCfgContent)
     } yield (emdContent, amdContent) // easy-ingest-flow hands these over to easy-ingest
   }
 
-  private def writeBagMetadata(sdoDir: File, manifestSha1Exists: Boolean, agreementsXmlExists: Boolean, messageFromDepositorExists: Boolean)(implicit s: Settings): Try[Unit] = {
+  private def writeBagMetadata(sdoDir: File, manifestSha1ExistsAndNonEmpty: Boolean, agreementsXmlExists: Boolean, messageFromDepositorExists: Boolean)(implicit s: Settings): Try[Unit] = {
     for {
       _ <- readFile("metadata/dataset.xml").flatMap(writeDatasetXML(sdoDir, _))
       _ <- readFile("metadata/files.xml").flatMap(writeFilesXML(sdoDir, _))
-      _ <- if (manifestSha1Exists) readFile("manifest-sha1.txt").flatMap(writeSha1Manifest(sdoDir, _))
+      _ <- if (manifestSha1ExistsAndNonEmpty) readFile("manifest-sha1.txt").flatMap(writeSha1Manifest(sdoDir, _))
            else Success(())
       _ <- if (agreementsXmlExists) readFile("metadata/depositor-info/agreements.xml").flatMap(writeAgreementsXML(sdoDir, _))
            else Success(())
