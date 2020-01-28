@@ -16,6 +16,6 @@
 package nl.knaw.dans.easy.stage.lib
 
 object Constants {
-  val DATASET_SDO = "dataset"
+  val DATASET_SDO = "DATASET_SDO~~RESERVED"
   val ADDITIONAL_LICENSE = "ADDITIONAL_LICENSE"
 }
