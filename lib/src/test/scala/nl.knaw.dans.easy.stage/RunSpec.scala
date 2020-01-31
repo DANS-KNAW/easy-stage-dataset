@@ -23,6 +23,7 @@ import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
 import org.scalatest.{ FlatSpec, Matchers }
 import resource._
+import Constants.DATASET_SDO
 
 import scala.collection.JavaConverters._
 import scala.util.Success
@@ -57,24 +58,24 @@ class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
       val res = EasyStageDataset.run(settings)
       res.recover { case e => e.printStackTrace() }
       res shouldBe a[Success[_]]
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/EMD").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/AMD").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/dataset.xml").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/files.xml").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/cfg.json").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/fo.xml").toFile should exist
-      sdoSetDir.resolve(s"${Constants.DATASET_SDO}/PRSQL").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/EMD").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/AMD").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/dataset.xml").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/files.xml").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/cfg.json").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/fo.xml").toFile should exist
+      sdoSetDir.resolve(s"$DATASET_SDO/PRSQL").toFile should exist
     }
 
-    puddingsDir.resolve(s"medium/${Constants.DATASET_SDO}/manifest-sha1.txt").toFile should exist
-    puddingsDir.resolve(s"medium/${Constants.DATASET_SDO}/agreements.xml").toFile should exist
-    puddingsDir.resolve(s"medium/${Constants.DATASET_SDO}/message-from-depositor.txt").toFile should exist
+    puddingsDir.resolve(s"medium/$DATASET_SDO/manifest-sha1.txt").toFile should exist
+    puddingsDir.resolve(s"medium/$DATASET_SDO/agreements.xml").toFile should exist
+    puddingsDir.resolve(s"medium/$DATASET_SDO/message-from-depositor.txt").toFile should exist
 
     numberOfFilesInDir(puddingsDir.resolve("minimal")) shouldBe 1
     numberOfFilesInDir(puddingsDir.resolve("no-additional-license")) shouldBe 5
     numberOfFilesInDir(puddingsDir.resolve("additional-license-by-text")) shouldBe 5
     numberOfFilesInDir(puddingsDir.resolve("one-invalid-sha1")) shouldBe 5
-    FileUtils.readFileToString(puddingsDir.resolve(s"one-invalid-sha1/${Constants.DATASET_SDO}/EMD").toFile, "UTF-8") should include("planetoïde")
+    FileUtils.readFileToString(puddingsDir.resolve(s"one-invalid-sha1/$DATASET_SDO/EMD").toFile, "UTF-8") should include("planetoïde")
   }
 
   private def numberOfFilesInDir(dir: Path): Int = {
