@@ -37,12 +37,12 @@ class ConfSpec extends AbstractConfSpec {
 
   override def getCommandLineOptions: ScallopConf = clo
 
-  "synopsis in help info" should "be part of README.md" in {
-    new File("../README.md") should containTrimmed(clo.synopsis)
+  "synopsis in help info" should "be part of docs/index.md" in {
+    new File("../docs/index.md") should containTrimmed(clo.synopsis)
   }
 
-  "description line(s) in help info" should "be part of README.md and pom.xml" in {
-    new File("../README.md") should containTrimmed(clo.description)
+  "description line(s) in help info" should "be part of docs/index.md and pom.xml" in {
+    new File("../docs/index.md") should containTrimmed(clo.description)
     new File("../pom.xml") should containTrimmed(clo.description)
   }
 }

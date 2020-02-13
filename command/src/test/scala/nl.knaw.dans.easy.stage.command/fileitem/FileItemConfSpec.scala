@@ -42,7 +42,7 @@ class FileItemConfSpec extends AbstractConfSpec {
   // Another test needs a verified instance, so we keep using the dummy here too.
   override def getCommandLineOptions: ScallopConf = clo
 
-  "synopsis in help info" should "be part of README.md" in {
-    new File("../README.md") should containTrimmed(clo.synopsis)
+  "synopsis in help info" should "be part of docs/index.md" in {
+    new File("../docs/index.md") should containTrimmed(clo.synopsis)
   }
 }
