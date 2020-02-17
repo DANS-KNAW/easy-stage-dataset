@@ -36,11 +36,11 @@ abstract class AbstractConfSpec extends FlatSpec with Matchers {
     mockedStdOut.toString
   }
 
-  "options in help info" should "be part of README.md" in {
+  "options in help info" should "be part of docs/index.md" in {
     val lineSeparators = s"(${ System.lineSeparator() })+"
     val options = helpInfo.split(s"${ lineSeparators }Options:$lineSeparators")(1)
     options.trim should not be empty
-    new File("../README.md") should containTrimmed(options)
+    new File("../docs/index.md") should containTrimmed(options)
   }
 
   "distributed default properties" should "be valid options" in {
