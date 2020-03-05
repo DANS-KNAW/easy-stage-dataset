@@ -143,7 +143,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File), "UTF-8")
-        .lines.filter(_.nonEmpty)
+        .linesIterator.filter(_.nonEmpty)
         .map(_.split("\\h+", 2)) // split into tokens on sequences of horizontal white space characters
         .map {
           case Array(sha1, filePath) if !sha1.matches("[a-fA-F0-9]") => filePath -> sha1

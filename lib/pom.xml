@@ -78,7 +78,7 @@
             -->
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
+            <version>20040902.021138</version>
             <exclusions>
                 <!--
                 Without this exclusion we get java.lang.NoClassDefFoundError: org/w3c/dom/ElementTraversal
