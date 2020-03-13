@@ -28,13 +28,13 @@
 
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset-lib</artifactId>
-    <version>2.0.6-SNAPSHOT</version>
+    <version>2.0.7-SNAPSHOT</version>
 
     <name>EASY Stage Dataset Library</name>
     <inceptionYear>2015</inceptionYear>
 
     <properties>
-        <easy.ddm.version>3.10.2</easy.ddm.version>
+        <easy.ddm.version>3.10.3</easy.ddm.version>
         <easy.licenses.version>1.0.6</easy.licenses.version>
         <dom4j.version>20040902.021138</dom4j.version>
         <dans-fedora.version>3.1.7</dans-fedora.version>
