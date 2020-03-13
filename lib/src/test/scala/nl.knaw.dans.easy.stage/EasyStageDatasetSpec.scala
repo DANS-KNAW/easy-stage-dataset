@@ -17,6 +17,7 @@ package nl.knaw.dans.easy.stage
 
 import java.io.File
 import java.net.URI
+import java.nio.charset.StandardCharsets
 import java.nio.file.{ Files, Paths }
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory._
@@ -65,7 +66,7 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     val sdoSetDir = testDir.resolve("someSDO")
     implicit val s: Settings = createSettings(bagDir.toFile, sdoSetDir.toFile)
     Files.createDirectories(dataDir)
-    FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile, "a b c")
+    FileUtils.write(bagDir.resolve("manifest-sha1.txt").toFile, "a b c", StandardCharsets.UTF_8)
 
     inside(createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS)) {
       case Failure(e) => e should have message "Invalid line in manifest-sha1.txt: a b c"
@@ -85,12 +86,12 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     // Note that files.xml specifies no accessRights for data/quicksort.hs
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>KNOWN</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<accessibleTo>KNOWN</accessibleTo>")
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>ANONYMOUS</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<accessibleTo>ANONYMOUS</accessibleTo>")
   }
 
   it should "override default dataset rights when rights are explicitly specified for a file" in {
@@ -104,12 +105,12 @@ class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTes
     // Note that files.xml specifies NONE for data/path/to/file.txt
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, OPEN_ACCESS_FOR_REGISTERED_USERS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>NONE</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<accessibleTo>NONE</accessibleTo>")
 
     createFileAndFolderSdos(dataDir.toFile, DATASET_SDO, ANONYMOUS_ACCESS) shouldBe a[Success[_]]
-    readFileToString(fileMetadataFile.toFile) should include("<visibleTo>ANONYMOUS</visibleTo>")
-    readFileToString(fileMetadataFile.toFile) should include("<accessibleTo>NONE</accessibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<visibleTo>ANONYMOUS</visibleTo>")
+    readFileToString(fileMetadataFile.toFile, StandardCharsets.UTF_8) should include("<accessibleTo>NONE</accessibleTo>")
   }
 
   "bag with secret file" should "have the correct visibleTo and accessibleTo keywords" in {
