@@ -15,6 +15,7 @@
  */
 package nl.knaw.dans.easy.stage.command.fileitem
 
+import java.nio.charset.StandardCharsets
 import java.nio.file.Paths
 
 import nl.knaw.dans.easy.stage.ExistingAncestor
@@ -81,12 +82,13 @@ class EasyStageFileItemCommandSpec extends FlatSpec with Matchers with Inside wi
   }
 
   it should "not overwrite files with same names if folders don't yet exist" in {
-    write(testDir.resolve("to-be-staged/data/some.txt").toFile, "")
-    write(testDir.resolve("to-be-staged/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/data/some.txt").toFile, "", StandardCharsets.UTF_8)
+    write(testDir.resolve("to-be-staged/some.txt").toFile, "", StandardCharsets.UTF_8)
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
          |easy-dataset:1,8521,text/plain,"data/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/data/some.txt"
-         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
+         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin,
+      StandardCharsets.UTF_8)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
       "easy-dataset:1 data/some.txt" -> Success("", "easy-folder:1"),
@@ -96,12 +98,13 @@ class EasyStageFileItemCommandSpec extends FlatSpec with Matchers with Inside wi
   }
 
   it should "not overwrite folders with same names if the parents don't yet exist" in {
-    write(testDir.resolve("to-be-staged/parent/child/some.txt").toFile, "")
-    write(testDir.resolve("to-be-staged/child/some.txt").toFile, "hello")
+    write(testDir.resolve("to-be-staged/parent/child/some.txt").toFile, "", StandardCharsets.UTF_8)
+    write(testDir.resolve("to-be-staged/child/some.txt").toFile, "hello", StandardCharsets.UTF_8)
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
          |easy-dataset:1,8521,text/plain,"parent/child/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/parent/child/some.txt"
-         |easy-dataset:1,8585,text/plain,"child/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/child/some.txt"""".stripMargin)
+         |easy-dataset:1,8585,text/plain,"child/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/child/some.txt"""".stripMargin,
+      StandardCharsets.UTF_8)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
       "easy-dataset:1 parent" -> Success("", "easy-dataset:1"),
@@ -148,12 +151,13 @@ class EasyStageFileItemCommandSpec extends FlatSpec with Matchers with Inside wi
   }
 
   it should "not overwrite files with same names in root and sub folder" in {
-    write(testDir.resolve("to-be-staged/da/ta/some.txt").toFile, "")
-    write(testDir.resolve("to-be-staged/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/da/ta/some.txt").toFile, "", StandardCharsets.UTF_8)
+    write(testDir.resolve("to-be-staged/some.txt").toFile, "", StandardCharsets.UTF_8)
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
          |easy-dataset:1,8521,text/plain,"da/ta/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/da/ta/some.txt"
-         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin)
+         |easy-dataset:1,8585,text/plain,"some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/some.txt"""".stripMargin,
+      StandardCharsets.UTF_8)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
       "easy-dataset:1 da/ta/some.txt" -> Success("da/ta", "easy-folder:1"),
@@ -163,12 +167,13 @@ class EasyStageFileItemCommandSpec extends FlatSpec with Matchers with Inside wi
   }
 
   it should "not overwrite files with same names in sibling folders" in {
-    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "")
-    write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "")
+    write(testDir.resolve("to-be-staged/dir1/some.txt").toFile, "", StandardCharsets.UTF_8)
+    write(testDir.resolve("to-be-staged/dir2/some.txt").toFile, "", StandardCharsets.UTF_8)
     write(testDir.resolve("to-be-staged/some.csv").toFile,
       s"""DATASET-ID,SIZE,FORMAT,PATH-IN-DATASET,DATASTREAM-LOCATION,ACCESSIBLE-TO,VISIBLE-TO,CREATOR-ROLE,OWNER-ID,FILE-LOCATION
          |easy-dataset:1,8521,text/plain,"dir1/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir1/some.txt"
-         |easy-dataset:1,8585,text/plain,"dir2/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir2/some.txt"""".stripMargin)
+         |easy-dataset:1,8585,text/plain,"dir2/some.txt",,KNOWN,ANONYMOUS,ARCHIVIST,archie001,"$testDir/to-be-staged/dir2/some.txt"""".stripMargin,
+      StandardCharsets.UTF_8)
 
     runForEachCsvRow(mockEasyFilesAndFolders(HashMap(
       "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),

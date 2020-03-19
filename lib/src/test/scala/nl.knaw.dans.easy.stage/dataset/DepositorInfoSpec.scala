@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 import org.apache.commons.io.FileUtils
 
@@ -39,7 +40,7 @@ class DepositorInfoSpec extends MdFixture {
 
   it should "handle invalid agreements.xml" in {
     infoDir.mkdirs()
-    FileUtils.write(new File(infoDir + "/agreements.xml"), "blablabla")
+    FileUtils.write(new File(infoDir + "/agreements.xml"), "blablabla", StandardCharsets.UTF_8)
     DepositorInfo(infoDir.toPath) shouldBe
       DepositorInfo(
         acceptedLicense = None,
@@ -50,7 +51,7 @@ class DepositorInfoSpec extends MdFixture {
 
   it should "escape the content of message-from-depositor.txt" in {
     infoDir.mkdirs()
-    FileUtils.write(new File(infoDir + "/message-from-depositor.txt"), "blab<br>labla")
+    FileUtils.write(new File(infoDir + "/message-from-depositor.txt"), "blab<br>labla", StandardCharsets.UTF_8)
     DepositorInfo(infoDir.toPath) should matchPattern {
       case DepositorInfo(_, _, "blab&lt;br&gt;labla") =>
     }
@@ -111,7 +112,8 @@ class DepositorInfoSpec extends MdFixture {
       val agreementsFile = new File(infoDir + "/agreements.xml")
       FileUtils.write(
         agreementsFile,
-        FileUtils.readFileToString(agreementsFile).replaceAll(replacing, by)
+        FileUtils.readFileToString(agreementsFile, StandardCharsets.UTF_8).replaceAll(replacing, by),
+        StandardCharsets.UTF_8
       )
     }
     DepositorInfo(infoDir.toPath)

@@ -115,7 +115,7 @@ object AdditionalLicense extends DebugEnhancedLogging {
   }
 
   private def readAndReplace(licenseTemplateFile: File, rightsHolder: String, year: String): String = {
-    FileUtils.readFileToString(licenseTemplateFile)
+    FileUtils.readFileToString(licenseTemplateFile, StandardCharsets.UTF_8)
       .replace("<rightsHolder>", rightsHolder)
       .replace("<year>", year)
   }

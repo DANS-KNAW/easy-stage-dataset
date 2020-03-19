@@ -16,6 +16,7 @@
 package nl.knaw.dans.easy.stage.dataset
 
 import java.io.File
+import java.nio.charset.StandardCharsets
 
 import nl.knaw.dans.easy.stage._
 import nl.knaw.dans.pf.language.emd.EasyMetadata
@@ -83,7 +84,7 @@ class EmdSpec extends MdFixture with Inspectors {
       </ddm:profile>
     </ddm:DDM>
     val tmpDDM = new File("target/test/EmdSpec/bag/metadata/dataset.xml")
-    write(tmpDDM, ddm.toString())
+    write(tmpDDM, ddm.toString(), StandardCharsets.UTF_8)
     implicit val s: Settings = newSettings(tmpDDM.getParentFile.getParentFile)
 
     inside(EMD.create(sdoSetDir, licenseAccepted = Some(true))) {

@@ -22,7 +22,7 @@
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-scala-project</artifactId>
-        <version>5.1.0</version>
+        <version>6.0.1</version>
         <relativePath />
     </parent>
 
@@ -36,6 +36,8 @@
     <properties>
         <easy.ddm.version>3.10.3</easy.ddm.version>
         <easy.licenses.version>1.0.6</easy.licenses.version>
+        <dom4j.version>1.6.1</dom4j.version>
+        <dans-fedora.version>3.1.7</dans-fedora.version>
     </properties>
 
     <dependencies>
@@ -78,7 +80,7 @@
             -->
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
-            <version>1.6.1</version>
+            <version>${dom4j.version}</version>
             <exclusions>
                 <!--
                 Without this exclusion we get java.lang.NoClassDefFoundError: org/w3c/dom/ElementTraversal
@@ -97,7 +99,7 @@
         <dependency>
             <groupId>nl.knaw.dans.easy</groupId>
             <artifactId>dans-fedora</artifactId>
-            <version>3.1.7</version>
+            <version>${dans-fedora.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
