@@ -21,14 +21,15 @@ import java.nio.file.{ Files, Path, Paths }
 import nl.knaw.dans.easy.stage.lib.Constants
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
-import org.scalatest.{ FlatSpec, Matchers }
 import resource._
 import Constants.DATASET_SDO
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.JavaConverters._
 import scala.util.Success
 
-class RunSpec extends FlatSpec with Matchers with CanConnectFixture {
+class RunSpec extends AnyFlatSpec with Matchers with CanConnectFixture {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
   FileUtils.deleteQuietly(testDir.toFile)
   Files.createDirectories(testDir)

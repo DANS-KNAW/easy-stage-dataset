@@ -16,9 +16,11 @@
 package nl.knaw.dans.easy.stage.fileitem
 
 import nl.knaw.dans.common.lang.dataset.AccessCategory
-import org.scalatest.{ FlatSpec, Matchers, OptionValues }
+import org.scalatest.OptionValues
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class FileAccesRightsSpec extends FlatSpec with Matchers with OptionValues {
+class FileAccesRightsSpec extends AnyFlatSpec with Matchers with OptionValues {
   /*
   according to ddm.xsd there are 5 options for the dataset AccessRights
         <xs:enumeration value="OPEN_ACCESS">

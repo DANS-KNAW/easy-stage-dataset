@@ -21,12 +21,14 @@ import java.net.URL
 import nl.knaw.dans.easy.stage.ExistingAncestor
 import nl.knaw.dans.easy.stage.lib.Util.loadXML
 import nl.knaw.dans.easy.stage.lib.{ Fedora, FedoraRelationObject }
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{ BeforeAndAfterEach, Inside }
 
 import scala.collection.immutable.HashMap
 import scala.util.{ Failure, Success, Try }
 
-class EasyStageFileItemSpec extends FlatSpec with Matchers with Inside with BeforeAndAfterEach {
+class EasyStageFileItemSpec extends AnyFlatSpec with Matchers with Inside with BeforeAndAfterEach {
 
   "run" should "report a missing size" in {
     val result = EasyStageFileItem.run(new FileItemSettings(
