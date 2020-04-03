@@ -26,13 +26,15 @@ import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.io.FileUtils
 import org.apache.commons.io.FileUtils.readFileToString
 import org.scalatest.Inside._
-import org.scalatest.{ FlatSpec, Matchers, OneInstancePerTest }
+import org.scalatest.OneInstancePerTest
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.io.Source
 import scala.util.{ Failure, Success }
 import scala.xml.XML
 
-class EasyStageDatasetSpec extends FlatSpec with Matchers with OneInstancePerTest with CanConnectFixture {
+class EasyStageDatasetSpec extends AnyFlatSpec with Matchers with OneInstancePerTest with CanConnectFixture {
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
   FileUtils.deleteQuietly(testDir.toFile)
   Files.createDirectories(testDir)

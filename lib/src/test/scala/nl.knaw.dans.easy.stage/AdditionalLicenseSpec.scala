@@ -16,9 +16,11 @@
 package nl.knaw.dans.easy.stage
 
 import nl.knaw.dans.easy.stage.dataset.AdditionalLicense._
-import org.scalatest.{ FlatSpec, Inside, Matchers }
+import org.scalatest.Inside
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
-class AdditionalLicenseSpec extends FlatSpec with Matchers with Inside {
+class AdditionalLicenseSpec extends AnyFlatSpec with Matchers with Inside {
 
   "hasXsiType" should
     """
