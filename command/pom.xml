@@ -34,7 +34,7 @@
 
     <properties>
         <main-class>nl.knaw.dans.easy.stage.command.Command</main-class>
-        <easy.licenses.version>1.0.6</easy.licenses.version>
+        <easy.licenses.version>1.0.7</easy.licenses.version>
     </properties>
 
     <dependencies>

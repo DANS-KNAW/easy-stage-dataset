@@ -35,7 +35,7 @@
 
     <properties>
         <easy.ddm.version>3.10.5</easy.ddm.version>
-        <easy.licenses.version>1.0.6</easy.licenses.version>
+        <easy.licenses.version>1.0.7</easy.licenses.version>
         <dom4j.version>1.6.1</dom4j.version>
         <dans-fedora.version>3.1.7</dans-fedora.version>
     </properties>
