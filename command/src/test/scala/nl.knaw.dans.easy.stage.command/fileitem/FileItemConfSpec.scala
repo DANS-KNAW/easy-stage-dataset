@@ -18,7 +18,7 @@ package nl.knaw.dans.easy.stage.command.fileitem
 import java.io.File
 import java.nio.file.Paths
 
-import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.command.CustomMatchers._
 import nl.knaw.dans.easy.stage.command.{ AbstractConfSpec, Configuration }
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf

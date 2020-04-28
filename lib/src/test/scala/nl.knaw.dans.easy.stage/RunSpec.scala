@@ -18,13 +18,12 @@ package nl.knaw.dans.easy.stage
 import java.io.File
 import java.nio.file.{ Files, Path, Paths }
 
-import nl.knaw.dans.easy.stage.lib.Constants
+import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
-import resource._
-import Constants.DATASET_SDO
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
+import resource._
 
 import scala.collection.JavaConverters._
 import scala.util.Success
@@ -54,7 +53,7 @@ class RunSpec extends AnyFlatSpec with Matchers with CanConnectFixture {
 
     for (bag <- testBags) {
       val sdoSetDir = puddingsDir.resolve(bag.getFileName)
-      implicit val settings = createSettings(bag.toFile, sdoSetDir.toFile)
+      implicit val settings: Settings = createSettings(bag.toFile, sdoSetDir.toFile)
 
       val res = EasyStageDataset.run(settings)
       res.recover { case e => e.printStackTrace() }

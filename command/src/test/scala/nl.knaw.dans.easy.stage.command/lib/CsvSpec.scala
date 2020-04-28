@@ -22,11 +22,13 @@ import nl.knaw.dans.easy.stage.command.Configuration
 import nl.knaw.dans.easy.stage.command.fileitem.FileItemCommandLineOptions
 import nl.knaw.dans.easy.stage.lib.CSV
 import org.apache.commons.configuration.PropertiesConfiguration
-import org.scalatest.{FlatSpec, Inside, Matchers}
+import org.scalatest.Inside
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.util.Failure
 
-class CsvSpec extends FlatSpec with Matchers with Inside {
+class CsvSpec extends AnyFlatSpec with Matchers with Inside {
   private val resourceDirString: String = Paths.get(getClass.getResource("/").toURI).toAbsolutePath.toString
 
   private val mockedConfiguration = new Configuration("version x.y.z", new PropertiesConfiguration() {

@@ -17,14 +17,15 @@ package nl.knaw.dans.easy.stage.command
 
 import java.io.{ ByteArrayOutputStream, File }
 
-import nl.knaw.dans.easy.stage.CustomMatchers._
+import nl.knaw.dans.easy.stage.command.CustomMatchers._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.rogach.scallop.ScallopConf
-import org.scalatest.{ FlatSpec, Matchers }
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
 
 import scala.collection.JavaConverters._
 
-abstract class AbstractConfSpec extends FlatSpec with Matchers {
+abstract class AbstractConfSpec extends AnyFlatSpec with Matchers {
 
   def getCommandLineOptions: ScallopConf
 

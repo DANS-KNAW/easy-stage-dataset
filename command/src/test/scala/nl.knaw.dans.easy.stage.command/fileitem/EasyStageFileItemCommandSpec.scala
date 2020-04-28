@@ -26,12 +26,14 @@ import nl.knaw.dans.easy.stage.fileitem.{ EasyFilesAndFolders, EasyStageFileItem
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils.{ deleteQuietly, readFileToString, write }
-import org.scalatest._
+import org.scalatest.flatspec.AnyFlatSpec
+import org.scalatest.matchers.should.Matchers
+import org.scalatest.{ BeforeAndAfterEach, Inside }
 
 import scala.collection.immutable.HashMap
 import scala.util.{ Success, Try }
 
-class EasyStageFileItemCommandSpec extends FlatSpec with Matchers with Inside with BeforeAndAfterEach {
+class EasyStageFileItemCommandSpec extends AnyFlatSpec with Matchers with Inside with BeforeAndAfterEach {
 
   private val testDir = Paths.get("target/test", getClass.getSimpleName)
 
