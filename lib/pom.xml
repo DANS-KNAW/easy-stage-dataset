@@ -22,7 +22,7 @@
     <parent>
         <groupId>nl.knaw.dans.shared</groupId>
         <artifactId>dans-scala-project</artifactId>
-        <version>6.0.2</version>
+        <version>6.0.3</version>
         <relativePath />
     </parent>
 
@@ -142,7 +142,7 @@
             <artifactId>scala-arm_2.12</artifactId>
         </dependency>
         <dependency>
-            <groupId>gov.loc</groupId>
+            <groupId>nl.knaw.dans</groupId>
             <artifactId>bagit</artifactId>
         </dependency>
     </dependencies>
