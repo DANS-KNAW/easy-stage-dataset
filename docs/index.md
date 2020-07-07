@@ -64,8 +64,8 @@ ARGUMENTS for easy-stage-dataset
                                              does not exist)
 
 
-ARGUMENTS
----------
+ARGUMENTS for easy-stage-fileItem
+---------------------------------
 
     -i, --dataset-id  <arg>            id of the dataset in Fedora that should receive the file to stage
                                        (requires file-path). If omitted the trailing argument csv-file is
