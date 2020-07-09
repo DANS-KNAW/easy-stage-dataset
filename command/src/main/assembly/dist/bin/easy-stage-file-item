@@ -17,4 +17,4 @@ fi
 java -Dlogback.configurationFile=$LOGCONFIG \
      -Dapp.home=$APPHOME \
      -cp $APPHOME/bin/easy-stage-dataset.jar \
-     nl.knaw.dans.easy.stage.command.fileitem.EasyStageFileItemCommand "$@"
+     nl.knaw.dans.easy.stage.fileitem.EasyStageFileItem "$@"
