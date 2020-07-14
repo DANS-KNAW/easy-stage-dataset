@@ -43,7 +43,7 @@ object JSON extends DebugEnhancedLogging {
                       )(implicit s: Settings): Try[String] = Try {
     trace(additionalLicenseFilenameAndMimetype, audiences)
 
-    checkProvided("DOI", s.doi)
+    //checkProvided("DOI", s.doi) //TODO mandatory if SDO has files
     checkProvided("URN", s.urn)
 
     implicit def boolean2Opt(b: Boolean): Option[Unit] = {
@@ -131,11 +131,13 @@ object JSON extends DebugEnhancedLogging {
     if (v.isEmpty) throw new IllegalStateException(s"$name must be provided")
   }
 
-  private def sdoCfg(audiences: Seq[String], datastreams: Seq[JsonAST.JObject])(implicit s: Settings): JsonAST.JObject =
+  private def sdoCfg(audiences: Seq[String], datastreams: Seq[JsonAST.JObject])(implicit s: Settings): JsonAST.JObject = {
+    val maybeDoi: List[JObject] = if (s.doi.isEmpty) List[JObject]()
+                                  else List(("predicate" -> HAS_DOI) ~ ("object" -> s.doi) ~ ("isLiteral" -> true))
+
     ("namespace" -> "easy-dataset") ~
       ("datastreams" -> datastreams) ~
-      ("relations" -> (List(
-        ("predicate" -> HAS_DOI) ~ ("object" -> s.doi) ~ ("isLiteral" -> true),
+      ("relations" -> (maybeDoi ++ List(
         ("predicate" -> HAS_PID) ~ ("object" -> s.urn) ~ ("isLiteral" -> true),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/dans-model:recursive-item-v1"),
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:EDM1DATASET"),
@@ -144,6 +146,7 @@ object JSON extends DebugEnhancedLogging {
       ) ++ audiences.flatMap(audience => List(
         ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }"),
         ("predicate" -> IS_MEMBER_OF_OAI_SET) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }")))))
+  }
 
   def createFileCfg(mimeType: String, parent: RelationObject, subordinate: RelationObject)(implicit settings: FileItemSettings): String = {
     val json = settings.file
