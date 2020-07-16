@@ -140,6 +140,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
   }
 
   def createFileAndFolderSdos(dir: File, parentSDO: String, datasetRights: AccessCategory)(implicit s: Settings): Try[Unit] = {
+    if(s.doi.isEmpty) return Success(())
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File), "UTF-8")
