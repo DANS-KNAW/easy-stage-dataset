@@ -79,8 +79,10 @@ object EasyStageDataset extends DebugEnhancedLogging {
       dataDir <- getDataDir
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()
-      _ = logger.info("Creating file and folder SDOs")
-      _ <- createFileAndFolderSdos(dataDir, DATASET_SDO, emdContent.getEmdRights.getAccessCategory)
+      category = emdContent.getEmdRights.getAccessCategory
+      _ <- s.doi
+        .map(_ => createFileAndFolderSdos(dataDir, DATASET_SDO, category))
+        .getOrElse(skipFileAndFolderSdos)
     } yield (emdContent, amdContent)
 
     result
@@ -139,8 +141,13 @@ object EasyStageDataset extends DebugEnhancedLogging {
       .getOrElse(Failure(new RuntimeException("Bag doesn't contain data directory.")))
   }
 
+  private def skipFileAndFolderSdos: Try[Unit] = {
+    logger.info("Skupping file and folder SDOs")
+    Success(())
+  }
+
   def createFileAndFolderSdos(dir: File, parentSDO: String, datasetRights: AccessCategory)(implicit s: Settings): Try[Unit] = {
-    if(s.doi.isEmpty) return Success(())
+    logger.info("Creating file and folder SDOs")
     val maybeSha1Map: Try[Map[String, String]] = Try {
       val sha1File = "manifest-sha1.txt"
       readFileToString(new File(s.bagitDir, sha1File), "UTF-8")

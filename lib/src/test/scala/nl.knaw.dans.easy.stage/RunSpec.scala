@@ -21,6 +21,7 @@ import java.nio.file.{ Files, Path, Paths }
 import nl.knaw.dans.easy.stage.lib.Constants.DATASET_SDO
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.IOFileFilter
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers
 import resource._
@@ -76,14 +77,17 @@ class RunSpec extends AnyFlatSpec with Matchers with CanConnectFixture {
     puddingsDir.resolve(s"medium/$DATASET_SDO/manifest-sha1.txt").toFile should exist
     puddingsDir.resolve(s"medium/$DATASET_SDO/agreements.xml").toFile should exist
     puddingsDir.resolve(s"medium/$DATASET_SDO/message-from-depositor.txt").toFile should exist
-    readDDM(puddingsDir, "medium") should include("doi")
-    readDDM(puddingsDir, noDoiVariant) should not include "doi"
 
     numberOfFilesInDir(puddingsDir.resolve("minimal")) shouldBe 1
     numberOfFilesInDir(puddingsDir.resolve("no-additional-license")) shouldBe 5
     numberOfFilesInDir(puddingsDir.resolve("additional-license-by-text")) shouldBe 5
     numberOfFilesInDir(puddingsDir.resolve("one-invalid-sha1")) shouldBe 5
     FileUtils.readFileToString(puddingsDir.resolve(s"one-invalid-sha1/$DATASET_SDO/EMD").toFile, "UTF-8") should include("planetoïde")
+
+    puddingsDir.resolve("medium").toFile.list() should have size 10 // DATASET_SDO + file-SDOs
+    readDDM(puddingsDir, "medium") should include("doi")
+    puddingsDir.resolve(noDoiVariant).toFile.list() shouldBe Array(DATASET_SDO) // no file-SDOs
+    readDDM(puddingsDir, noDoiVariant) should not include "doi"
   }
 
   private def readDDM(puddingsDir: Path, bagName: String) = {

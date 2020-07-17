@@ -43,7 +43,6 @@ object JSON extends DebugEnhancedLogging {
                       )(implicit s: Settings): Try[String] = Try {
     trace(additionalLicenseFilenameAndMimetype, audiences)
 
-    //checkProvided("DOI", s.doi) //TODO mandatory if SDO has files
     checkProvided("URN", s.urn)
 
     implicit def boolean2Opt(b: Boolean): Option[Unit] = {

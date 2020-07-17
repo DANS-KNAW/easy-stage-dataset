@@ -37,7 +37,7 @@ class CommandLineOptions(args: Seq[String], configuration: Configuration) extend
   private val _________ = " " * printedName.length
   val description = "Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x Repository."
   val synopsis: String =
-    s"""$printedName -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
+    s"""$printedName -t <submission-timestamp> -u <urn> [ -d <doi> ] [ -o ] [ -f <external-file-uris> ] [-a <archive>] \\
        |${ _________ } <EASY-deposit> <staged-digital-object-set>""".stripMargin
   banner(
     s"""
@@ -60,7 +60,7 @@ class CommandLineOptions(args: Seq[String], configuration: Configuration) extend
     descr = "The URN to assign to the new dataset in EASY")
   val doi: ScallopOption[String] = opt[String](
     name = "doi", short = 'd',
-    descr = "The DOI to assign to the new dataset in EASY")
+    descr = "The DOI to assign to the new dataset in EASY. If omitted, no files are ingested into fedora, not even place holders.")
   val otherAccessDOI: ScallopOption[Boolean] = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
