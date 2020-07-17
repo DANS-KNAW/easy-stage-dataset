@@ -142,7 +142,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
   }
 
   private def skipFileAndFolderSdos: Try[Unit] = {
-    logger.info("Skupping file and folder SDOs")
+    logger.info("Skipping file and folder SDOs")
     Success(())
   }
 

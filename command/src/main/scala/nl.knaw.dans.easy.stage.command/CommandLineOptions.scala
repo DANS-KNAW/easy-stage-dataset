@@ -60,7 +60,7 @@ class CommandLineOptions(args: Seq[String], configuration: Configuration) extend
     descr = "The URN to assign to the new dataset in EASY")
   val doi: ScallopOption[String] = opt[String](
     name = "doi", short = 'd',
-    descr = "The DOI to assign to the new dataset in EASY. If omitted, no files are ingested into fedora, not even place holders.")
+    descr = "The DOI to assign to the new dataset in EASY. If omitted, no files are ingested into EASY, not even place holders.")
   val otherAccessDOI: ScallopOption[Boolean] = opt[Boolean](
     name = "doi-is-other-access-doi", short = 'o',
     descr = """Stage the provided DOI as an "other access DOI"""",
