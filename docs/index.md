@@ -8,7 +8,7 @@ Stage a dataset in EASY-BagIt format for ingest into an EASY Fedora Commons 3.x 
 SYNOPSIS
 --------
 
-    easy-stage-dataset -t <submission-timestamp> -u <urn> -d <doi> [ -o ] [ -f <external-file-uris> ] [-a <archive>] \
+    easy-stage-dataset -t <submission-timestamp> -u <urn> [ -d <doi> ] [ -o ] [ -f <external-file-uris> ] [-a <archive>] \
                               <EASY-deposit> <staged-digital-object-set>
 
     easy-stage-file-item [<options>...] <staged-digital-object-set>
@@ -42,7 +42,8 @@ ARGUMENTS for easy-stage-dataset
                                           EASY: Data and metadata are archived in EASY. DATAVAULT: Data and
                                           metadata are archived in the DATAVAULT. There may be dissemination
                                           copies in EASY. (default = EASY)
-      -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY
+      -d, --doi  <arg>                    The DOI to assign to the new dataset in EASY. If omitted, no files are
+                                          ingested into EASY, not even place holders.
       -o, --doi-is-other-access-doi       Stage the provided DOI as an "other access DOI"
       -f, --external-file-uris  <arg>     File with mappings from bag local path to external file URI. Each line
                                           in this file must contain a mapping. The path is separated from the URI
