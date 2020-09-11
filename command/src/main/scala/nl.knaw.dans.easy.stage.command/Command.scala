@@ -28,9 +28,6 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 object Command extends App with DebugEnhancedLogging {
 
   val configuration = Configuration(Paths.get(System.getProperty("app.home")))
-  val agent = configuration.properties.getString("http.agent",s"easy-stage-dataset/${configuration.version}")
-  logger.info(s"setting http.agent to $agent")
-  System.setProperty("http.agent", agent)
 
   val clo = new CommandLineOptions(args, configuration)
   Fedora.setFedoraConnectionSettings(
