@@ -27,6 +27,7 @@ import org.scalatest.Inspectors
 import scala.util.{ Failure, Success }
 
 class EmdSpec extends MdFixture with Inspectors {
+  System.setProperty("http.agent", "Test")
 
   "create" should "succeed for each test bag" in {
     assume(canConnect(xsds))

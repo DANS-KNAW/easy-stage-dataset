@@ -22,12 +22,16 @@ import nl.knaw.dans.easy.stage.lib.Fedora
 import nl.knaw.dans.lib.error._
 import org.apache.commons.configuration.PropertiesConfiguration
 import org.joda.time.DateTime
+import nl.knaw.dans.easy.stage.{ EasyStageDataset, Settings }
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 
-import nl.knaw.dans.easy.stage.{ Settings, EasyStageDataset }
-
-object Command extends App {
+object Command extends App with DebugEnhancedLogging {
 
   val configuration = Configuration(Paths.get(System.getProperty("app.home")))
+  val agent = configuration.properties.getString("http.agent",s"easy-stage-dataset/${configuration.version}")
+  logger.info(s"setting http.agent to $agent")
+  System.setProperty("http.agent", agent)
+
   val clo = new CommandLineOptions(args, configuration)
   Fedora.setFedoraConnectionSettings(
     configuration.properties.getString("fcrepo.url"),
