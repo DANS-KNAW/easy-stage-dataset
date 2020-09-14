@@ -18,6 +18,7 @@ package nl.knaw.dans.easy.stage.command
 import java.io.File
 import java.nio.file.{ Files, Path, Paths }
 
+import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import org.apache.commons.configuration.PropertiesConfiguration
 import resource.managed
 
@@ -26,7 +27,7 @@ import scala.io.Source
 
 case class Configuration(version: String, properties: PropertiesConfiguration, licenses: Map[String, File])
 
-object Configuration {
+object Configuration extends DebugEnhancedLogging {
 
   def apply(home: Path): Configuration = {
     val cfgPath = Seq(Paths.get(s"/etc/opt/dans.knaw.nl/easy-stage-dataset/"), home.resolve("cfg"))
@@ -34,13 +35,19 @@ object Configuration {
       .getOrElse {
         throw new IllegalStateException("No configuration directory found")
       }
+    val version = managed(Source.fromFile(home.resolve("bin/version").toFile)).acquireAndGet(_.mkString).stripLineEnd
+    val properties = new PropertiesConfiguration() {
+      setDelimiterParsingDisabled(true)
+      setThrowExceptionOnMissing(true)
+      load(cfgPath.resolve("application.properties").toFile)
+    }
+    val agent = properties.getString("http.agent",s"easy-validate-dans-bag/$version")
+    logger.info(s"setting http.agent to $agent")
+    System.setProperty("http.agent", agent)
 
     new Configuration(
-      version = managed(Source.fromFile(home.resolve("bin/version").toFile)).acquireAndGet(_.mkString),
-      properties = new PropertiesConfiguration() {
-        setDelimiterParsingDisabled(true)
-        load(cfgPath.resolve("application.properties").toFile)
-      },
+      version,
+      properties,
       licenses = {
         val licDir = cfgPath.resolve("lic")
         require(Files.exists(licDir), s"The licenses are expected to be located at $licDir, but they don't exist.")

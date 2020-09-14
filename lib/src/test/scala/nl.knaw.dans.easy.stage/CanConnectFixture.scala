@@ -27,6 +27,9 @@ import scala.xml.SAXParseException
 
 trait CanConnectFixture {
 
+  // Some (XSD) servers will deny requests if the User-Agent is set to the default value for Java
+  System.setProperty("http.agent", "Test")
+
   def canConnect(urls: Array[String]): Boolean = urls
     .forall(url => isAvailable(loadSchema(url)))
 
