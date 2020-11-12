@@ -40,25 +40,33 @@ object EasyStageFileItem extends DebugEnhancedLogging {
       datasetSdoSetDir <- mkdirSafe(new File(sdoSetDir, datasetId.replace(":", "_")))
       pathInDataset <- Try { s.pathInDataset.get }
       existingAncestor <- s.easyFilesAndFolders.getExistingAncestor(pathInDataset, datasetId)
-      _ = createFolderSdos(existingAncestor, pathInDataset, datasetSdoSetDir)
+      _ = createFolderSdos(pathInDataset, datasetSdoSetDir)
       _ <- createFileSdoForExistingDataset(datasetSdoSetDir, existingAncestor)
     } yield ()
   }
 
-  private def createFolderSdos(existingAncestor: ExistingAncestor,
-                               file: File,
+  private def createFolderSdos(file: File,
                                datasetSdoSetDir: File
                               )(implicit s: FileItemSettings): Unit = {
-    val (existingPath, _) = existingAncestor
+
+    def getPath(file: File): String = {
+      if (file.getParentFile == null)
+        file.getName
+      else
+        getPath(file.getParentFile) + "/" + file.getName
+    }
 
     @tailrec
     def createParent(child: File): Unit = {
       if (child != null) {
         val parent = child.getParentFile
-        if (parent != null && parent.toString != existingPath) {
+        if (parent != null) {
+          var grandParent = parent.getParentFile
+          if (grandParent == null)
+            grandParent = new File(datasetSdoSetDir.getName)
           val sdoDir = new File(datasetSdoSetDir, toSdoName(parent.toString))
-          createFolderSdo(sdoDir, parent.getName, SdoRelationObject(parent))
-          createParent(child.getParentFile)
+          createFolderSdo(sdoDir, getPath(parent), SdoRelationObject(grandParent))
+          createParent(parent)
         }
       }
     }

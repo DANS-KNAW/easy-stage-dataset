@@ -165,7 +165,7 @@ class EasyStageFileItemCommandSpec extends AnyFlatSpec with Matchers with Inside
       "easy-dataset:1 da/ta/some.txt" -> Success("da/ta", "easy-folder:1"),
       "easy-dataset:1 some.txt" -> Success("", "easy-dataset:1")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("some_txt", "da_ta_some_txt")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("some_txt", "da_ta_some_txt", "da", "da_ta")
   }
 
   it should "not overwrite files with same names in sibling folders" in {
@@ -181,7 +181,7 @@ class EasyStageFileItemCommandSpec extends AnyFlatSpec with Matchers with Inside
       "easy-dataset:1 dir1/some.txt" -> Success("dir1", "easy-folder:1"),
       "easy-dataset:1 dir2/some.txt" -> Success("dir2", "easy-folder:2")
     )))
-    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("dir1_some_txt", "dir2_some_txt")
+    testDir.resolve("SDO/easy-dataset_1").toFile.list() should contain only("dir1_some_txt", "dir2_some_txt", "dir1", "dir2")
   }
 
   def mockEasyFilesAndFolders(expectations: Map[String, Try[ExistingAncestor]]): EasyFilesAndFolders = {
