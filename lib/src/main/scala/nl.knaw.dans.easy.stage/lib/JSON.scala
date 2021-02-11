@@ -134,6 +134,11 @@ object JSON extends DebugEnhancedLogging {
     val maybeDoi: List[JObject] = if (s.doi.isEmpty) List[JObject]()
                                   else List(("predicate" -> HAS_DOI) ~ ("object" -> s.doi) ~ ("isLiteral" -> true))
 
+    val maybeOaiMembers =
+      if (s.state == "PUBLISHED")
+        audiences.flatMap(audience => List(("predicate" -> IS_MEMBER_OF_OAI_SET) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }")))
+      else List.empty[JObject]
+
     ("namespace" -> "easy-dataset") ~
       ("datastreams" -> datastreams) ~
       ("relations" -> (maybeDoi ++ List(
@@ -143,8 +148,8 @@ object JSON extends DebugEnhancedLogging {
         ("predicate" -> HAS_MODEL) ~ ("object" -> "info:fedora/easy-model:oai-item1"),
         ("predicate" -> OAI_ITEM_ID) ~ ("object" -> "oai:easy.dans.knaw.nl:$sdo-id") ~ ("isLiteral" -> true)
       ) ++ audiences.flatMap(audience => List(
-        ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }"),
-        ("predicate" -> IS_MEMBER_OF_OAI_SET) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }")))))
+        ("predicate" -> IS_MEMBER_OF) ~ ("object" -> s"info:fedora/${ s.disciplines(audience) }")))
+        ++ maybeOaiMembers))
   }
 
   def createFileCfg(mimeType: String, parent: RelationObject, subordinate: RelationObject)(implicit settings: FileItemSettings): String = {
