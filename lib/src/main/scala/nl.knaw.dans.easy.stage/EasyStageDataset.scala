@@ -195,10 +195,11 @@ object EasyStageDataset extends DebugEnhancedLogging {
       title <- readTitle(fileMetadata)
       fileAccessRights <- getFileAccessRights(fileMetadata, datasetRights)
       fileVisibleToRights <- getFileVisibleToRights(fileMetadata, datasetRights)
-      _ <- FileItemSettings(
+      maybeUri = s.fileUris.get(getBagRelativePath(file.toPath))
+      itemSettings = FileItemSettings(
         sdoSetDir = s.sdoSetDir,
-        file = s.fileUris.get(getBagRelativePath(file.toPath)).fold(Option(file))(_ => Option.empty),
-        datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
+        file = maybeUri.fold(Option(file))(_ => Option.empty),
+        datastreamLocation = maybeUri.map(_.toURL),
         ownerId = s.ownerId,
         pathInDataset = datasetRelativePath.toFile,
         size = Some(file.length),
@@ -210,6 +211,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
         databaseUrl = s.databaseUrl,
         databaseUser = s.databaseUser,
         databasePassword = s.databasePassword)
+      _ <- itemSettings
         .map(EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(_))
         .tried
     } yield ()
