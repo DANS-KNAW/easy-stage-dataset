@@ -140,6 +140,7 @@ class RunSpec extends AnyFlatSpec with Matchers with CanConnectFixture {
       databasePassword = "", // TODO: probably not the value in the actual deasy environment
       licenses = licensesMap,
       includeBagMetadata = true,
+      skipPayload = false,
     )
   }
 }

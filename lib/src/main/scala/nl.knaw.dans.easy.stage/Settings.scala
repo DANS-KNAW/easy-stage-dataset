@@ -15,14 +15,34 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.File
-import java.net.URI
-import java.nio.file.Path
-
 import com.yourmediashelf.fedora.client.FedoraCredentials
 import nl.knaw.dans.easy.stage.lib.Fedora
 import org.joda.time.DateTime
 
+import java.io.File
+import java.net.URI
+import java.nio.file.Path
+
+/**
+ *
+ * @param ownerId
+ * @param submissionTimestamp
+ * @param bagitDir
+ * @param sdoSetDir empty directory
+ * @param urn
+ * @param doi
+ * @param otherAccessDoi
+ * @param fileUris  ignored when skipPayload is true
+ * @param state
+ * @param archive
+ * @param disciplines
+ * @param databaseUrl
+ * @param databaseUser
+ * @param databasePassword
+ * @param licenses
+ * @param includeBagMetadata
+ * @param skipPayload when no doi is provided payloads are skipped anyway
+ */
 case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = DateTime.now,
                     bagitDir: File,
@@ -39,6 +59,7 @@ case class Settings(ownerId: String,
                     databasePassword: String,
                     licenses: Map[String, File],
                     includeBagMetadata: Boolean,
+                    skipPayload: Boolean,
                    ) {
   override def toString: String = {
     s"Stage-Dataset.Settings(ownerId = $ownerId, submissionTimestamp = $submissionTimestamp, " +
@@ -68,6 +89,7 @@ object Settings {
             databasePassword: String,
             licenses: Map[String, File],
             includeBagMetadata: Boolean,
+            skipPayload: Boolean,
            ): Settings = {
     Fedora.setFedoraConnectionSettings(
       credentials.getBaseUrl.toString,
@@ -91,6 +113,7 @@ object Settings {
       databasePassword = databasePassword,
       licenses = licenses,
       includeBagMetadata = includeBagMetadata,
+      skipPayload = skipPayload,
     )
   }
 }
