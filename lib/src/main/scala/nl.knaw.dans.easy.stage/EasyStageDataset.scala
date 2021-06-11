@@ -15,10 +15,6 @@
  */
 package nl.knaw.dans.easy.stage
 
-import java.io.{ File, FileNotFoundException }
-import java.nio.charset.StandardCharsets
-import java.nio.file.{ Files, Path }
-
 import gov.loc.repository.bagit.reader.BagReader
 import nl.knaw.dans.common.lang.dataset.AccessCategory
 import nl.knaw.dans.easy.stage.dataset.AMD.AdministrativeMetadata
@@ -34,6 +30,9 @@ import nl.knaw.dans.lib.logging.DebugEnhancedLogging
 import nl.knaw.dans.pf.language.emd.EasyMetadata
 import org.apache.commons.io.FileUtils.readFileToString
 
+import java.io.{ File, FileNotFoundException }
+import java.nio.charset.StandardCharsets
+import java.nio.file.{ Files, Path }
 import scala.collection.JavaConverters._
 import scala.util.{ Failure, Success, Try }
 import scala.xml.NodeSeq
@@ -42,6 +41,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
   private val bagReader = new BagReader()
 
   // TODO: candidate for a possible dans-bagit-lib
+
   /**
    * Checks that all paths in `files` are part of the payload of the bag in `bagDir`. This means that they must be in at least one payload manifest.
    *
@@ -80,9 +80,9 @@ object EasyStageDataset extends DebugEnhancedLogging {
       _ <- mkdirSafe(s.sdoSetDir)
       (emdContent, amdContent) <- createDatasetSdo()
       category = emdContent.getEmdRights.getAccessCategory
-      _ <- s.doi
-        .map(_ => createFileAndFolderSdos(dataDir, DATASET_SDO, category))
-        .getOrElse(skipFileAndFolderSdos)
+      _ <- if (s.skipPayload || s.doi.isEmpty)
+             (skipFileAndFolderSdos)
+           else createFileAndFolderSdos(dataDir, DATASET_SDO, category)
     } yield (emdContent, amdContent)
 
     result
@@ -132,7 +132,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
 
     if (!file.exists()) Failure(new RuntimeException(s"File $path does not exist"))
     else if (!file.canRead) Failure(new RuntimeException(s"File $path exists but cannot be read"))
-    else Try { new String(Files.readAllBytes(file.toPath), StandardCharsets.UTF_8) }
+         else Try { new String(Files.readAllBytes(file.toPath), StandardCharsets.UTF_8) }
   }
 
   private def getDataDir(implicit s: Settings) = {
@@ -195,10 +195,11 @@ object EasyStageDataset extends DebugEnhancedLogging {
       title <- readTitle(fileMetadata)
       fileAccessRights <- getFileAccessRights(fileMetadata, datasetRights)
       fileVisibleToRights <- getFileVisibleToRights(fileMetadata, datasetRights)
-      _ <- FileItemSettings(
+      maybeUri = s.fileUris.get(getBagRelativePath(file.toPath))
+      itemSettings = FileItemSettings(
         sdoSetDir = s.sdoSetDir,
-        file = s.fileUris.get(getBagRelativePath(file.toPath)).fold(Option(file))(_ => Option.empty),
-        datastreamLocation = s.fileUris.get(getBagRelativePath(file.toPath)).map(_.toURL),
+        file = maybeUri.fold(Option(file))(_ => Option.empty),
+        datastreamLocation = maybeUri.map(_.toURL),
         ownerId = s.ownerId,
         pathInDataset = datasetRelativePath.toFile,
         size = Some(file.length),
@@ -210,6 +211,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
         databaseUrl = s.databaseUrl,
         databaseUser = s.databaseUser,
         databasePassword = s.databasePassword)
+      _ <- itemSettings
         .map(EasyStageFileItem.createFileSdo(sdoDir, SdoRelationObject(new File(parentSDO)))(_))
         .tried
     } yield ()

@@ -41,7 +41,7 @@ object Configuration extends DebugEnhancedLogging {
       setThrowExceptionOnMissing(true)
       load(cfgPath.resolve("application.properties").toFile)
     }
-    val agent = properties.getString("http.agent",s"easy-validate-dans-bag/$version")
+    val agent = properties.getString("http.agent",s"easy-stage-dataset/$version")
     logger.info(s"setting http.agent to $agent")
     System.setProperty("http.agent", agent)
 

@@ -46,6 +46,7 @@ class MdFixture extends AnyFlatSpec with Matchers with Inside with CanConnectFix
       databasePassword = "",
       licenses = Map.empty,
       includeBagMetadata = false,
+      skipPayload = false,
     )
   }
 

@@ -52,6 +52,7 @@ object Command extends App with DebugEnhancedLogging {
     databasePassword = configuration.properties.getString("db-connection-password"),
     licenses = configuration.licenses,
     includeBagMetadata = clo.includeBagMetadata(),
+    skipPayload = false,
   )
 
   EasyStageDataset.run
