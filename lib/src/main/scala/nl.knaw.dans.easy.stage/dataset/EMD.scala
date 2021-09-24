@@ -36,6 +36,7 @@ object EMD extends DebugEnhancedLogging {
       case file if file.exists() =>
         for {
           emd <- getEasyMetadata(file)
+          _ = if (s.skipPayload) addExtraDescription(emd)
           _ = s.urn.foreach(urn => emd.getEmdIdentifier.add(wrapUrn(urn)))
           _ = s.doi.foreach(doi => emd.getEmdIdentifier.add(wrapDoi(doi, s.otherAccessDoi)))
           _ = emd.getEmdIdentifier.add(createDmoIdWithPlaceholder())
@@ -51,6 +52,11 @@ object EMD extends DebugEnhancedLogging {
         } yield emd
       case _ => Failure(new RuntimeException(s"Couldn't find metadata/dataset.xml"))
     }
+  }
+
+  private def addExtraDescription(emd: EasyMetadata)(implicit s: Settings): Try[Unit] = Try {
+    trace(emd)
+    s.extraDescription.foreach(d => emd.getEmdDescription.getDcDescription.add(new BasicIdentifier(d)))
   }
 
   private def getEasyMetadata(ddm: File): Try[EasyMetadata] = {

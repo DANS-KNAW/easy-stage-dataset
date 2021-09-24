@@ -42,6 +42,7 @@ import java.nio.file.Path
  * @param licenses
  * @param includeBagMetadata
  * @param skipPayload when no doi is provided payloads are skipped anyway
+ * @param extraDescription
  */
 case class Settings(ownerId: String,
                     submissionTimestamp: DateTime = DateTime.now,
@@ -60,13 +61,15 @@ case class Settings(ownerId: String,
                     licenses: Map[String, File],
                     includeBagMetadata: Boolean,
                     skipPayload: Boolean,
+                    extraDescription: Option[String] = None,
                    ) {
   override def toString: String = {
     s"Stage-Dataset.Settings(ownerId = $ownerId, submissionTimestamp = $submissionTimestamp, " +
       s"bagitDir = $bagitDir, sdoSetDir = $sdoSetDir, urn = ${ urn.getOrElse("<not defined>") }, " +
       s"doi = ${ doi.getOrElse("<not defined>") }, otherAccessDoi = $otherAccessDoi, " +
       s"fileUris = $fileUris, state = $state, archive = $archive, " +
-      s"Database($databaseUrl, $databaseUser, ****), licenses = $licenses, includeBagMetadata = $includeBagMetadata)"
+      s"Database($databaseUrl, $databaseUser, ****), licenses = $licenses, includeBagMetadata = $includeBagMetadata, " +
+      s"skipPayload = $skipPayload, extraDescription = $extraDescription)"
   }
 }
 
@@ -90,6 +93,7 @@ object Settings {
             licenses: Map[String, File],
             includeBagMetadata: Boolean,
             skipPayload: Boolean,
+            extraDescription: Option[String],
            ): Settings = {
     Fedora.setFedoraConnectionSettings(
       credentials.getBaseUrl.toString,
@@ -114,6 +118,7 @@ object Settings {
       licenses = licenses,
       includeBagMetadata = includeBagMetadata,
       skipPayload = skipPayload,
+      extraDescription = extraDescription,
     )
   }
 }
