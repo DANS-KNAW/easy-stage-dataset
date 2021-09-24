@@ -28,7 +28,7 @@
 
     <groupId>nl.knaw.dans.easy</groupId>
     <artifactId>easy-stage-dataset-lib</artifactId>
-    <version>2.2.3-SNAPSHOT</version>
+    <version>2.2.3</version>
 
     <name>EASY Stage Dataset Library</name>
     <inceptionYear>2015</inceptionYear>
@@ -196,4 +196,8 @@
             </plugin>
         </plugins>
     </build>
+
+  <scm>
+    <tag>v2.2.3</tag>
+  </scm>
 </project>
