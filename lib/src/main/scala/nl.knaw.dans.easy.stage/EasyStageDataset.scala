@@ -67,7 +67,7 @@ object EasyStageDataset extends DebugEnhancedLogging {
   }
 
   def checkValidState(state: String): Try[Unit] = {
-    if (Seq("DRAFT", "SUBMITTED", "PUBLISHED").contains(state)) Success(())
+    if (Seq("DRAFT", "SUBMITTED", "PUBLISHED", "MAINTENANCE").contains(state)) Success(())
     else Failure(new IllegalArgumentException(s"Not a valid state: $state"))
   }
 
