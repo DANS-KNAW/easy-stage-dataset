@@ -31,7 +31,7 @@
     <packaging>pom</packaging>
 
     <scm>
-        <developerConnection>scm:git:https://github.com/DANS-KNAW/easy-stage-dataset</developerConnection>
+        <developerConnection>scm:git:ssh://github.com/DANS-KNAW/easy-stage-dataset</developerConnection>
         <tag>HEAD</tag>
     </scm>
 
