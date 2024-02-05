@@ -1,3 +1,0 @@
-29d5d8b3e53ce11b0f379a567b1b0247209f8954  data/reisverslag/deel01.txt
-041e53eb705c3cfbe135e53cdddf8bf4238537c0  data/reisverslag/deel02.txt
-a172c01f396818d90cce049a201b4aec4f65cc68  data/reisverslag/deel03.txt

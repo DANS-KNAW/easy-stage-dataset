@@ -1,2 +1,0 @@
-data/random images/image01.png.bak      http://some-external-url
-data/a/deeper/path/With some file.txt   http://some-other-url
